@@ -167,7 +167,7 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
 
 
 
-- 创建分支
+- **创建分支**
 
 	- `git branch <name>`在本地仓库上HEAD位置上创建一个本地分支。
 
@@ -178,19 +178,31 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
 		$git checkout iss53
 		~~~
 
-- 切换分支
+- **切换分支**
 
 	- `git checkout <name>`。**切换分支时，工作目录以及暂存区都替换为当时的版本快照**。
 
-- 查看分支：
+- **查看分支**
 
   - `git branch`：查看本地分支
   - `git branch -a`：查看所有的本地分支以及远程分支。
 
-- 合并分支
+- **更名分支**
+
+  - `git branch -M <oldname> <newname>`，可省略`oldname`，就对当前分支更名。
+  
+- **删除分支**
+
+  - `git branch -d <name>`：删除指定分支。`-D`强制删除。
+  
+- **合并分支**
 
   - `git merge <name>`，将当前分支与指定分支合并。如果指定分支与当前分支是直接祖先关系，那么将会执行一次快速合并，即只修改指定分支的指向。
 
+  	
+  	
+  	
+  	
   	
   	
   	![一次典型合并中所用到的三个快照。](assets/basic-merging-1.png)
@@ -205,12 +217,10 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
   	![一个合并提交。](assets/basic-merging-2.png)
   	
   	解决 Git 的合并冲突：在手动解决完冲突后，在手动解决完冲突后需要调用 `git commit`。
+  	
+  	
 
-- 更名分支
-
-  - `git branch -M <oldname> <newname>`，可省略`oldname`，就对当前分支更名。
-
-- 变基：将当前分支变基到指定分支上。![分叉的提交历史。](assets/basic-rebase-1.png)
+- **变基**：将当前分支变基到指定分支上。![分叉的提交历史。](assets/basic-rebase-1.png)
 
   它的原理是首先找到这两个分支（即当前分支 `experiment`、变基操作的目标基底分支 `master`）的最近共同祖先 `C2`，然后对比当前分支相对于该祖先的历次提交，提取相应的修改并存为临时文件，然后将当前分支指向目标基底 `C3`, 最后以此将之前另存为临时文件的修改依序应用。注意：此时`C4`提交会被删除。
 
@@ -226,7 +236,7 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
 
   ![将 `server` 中的修改变基到 `master` 上。](assets/interesting-rebase-4.png)
 
-- 优选分支
+- **优选分支**
 
   - `git cherry-pick <name>`：将指定分支所指向的版本复制到当前分支上。原理与`git rebase`类似
 
@@ -239,21 +249,17 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
   	\ 
   	  e - f - g
   	  
-  git checkout master
+  git checkout Master
   git cherry-pick f
   
                Master
                   |
-  a - b - c - d - f
+  a - b - c - d - f'
   	\ 
   	  e - f - g
   ~~~
 
   出现冲突后，可使用`git cherry-pick --continue`或者`git cherry-pick --abort` 
-
-- 删除分支
-
-  - `git branch -d <name>`：删除指定分支。`-D`强制删除。
 
 ## 远程仓库
 
@@ -284,21 +290,22 @@ git checkout origin/master		 #切换回本地的远程仓库
 
 `git fetch <shortname>`从服务器下载数据到对应的本地远程仓库。
 
-而`git pull <shortname / url>` 从服务器中下载数据后直接进行合并。解决冲突：使用`git commit`命令。
 
 
+`git pull` 其实就是 `git fetch` 和 `git merge FETCH_HEAD`的简写。
 
-`git push <name> <branch>`将本地分支推送到服务器上。`git push <1> <2>:<3>`创建远程分支并同步到服务器上。这里`<1>`是远程仓库名，而`<2>`是本地分支名，`<3>`是远程分支名。
+- `git pull <远程主机名> <远程分支名>:<本地分支名>` 从服务器中下载数据后直接进行合并。
+- `git pull origin master`将远程分支`origin/master`与当前分支合并。
 
-`git push origin :<branch>` or `git push origin --delete <branch>`都可以删除掉远程分支并同步到服务器上。
-
-
-
-
+解决冲突：使用`git commit`命令。
 
 
 
 
+
+`git push <远程仓库名> <本地分支名>`将本地分支推送到服务器上。`git push <远程仓库名> <本地分支名>:<远程分支名>`创建远程分支并同步到服务器上。
+
+`git push origin :<远程分支名>` or `git push origin --delete <远程分支名>`都可以删除掉远程分支并同步到服务器上。
 
 
 
@@ -321,15 +328,9 @@ git pull			#自动拉取
 
 	
 
-
-
 查看所有跟踪分支
 
 - `git branch -vv`
-
-
-
-
 
 
 
