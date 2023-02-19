@@ -119,7 +119,7 @@ $ git add README
 
 `git reset`可以进行撤回操作。git reset有三种工作模式，即`--soft`、`--mixed`（默认方式）与`--hard`
 
--  --soft：仅仅移动当前 Head 指针以及它所指向的分支的指向，不会改变工作目录和暂存区的内容。
+-  --soft：仅仅移动当前 Head 指针以及它所指向的分支（Head->Master）的指向（Master->commit），不会改变工作目录和暂存区的内容。
 
 	![在这里插入图片描述](assets/d9cc49896f92430b9dc4807529e07dcd.png)
 
