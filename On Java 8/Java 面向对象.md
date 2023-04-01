@@ -153,7 +153,15 @@ final int j = i;		//运行时常量
 使用final方法的原因有两个：
 
 - 设计上：防止继承类通过重写来改变该方法的含义
-- 效率上：在Java的早期实现中，如果创建了一个final方法 ，编译器可以将任何对该方法的调用转换为内联调用，即通过复制方法体中实际代码的副本来代替方法调用。而正常的方法调用方式则是将参数压入栈，跳到方法代码处并执行，然后跳回并清除栈上的参数，最后处理返回值。这节省了方法调用的开销，但会让代码开始膨胀。长期以来，Java都不鼓励使用final来进行优化。**因此不推荐处于效率原因使用final方法**
+
+- 效率上：
+
+	但在大多数情况下，它不会对程序的整体性能产生什么影响，**因此最好仅将final用作设计决策，而不是尝试用它提高性能**。长期以来，Java都不鼓励使用final来进行优化。
+
+	- 在Java的早期实现中，如果创建了一个final方法 ，编译器可以将任何对该方法的调用转换为内联调用，即通过复制方法体中实际代码的副本来代替方法调用。而正常的方法调用方式则是将参数压入栈，跳到方法代码处并执行，然后跳回并清除栈上的参数，最后处理返回值。这节省了方法调用的开销，但会让代码开始膨胀。
+	- 它告诉编译器自己不需要动态绑定。这让编译器可以为final方法的调用生成更为高效的代码。
+
+
 
 
 
@@ -324,7 +332,7 @@ class Mug {
 
 4. 最后执行构造器
 
-如果在继承体系中，会从基类到子类依次应用（1）或者 （2）~（4）。
+如果在继承体系中，会从基类到子类递归地重复（1）或者 （2）~（4）。
 
 
 
@@ -364,7 +372,7 @@ class TerminationCondition {
 
 ### 清理顺序
 
-先按初始化相反的顺序清理本类的成员，再清理基类（为什么要这么做呢？）。下面给出一个例子：
+先按初始化相反的顺序清理本类的成员（以防对象依赖于其他对象），再清理基类（清理时可能会调用基类的方法，此时要求基类组件处于存活状态）。下面给出一个例子：
 
 ~~~java
 class Shape {
@@ -374,7 +382,7 @@ class Line extends Shape {
     void clean() {super.dispose();}
 }
 class Triangle extends Shape {
-    void clean() {super.dispose();}
+    void clean() {super.dispose();}	//一定记得执行基类清理工作
 }
 class CADSystem extends Shape {
 	Triangle t = new Triangle();
@@ -389,6 +397,41 @@ class CADSystem extends Shape {
 
 
 
+如果其中某个成员对象被其他对象所共享，则问题会变得更加复杂，此时就不能简单地调用`dispose()`。在这里，可能需要使用**引用计数**来跟踪访问共享对象的对象数量。下面是相关的示例：
+
+~~~java
+class Shared {
+    private static long refCount = 0;
+    public void addRef() { refCount += 1; }
+    
+    public void dispose() {
+        if (reCount == 0) {
+            /*清理工作*/
+        } else refCount -= 1;
+    }
+}
+
+class Composing {
+    private Shared shared;
+    Composing(Shared shared) { this.shared = shared; shared.addRef(); }
+    protected void dispose() { shared.dispose(); }
+}
+
+class ReferenceCounting {
+    public static void main(String[] args) {
+		Shared shared = new Shared();
+         Composing[] composing = { 
+             new Composing(shared);
+             new Composing(shared);
+             new Composing(shared);
+         } 
+        for (Composing c : composing) {
+            c.dispose();
+        }
+    }
+}
+~~~
+
 
 
 ## 复用——继承与组合
@@ -397,7 +440,7 @@ class CADSystem extends Shape {
 
 它直接复制了现有类的形式，然后向其中添加代码，而没有修改现有类。这种技术叫作**继承（inheritance）**。它的大部分工作是由编译器完成的。
 
-继承一般表示 `is-a`的关系，而组合表示`has-a`的关系。
+继承一般表示 `is-a`的关系，而组合表示`has-a`的关系。而且组合来允许其状态发生改变，继承允许行为发生改变。
 
 ### 继承
 
@@ -480,6 +523,8 @@ public class SpaceShipDelegation {
 
 类本身的访问权限只能是`public`或`default`。实际上内部类可以是`private`或`protected`的，这会在内部类一节中介绍。
 
+**`private`是隐式`final`的**
+
 
 
 再此强调，private仅仅是语言层面上的隐藏，而不是二进制层面上的！这意味着private并不能够抵抗反编译。private仅仅是将底层实现与接口分离，当有能力改变底层实现时，你不仅有了改进设计的自由，还有了犯错误的自由。同时对客户程序员而言也是一种服务，因为这样的话他们就可以轻松地了解到什么对他们重要，什么又是他们可以忽略的。这简化了他们对类的理解。
@@ -540,23 +585,93 @@ public B extends A {
 
 ## 多态
 
-封装将实现与接口解耦。而多态（也称动态绑定、后期绑定或运行时绑定）实现类型之间的解耦，即让一段代码同等地适用于所有这些不同的类型，同时在行为上又有所不同。这改善了代码的组织结构和可读性，并且还能创建**可扩展**的程序。大部分面向对象的设计模式依赖于多态机制！
+封装将实现与接口解耦。而多态（也称动态绑定、后期绑定或运行时绑定）实现类型之间的解耦，即让一段代码同等地适用于所有这些不同的类型，同时在行为上又有所不同。这改善了代码的组织结构和可读性，并且还能创建**可扩展**的程序。多态是“将变化的事物与不变的事物分离”的一项重要技术。因此大部分面向对象的设计模式依赖于多态机制！
 
-### 构造器与多态
+
 
 ### 转型
 
 向上转型总是安全的，因为你是从更具体的类型转为更通用的类型。在向上转型期间，子类接口“缩小”至基类的接口。
 
-向下转型（downcasting），但这涉及一个难题，我们等会在详细解释。
+因为向上转型会丢失特定类型的信息，所以我们自然就可以通过向下转型（downcast）来重新获取类型信息。而向下转型不总是安全的，因为它可能转型为错误的类型，而向该对象发送它无法接受的信息，从而在运行时抛出`ClassCastException`
 
 ### 绑定（覆写）
 
 将一个方法调用和一个方法体关联起来的动作称为**绑定**。在程序运行之前执行绑定（如果存在编译器和链接器的话，由它们来实现），称为前期绑定。
 
-Java中的所有方法绑定都是后期绑定，除非方法是static或final的（private方法隐式为final）。
+Java中的所有方法绑定都是后期绑定，除非方法是static或final的（private方法隐式为final）。例子：
+
+~~~java
+class A {
+    void f() { g(); }	//g()不一定是A中的f()方法，还可能是B中的
+    void g() {}
+}
+class B extends A {
+    @Override void g() {}
+}
+~~~
+
+
+
+请注意只有普通方法是多态的。而final方法、静态方法以及字段会在编译时解析的。一个副作用就是可以名字隐藏，想要访问基类的字段或静态方法必须使用super关键字。例子：
+
+~~~java
+class Super {
+    public int field = 0;
+}
+class Sub extends Super {
+    public int field = 1;
+    public int getField() { return field; }			    //0
+    public int getSuperField() { return super.field; }	//1
+}
+~~~
+
+我们一般不会为基类字段与子类字段指定相同的名称，因为这会造成混淆。
 
 ### 协变返回类型
 
+**协变返回类型（covariant return type）**，这表示子类中重写方法的返回值可以是基类方法返回值的子类型。这对于基本类型并不成立。
+
 ### 构造器与多态
 
+在基类构造器中，整个子类对象还只是部分构造，只能知道基类对象是已完全初始化的。由于动态绑定，基类构造器可能调用子类的方法，此时可能有访问尚未初始化的子类字段，这会带来难以发现的错误！下面给出一个例子：
+
+~~~java
+class Glyph {
+    void draw() { System.out.println("Glyph.draw()"); }
+    Glyph() {
+        System.out.println("Glyph() before draw()");
+        draw();
+        System.out.println("Glyph() after draw()");
+    }
+}
+
+class RoundGlyph extends Glyph {
+    private int radius = 1;
+    RoundGlyph(int r) {
+        radius = r;
+        System.out.println(
+            "RoundGlyph.RoundGlyph(), radius = " + radius);
+    }
+    @Override void draw() {
+        System.out.println(
+            "RoundGlyph.draw(), radius = " + radius);
+    }
+}
+
+public class PolyConstructors {
+    public static void main(String[] args) {
+        new RoundGlyph(5);
+    }
+}
+/* Output:
+Glyph() before draw()
+RoundGlyph.draw(), radius = 0		//期望是radius = 1
+Glyph() after draw()
+RoundGlyph.RoundGlyph(), radius = 5
+*/
+~~~
+
+
+
+因此，编写构造器时有一个很好的准则：“用尽可能少的操作使对象进入正常状态，如果可以避免的话，请不要调用此类中的任何其他方法。”只有基类中的final方法可以在构造器中安全调用（这也适用于private方法，它们默认就是final的）。这些方法不能被重写，因此不会产生这种令人惊讶的问题。
