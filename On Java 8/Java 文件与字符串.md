@@ -22,7 +22,20 @@
 	String str = new String("Java Note")
 	~~~
 
-	
+
+
+
+
+
+字符串的拼接
+
+当`+`接收一个String类型以及对象时，会自动调用对象的toString()方法。对于基本类型也会做相应的字符串转换
+
+~~~java
+System.out.println(true + ""); //true
+~~~
+
+
 
 ### 字符串常量池
 
