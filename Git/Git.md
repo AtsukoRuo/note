@@ -51,6 +51,8 @@ git config --global -l		 #查看全局配置
 
 
 
+`git clone <repository_url> <new_directory_name>`克隆远程仓库。其中`<new_directory_name>`可选。
+
 
 
 
@@ -153,7 +155,7 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
 
 
 
-`git checkout -- <file>`用暂存区中的文件覆写工作目录中的，而`git reset HEAD <file> `是用本地仓库中的文件覆写暂存区中的。
+`git checkout -- <file>`用暂存区中的文件覆写工作目录中的，而`git reset HEAD <file> `是用撤销暂存区中的指定文件。
 
 > `git`又引入了`git restore`命令来分担`git checkout`恢复文件的职责。
 
@@ -180,7 +182,23 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
 
 - **切换分支**
 
-	- `git checkout <name>`。**切换分支时，工作目录以及暂存区都替换为当时的版本快照**。
+  - `git checkout <name>`。**切换分支时，工作目录以及暂存区都替换为当时的版本快照**。
+
+  	通过切换分支可能切换到不同的仓库中，例如：
+
+  	~~~bash
+  	git checkout origin/default
+  	~~~
+  	
+  	**在本地创建的分支在各个仓库之间的名字必须是唯一的**
+
+- **移动分支**
+
+  - ```bash
+  	git branch -f <branch-name> <commit>
+  	```
+
+  	将指定分支`<branch-name>`移动到`commit`上，其中`commit`可以是HEAD、分支名、SHA-1
 
 - **查看分支**
 
@@ -277,7 +295,7 @@ xxx/**/*.txt 	 # 目录中所有以txt结尾的文件，包括子目录
 
 
 
-注意：**本地上的各个仓库之间是隔离的，都拥有自己的对象（本地分支、文件数据等）**。
+**在本地创建的分支在各个仓库之间的名字必须是唯一的**
 
 通过`git checkout`切换分支来切换到对应的仓库。而且**远程分支是不可修改**的，除非使用`git fetch`以及`git pull`命令与服务器远程仓库同步。
 
@@ -331,6 +349,81 @@ git pull			#自动拉取
 查看所有跟踪分支
 
 - `git branch -vv`
+
+
+
+## 子模块
+
+> 整理自https://zhuanlan.zhihu.com/p/87053283
+
+### 需求动机
+
+面对比较复杂的项目，我们有可能会将代码根据功能拆解成不同的子模块。主项目对子模块有依赖关系，却又并不关心子模块的内部开发流程细节。这种情况下，通常不会把所有源码都放在同一个 Git 仓库中。Git 工具的 `submodule` 功能就是建立了当前项目与子模块之间的依赖关系：`子模块路径`、`子模块的远程仓库`、`子模块的版本号`。
+
+### 创建子模块 & 拉取
+
+`git submodule add <submodule_url> <path>` 命令可以在项目中创建一个子模块。`<path>`是可选的。
+
+此时项目仓库中会多出两个文件：`.gitmodules` 和 `subproject`。`.gitmodules`文件中描述子模块的信息：
+
+~~~
+[submodule "project-sub-1"]
+	path = project-sub-1
+	url = https://github.com/AtsukoRuo/project-sub-1.git
+[submodule "project-sub-2"]
+	path = project-sub-2
+	url = https://github.com/AtsukoRuo/project-sub-2.git
+~~~
+
+
+
+
+
+
+
+如果直接克隆主项目，会发现子项目是空的。有两种方法拉取子项目：
+
+- `git clong --recurse-submodules`这样会递归地将项目中所有子模块的代码拉取。
+- `git submodule init` `git submodule update`。它根据主项目的配置信息，拉取更新子模块中的代码。
+
+
+
+### 更新
+
+子模块的更新是独立于主模块的。**如果在主模块中直接修改子模块的代码，那么通常需要进入子模块文件夹，按照子模块内部的版本控制体系提交代码**。
+
+
+
+如果子模块更新，那么需要让主项目主动进入子模块拉取新版代码，进行升级操作。
+
+~~~bash
+cd project-sub-1
+git pull origin master
+~~~
+
+或者使用`git submodule update --init --recursive`。
+
+更新完后，最好在主模块上做一次`commit`，说明这次更新。
+
+
+
+当主项目的子项目特别多时，可能会不太方便，此时可以使用 `git submodule` 的一个命令 `foreach` 执行：
+
+~~~bash
+git submodule foreach 'git pull origin default'
+~~~
+
+
+
+### 删除
+
+~~~bash
+git submodule deinit project-sub-1
+git rm project-sub-1
+git commit -m "delete submodule project-sub-1"
+~~~
+
+这样才能彻底对子模块完成删除
 
 
 
