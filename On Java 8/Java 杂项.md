@@ -8,7 +8,7 @@ Java通过`package`机制解决了命名冲突的问题。包名的命名方法�
 
 
 
-
+package必须是第一条语句（除注释）
 
 Javas使用`import`语句，可以将一个包下的类导入，这样在每次访问这些类时，无需再添加包名，例子：
 
@@ -34,8 +34,6 @@ System.out.println("Hello World");
 
 
 
-
-
 此外，Java 消除了所谓的**“前向引用”（forward referencing）**问题。假如某个类存在于当前被调用的源代码文件中。你只要使用这个类就可以了，哪怕这个类稍后才会在文件中定义。
 
 
@@ -58,7 +56,7 @@ java.util.Date date2 = new java.util.Date();	  //date2是java.util.Date类型
 
 ### 编译单元
 
-一个Java源代码文件就是一个编译单元。在编译单元内，至多有一个public类，而且它必须与文件同名。如果该编译单元中有其他类，则在**该包之外**是看不到它们的，这是因为它们不是public的，而只是该public类的**支持类（support class）**。
+一个Java源代码文件就是一个编译单元。**在编译单元内，至多有一个public类、接口、抽象类，而且它必须与文件同名**。如果该编译单元中有其他类，则在**该包之外**是看不到它们的，这是因为它们不是public的，而只是该public类的**支持类（support class）**。
 
 ### 默认包
 

@@ -20,6 +20,14 @@ int[] a3 = new int[] {1, 2, 3, 4, 5,};			//初始值列表的最后一个逗号�
 
 所有数组都有`length`字段，不可修改。
 
+### 打印数组
+
+使用`Arrays.toString`打印单层数组
+
+使用`Arrays.deepToString`来打印多层嵌套数组
+
+
+
 ## 枚举
 
 Java 5中添加了`enum`关键字
@@ -47,7 +55,7 @@ public class EnumOrder {
 }
 ~~~
 
-枚举类的静态方法`values()`，它按照声明顺序生成一个enum常量值的数组。枚举对象的ordinal()方法，来表示特定enum常量的声明顺序。
+枚举类的静态方法`values()`，它按照声明顺序生成一个enum常量值的数组。枚举对象的`ordinal()`方法，来表示特定enum常量的声明顺序。
 
 
 

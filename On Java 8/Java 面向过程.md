@@ -105,6 +105,27 @@ f(1, '2', '3');			//OK
 f('a', '2', '3');		//匹配多个重载，抛出异常
 ```
 
+
+
+注意：`...`只会生成以为数组
+
+~~~java
+Integer[] array = {1, 2, 3, 4, 5};
+f(array, array);
+g(array, array);	//Error 
+//Required Type: Integer.
+//Provided Type: Integer[]
+
+void f(Integer[]... arrays) {
+    System.out.println(Arrays.deepToString(arrays));
+}
+void g(Integer... arrays) {
+    System.out.println(Arrays.deepToString(arrays));
+}
+~~~
+
+
+
 ## 控制流
 
 Java控制流相关的关键字包括`if-else`、`while`、`do-while`、`for`、`return`、`break`以及选择语句`switch`

@@ -31,7 +31,7 @@ public class Parcel {
         }
     }
 	
-    //内部类实现接口，权限为private，外部访问不到
+    //内部类实现接口，权限为protected，外部访问不到
     protected final class PDestination implements Destination {
         private String label;
         private PDestination(String whereTo) {
@@ -43,7 +43,7 @@ public class Parcel {
         }
     }
 	
-    //通过方法返回private接口的引用，而且通过向上转型，隐藏内部实现。更加安全
+    //通过方法返回接口的引用，而且内部类通过向上转型到接口类型。这样隐藏内部实现。更加安全
     public Destination destination(String s) {
         return new PDestination(s);
     }
@@ -62,11 +62,11 @@ public class Parcel {
 
 
 
-内部类为类的设计者提供了一种方式，可以完全阻止任何与类型相关的编码依赖（通过接口与向上转型实现），并且可以完全隐藏实现细节。此外，从客户程序员的角度来看，因为无法访问接口之外的任何方法，所以接口的扩展对他们而言并没有什么用处。这也为Java编译器提供了一个生成更高效代码的机会。
+内部类为类的设计者提供了一种方式，可以完全阻止任何与类型相关的编码依赖（通过接口与向上转型实现），并且可以完全隐藏实现细节。此外，从客户程序员的角度来看，因为无法访问接口之外的任何方法，所以接口的扩展对他们而言并没有什么用处。
 
 ### 多继承
 
-通常情况下，内部类继承自某个类或实现某个接口，内部类中的代码会操作用以创建该内部类对象的外部类对象。内部类提供了进入其外部类的某种窗口。
+通常情况下，内部类可以继承自某个类或实现某个接口。内部类提供了进入其外部类的某种窗口，这样内部类中的代码可以操作外部类对象。
 
 每个内部类都可以独立地继承自一个实现。因此，外部类是否已经继承了某个实现，对内部类并没有限制。
 
@@ -76,11 +76,10 @@ public class Parcel {
 class D {}
 abstract class E {}
 class Z extends D {
-    E makeE() { return new E() {}; }
+    class F extends E {}
+    E makeE() { return new F(); }		
 }
 ~~~
-
-
 
 
 
@@ -95,7 +94,7 @@ public class A {
     private class B {
         protected class C {
             class D {
-            }
+          	}
         }
     }
 }
@@ -129,12 +128,12 @@ public class A {
     }
     B f() { return new B(); }			//正确的，通过隐含this指针可以获取外围对象
     static B g() { return new B(); }	//错误的，没有办法获取到this指针
-    B.C g() { return new B.C(); }		//错误的，此时没办法获取B外围对象
+    B.C g() { return new B.C(); }		//错误的，此时没有类型为B的外部对象
     public static void main(String[] args) {
         A  a   = new A();
         B  b0  = new B();			//错误的，在静态方法里没有this，无法获取到外围对象
         B  b   = a.new B();
-        B  b1 = a.f();				//通过构造器返回一个引用，很常用
+        B  b1  = a.f();				//通过构造器返回一个引用，很常用
     }
 }
 ~~~
@@ -199,7 +198,7 @@ A::Private
 
 
 
-通过`.this`关键字解决命名冲突以及**引用外部对象的方法与字段**：
+通过`.this`关键字**解决命名冲突**以及**引用外部对象的方法与字段**：
 
 ~~~java
 class A {
@@ -228,7 +227,7 @@ class A {
 
 - **作用域的限制**：局部内部类超出作用域外就不可访问。
 
-- 局部内部类可以在静态方法中创建，因为局部内部类是定义在方法中的，它的作用域仅限于方法内部，不依赖于外部类的实例。因此，在静态方法中可以直接创建局部内部类的对象，而不需要创建外部类的实例。
+- 局部内部类可以在静态方法中创建，因为局部内部类是定义在方法中的，它的作用域仅限于方法内部，不依赖于外部类的实例。因此，在静态方法中可以直接创建局部内部类的对象，而不需要创建外部类的实例。此时只能访问外部类的静态方法以及静态字段。
 
 	~~~java
 	class A {
@@ -275,9 +274,6 @@ public class Parcel6 {
         //- TrackingSlip ts = new TrackingSlip("x");
     }
     public void track() { internalTracking(true); }
-    public static void g() {
-        class B {}		//错误，因为无法获取到this。
-    }
     public static void main(String[] args) {
         Parcel6 p = new Parcel6();
         p.track();
@@ -367,11 +363,11 @@ public class A {
 - 因为匿名类没有名字，所以不可能有命名的构造器。实例初始化部分就是匿名内部类的构造器。不过它也有局限性——我们无法重载实例初始化部分，所以只能有一个这样的构造器。
 - 与普通的继承相比，匿名内部类有些局限性，因为它们要么是扩展一个类，要么是实现一个接口，但是两者不可兼得。而且就算要实现接口，也只能实现一个。
 
-匿名类相对局部内部类唯一的优势就是在
+匿名类相对局部内部类唯一的优势：在仅需使用一次类的地方可简化代码编写。Lambda表达式在这方面会做得更好。
 
 ## 嵌套类（静态内部类）
 
-如果**不需要内部类对象和外部类对象之间的连接**，可以将内部类设置为static的。我们通常称之为**嵌套类**。
+如果**不需要内部类对象和外部类对象之间的连接**，可以将内部类设置为static的。我们通常称之为**嵌套类**。此时只能访问外部类的静态字段或静态方法。
 
 ~~~java
 class A {
@@ -386,12 +382,24 @@ class A {
 }
 ~~~
 
+
+
 此时可以在静态语义下，直接创建该嵌套类对象：
 
 ~~~java
 class A {
-	static class B {}
-     class C {}
+    private int i = 10;
+    private static int j = 10;
+	static class B {
+        void g() {
+            i = 10;			//Error
+            A a = new A();
+            a.i = 10;		//OK
+            j = 10; 		//OK
+            
+        }
+    }
+    class C {}
     static void f() {
         C c = new C(); 	//错误
         B b = new B();	//正确
