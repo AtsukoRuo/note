@@ -66,12 +66,11 @@ static关键字（源自 C++）为以上两个问题提供了解决方案。有�
 A a = new A();
 A.staticMethod();			//通过类名访问（推荐）
 a.staticMethod();			//通过对象名访问
-staticMethod();				//直接访问本类中的静态方法
 ~~~
 
 
 
-**static字段是基于类创建的，而非static字段是基于对象创建的**。因此**不可在static方法中直接访问本类的非static字段、非static方法，以及使用this参数**，但是在非static方法中**可以**直接访问static字段。
+**static字段是基于类创建的，而非static字段是基于对象创建的**。因此**不可在static方法中直接访问本类的非static字段、非static方法，以及使用this参数**，但是在非static方法中**可以**直接访问static字段以及调用static方法。
 
 
 
@@ -146,7 +145,7 @@ final int j = i;		//运行时常量
 
 
 
-**空白final**是没有初始值的final字段。编译器会确保在使用前初始化这个空白final字段。而且必须在构造器执行完之前完成初始化工作。
+**空白final**是没有初始值的final字段。编译器会确保在使用前初始化这个空白final字段。因为空白fianl不执行默认初始化，所以**必须在构造器执行完之前完成初始化工作**。
 
 #### 方法final
 
@@ -156,12 +155,10 @@ final int j = i;		//运行时常量
 
 - 设计上：防止继承类通过重写来改变该方法的含义
 
-- 效率上：
-
-	但在大多数情况下，它不会对程序的整体性能产生什么影响，**因此最好仅将final用作设计决策，而不是尝试用它提高性能**。长期以来，Java都不鼓励使用final来进行优化。
+- 效率上：但在大多数情况下，它不会对程序的整体性能产生什么影响，**因此最好仅将final用作设计决策，而不是尝试用它提高性能**。长期以来，Java都不鼓励使用final来进行优化。
 
 	- 在Java的早期实现中，如果创建了一个final方法 ，编译器可以将任何对该方法的调用转换为内联调用，即通过复制方法体中实际代码的副本来代替方法调用。而正常的方法调用方式则是将参数压入栈，跳到方法代码处并执行，然后跳回并清除栈上的参数，最后处理返回值。这节省了方法调用的开销，但会让代码开始膨胀。
-	- 它告诉编译器自己不需要动态绑定。这让编译器可以为final方法的调用生成更为高效的代码。
+- 它告诉编译器自己不需要动态绑定。这让编译器可以为final方法的调用生成更为高效的代码。
 
 
 
@@ -479,6 +476,8 @@ class C extends B {
 
 **委托（delegation）**。它介于继承和组合之间。虽然Java里没有提供直接支持，但是你可以在新类中创建现有类的对象（组合），同时又在新类里公开了成员对象的部分方法，以及适当添加一些操作（类似继承）。下面给出一个例子：
 
+
+
 ~~~java
 public class SpaceShipControls {
     void up(int velocity) {};
@@ -490,16 +489,15 @@ public class SpaceShipControls {
 public class SpaceShipDelegation {
     SpaceShipControls controls = new SpaceShipControls();
     public void up(int velocity) {
-		controls.up(velocity);
+        controls.up(velocity);
     }
     public void up(int velocity) {
          log.info("up:" + velocity);		//扩展操作
-		controls.up(velocity);
+        controls.up(velocity);
     }
     //暴露部分方法
 }
 ~~~
-
 
 
 ### 继承中的名字隐藏

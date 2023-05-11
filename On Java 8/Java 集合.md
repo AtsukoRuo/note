@@ -59,7 +59,7 @@ Java集合类库是用来“持有对象”的，而且从设计上讲，它可�
 	- 而`Queue`则要按照排队规则来输出元素。
 - `Map`：一组键值对象对，使用键来查找值。数组就是使用一个数值来查找某个对象，所以在**某种意义上**它将数值与对象关联在了一起。而Map使用另一个对象来查找某个对象。它也被称作**关联数组**（或者被称作**字典**），因为它将对象与其他对象关联在了一起；
 
-在Java中，几乎所有的容器类都是持有对象的引用。当你向一个容器中添加一个对象时，实际上是将这个对象的引用添加到容器中（浅复制），而不是对象本身（深复制）。因此，如果你修改了这个对象，这些修改也会反映存储在容器中的引用所指向的对象上。
+在Java中，几乎所有的容器类都是**持有对象的引用**。当你向一个容器中添加一个对象时，实际上是将这个对象的引用添加到容器中（浅复制），而不是对象本身（深复制）。因此，如果你修改了这个对象，这些修改也会反映存储在容器中的引用所指向的对象上。
 ~~~Java
 class A {
     int i = 0;
@@ -104,6 +104,8 @@ public interface Collection<E> extends Iterable<E> {
     void clear();
     boolean equals(Object o);
     int hashCode();
+    
+    default Stream<E> stream() { //... }
 }
 
 作者：落落小方地发卡
@@ -141,7 +143,7 @@ public interface Collection<E> extends Iterable<E> {
 
 - contain、remove等方法依赖于对象的equal方法！
 
-- toArray方法其中一个重载版本允许传递一个数组。如果数组大小可以容纳容器中的所有元素，那么就填充该数组，否则一个都不填充。
+- toArray方法其中一个重载版本允许传递一个数组。如果数组大小可以容纳容器中的所有元素，那么就填充该数组，否则一个都不填充。注意，它也是浅拷贝
 
 ## Set
 
@@ -151,6 +153,12 @@ public interface Collection<E> extends Iterable<E> {
 
 - **LinkedHashSet**。具有 HashSet 的查找效率，且内部使用双向链表维护元素的插入顺序。
 
+- **ConcurrentSkipListSet**
+
+- **CopyOnWriteArraySet**
+
+- **SortedSet**（接口）
+
 	
 
 `Set`接口继承了`Collection`接口，并没有添加什么特殊的方法
@@ -158,8 +166,12 @@ public interface Collection<E> extends Iterable<E> {
 ## Map
 
 - **HashMap**：键和值在HashMap之中的存储顺序不同于插入顺序，这是因为HashMap使用了一种非常快速的算法，而该算法会控制顺序。
+
 - **TreeMap**：TreeMap会按照键的升序来排序。
+
 - **LinkedHashMap**：LinkedHashMap则按照插入顺序来保存键，同时保留了HashMap的查找速度。
+
+	
 
 
 
@@ -197,6 +209,7 @@ public interface List<E> extends Collection<E> {
     int lastIndexOf(Object o);
     List<E> subList(int fromIndex, int toIndex);	//注意返回List的引用，而不是创建一个新List
     static <E> List<E> of(E... elements);		//创建一个List
+    
 }
 
 作者：落落小方地发卡
@@ -269,7 +282,7 @@ while (!stack.isEmpty()) {
 
 Stack是使用**ArrayDeque**实现的，它也持有T类型对象。注意，`push()`接受一个T类型的对象，而`peek()`和`pop()`返回一个T类型的对象。`peek()`方法用于提供栈顶元素，并不把它从栈顶移走，而`pop()`则移除并返回顶端元素。
 
-ArrayDeque还有一些冗余功能是Stack使用不到的。在使用中可能会误用这些方法，而破坏栈功能的使用逻辑一致性。
+ArrayDeque还有一些功能是Stack使用不到的。在使用中可能会误用这些方法，而违背栈的使用语义。
 
 ## Queue
 
@@ -427,7 +440,9 @@ PriorityQueue<String> queue = new PriorityQueue<>(Collection.reverseOrder());
 
 for-in强制要求接受一个数组或者实现java.lang.Iterable的对象。
 
-对于实现Iterable的对象，for-in会自动调用它的iterator()方法获取Iterator，燃火开始迭代。或者显式调用一个返回Iterable接口的方法（一般用适配器来实现）来使用多种不同迭代的行为。
+对于实现Iterable的对象，for-in会自动调用它的iterator()方法获取Iterator，然后开始迭代。或者显式调用一个返回Iterable接口的方法（一般用适配器来实现）来使用多种不同迭代的行为。
+
+注意：Iterator接口并没有扩展Iterable接口，因此无法向上转型。
 
 ~~~java
 public class ForEachAndIetrator {
@@ -464,7 +479,7 @@ class T implements Iterable<String> {
     //适配器
     public Iterable<String> reversedIterator() {
         return new Iterable<String>() {
-            public Iterator<String> iterator() {
+            @Override public Iterator<String> iterator() {
                 return new Iterator<String>() {
                     private int index = words.length;
                     
@@ -571,6 +586,7 @@ record Point(int x, int y) {
 注意：
 
 - 普通构造器与紧凑构造器必须二选一
-- 普通构造器中的签名必须和规范构造器一样，而且参数名不允许改变
-- 必须在普通构造中对每个实例字段进行初始化，否则编译器会报错。紧凑构造器就没有此限制
+- 普通构造器中的签名必须和规范构造器一样，而且参数名不允许改变。这暗示着不能声明其他构造器。
+- 必须在普通构造中对每个实例字段进行初始化，否则编译器会报错。紧凑构造器就没有此限制。
+- 支持泛型
 
