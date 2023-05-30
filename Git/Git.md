@@ -307,7 +307,7 @@ git checkout origin/master		 #切换回本地的远程仓库
 
 
 
-`git fetch <shortname>`从服务器下载数据到对应的本地远程仓库。
+`git fetch <远程主机名>`从服务器下载数据到对应的本地远程仓库。
 
 
 
@@ -454,3 +454,14 @@ git merge B/master --allow-unrelated-histories	#这里--allow-unrelated-historie
 
 
 
+### 体积过大
+
+```shell
+#一：常规办法
+#1.删除无用的分支
+$ git branch -d <branch_name>
+#2.删除无用的tag
+$ git tag -d <tag_name>
+#3.清理本地版本库
+$ git gc --prune=now
+```
