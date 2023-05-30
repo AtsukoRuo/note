@@ -417,10 +417,17 @@ PriorityQueue<String> queue = new PriorityQueue<>(Collection.reverseOrder());
 
 实际上`Iterator`是实现了`Iteratable`接口的对象。
 
-- `iterator()`方法让`Collection`返回一个`Iterator`。这个迭代器将准备好返回序列中的第一个元素。
+`Iterator`接口有：
+
 - `next()`方法获得序列中的下一个对象。
 - `hasNext()`方法检查序列中是否还有更多对象。
-- `remove()`方法删除该迭代器最近返回的元素。这暗含着调用`remove()`之前必须调用next()`。
+- `remove()`方法删除该迭代器最近返回的元素。这暗含着调用`remove()`之前必须调用`next()`。
+
+
+
+`Iteratable`接口有
+
+- `iterator()`方法让`Collection`返回一个`Iterator`。这个迭代器将准备好返回序列中的第一个元素。
 
 
 
@@ -438,9 +445,9 @@ PriorityQueue<String> queue = new PriorityQueue<>(Collection.reverseOrder());
 
 ### for-in与Iterator
 
-for-in强制要求接受一个数组或者实现java.lang.Iterable的对象。
+for-in强制要求接受一个数组或者实现java.lang.Iterable的对象。Iterable对象
 
-对于实现Iterable的对象，for-in会自动调用它的iterator()方法获取Iterator，然后开始迭代。或者显式调用一个返回Iterable接口的方法（一般用适配器来实现）来使用多种不同迭代的行为。
+对于已经实现Iterable的对象，for-in会自动调用它的iterator()方法获取Iterator，然后开始迭代。或者显式调用一个返回Iterable接口的方法（一般用适配器来实现）来使用多种不同迭代的行为。
 
 注意：Iterator接口并没有扩展Iterable接口，因此无法向上转型。
 
@@ -519,6 +526,7 @@ interface Star {
     double brightness();
     double density();
 }
+
 record RedDwarf(double brightness) implements Star {
     @Override public double density() { return 100.0; }
     //注意record为brightness字段生成的brightness方法会覆写Star中的brightness方法。

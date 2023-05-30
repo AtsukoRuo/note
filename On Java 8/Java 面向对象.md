@@ -65,7 +65,7 @@ static关键字（源自 C++）为以上两个问题提供了解决方案。有�
 ~~~java
 A a = new A();
 A.staticMethod();			//通过类名访问（推荐）
-a.staticMethod();			//通过对象名访问
+a.staticMethod();			//通过对象名访问（十分不推荐）
 ~~~
 
 

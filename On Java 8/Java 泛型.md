@@ -37,6 +37,10 @@ C++ 和Java 的策略分别处于异构翻译和同构翻译的极端。而 C#/C
 
 - **类型系统的自由度**：虽然 Java 和 JVM 常常被绑定在一起，但它们是各自独立的，有着各自的规范。由于通过类型擦除实现泛型，像 Scala 这样的语言可以以与 Java 泛型高度协同的方案实现远远超出 Java 类型系统表达能力的类型系统，同时保持高度的互操作性。
 
+## 泛型的基本语法
+
+
+
 ## 泛型数组
 
 [一个很好解释泛型数组的帖子](https://www.zhihu.com/question/300950759/answer/528504962)
@@ -98,11 +102,11 @@ interface B { }
 interface C { }
 class I1<T> { }
 class I2<T extends A & B> extends I1<T> { }
-class I3<T extends A & B & C> extends I2<T> { }
+class I3<T extends A & B & C, U, W> extends I2<T> { }
 class I4 <T extends A & C> extends I2<T> { }			//Type parameter 'T' is not within its bound; should implement 'B'
 ~~~
 
-**子类可以扩展父类的边界，这里扩展的含义是子类必须拥有父类的全部边界**
+在继承时，如果子类的泛型参数`T`要实现父类的泛型参数`U`，那么`T`必须拥有`U`的全部边界。
 
 
 
@@ -110,7 +114,15 @@ class I4 <T extends A & C> extends I2<T> { }			//Type parameter 'T' is not withi
 
 ~~~java
 List<? extends SuperHearing> audioPeople;
-List<? extends SuperHearing & SuperSmell> dogPeople;		//编译错误
+List<? extends SuperHearing & SuperSmell> dogPeople;		//语法错误
+~~~
+
+而且不能在泛型声明中使用：
+
+~~~java
+class A <? extends Object> {
+    //语法错误
+}
 ~~~
 
 
@@ -131,7 +143,7 @@ arr[0] = 0;								//运行时错误，编译通过
 List<Fruit> flist = new ArrayList<Apple>();		//Compile Error: incompatible types
 ~~~
 
-问题本质在于我们讨论的是集合自身的类型，而不是它所持有的元素类型。
+问题本质在于我们讨论的是**集合自身的类型，而不是它所持有的元素类型**。
 
 不过有时你想在这两者之间建立某种向上转型的关系。通配符可以达到这个目的。也就是说**通配符在一定程度上实现了泛型协变**。
 
@@ -184,6 +196,54 @@ List<? super Apple> apples = new ArrayList<Fruit>();
 apples是由某种Apple的基类组成的List，因此你知道**可以安全地向其中添加Apple类型或其子类型**。但是如果调用返回类型为泛型类型的方法，则必须进行强制转换，这是因为读操作是不安全的。
 
 
+
+### List\<?\>、List\<? extends Obejct\>、List、List\<Object\>的区别
+
+List<?>与List<? extends Object>是等价的表述，它们在添加元素时有限制（原因见上述讨论），而`List`、`List<Object>`可以随意添加元素。
+
+
+
+在类型推断上
+
+- `List<?>推断为 capture of ？`
+- `List<? extends Apple>`推断为`capture of ？ extends Apple`
+- `List<? extends Object>`推断为`capture of ？ extends Object`
+- `List<Apple>`推断为`Apple`
+- `List<T>`推断为`T`
+
+
+
+这些泛型变量之间是不可以相互赋值的（除通配符的向上转型规则）
+
+~~~java
+List<Apple> list1 = new ArrayList<Apple>();
+List<? extends Object> list2 = list1;
+List<? extends Apple> list3 = list2;		//语法错误
+/**
+Required type: List <? extends Apple>
+Provided: List <capture of ? extends Object>
+*/
+
+List<Apple> list4 = list2;					//语法错误
+/**
+Required type: List <Apple>
+Provided: List <capture of ? extends Object>
+*/
+
+List<Object> list5;
+List<T> list6 = list5;					//语法错误
+/**
+Required type: List <T>
+Provided: List <Object>
+*/
+~~~
+
+但是原生类型可以随意赋值给任意泛型变量，但是这是一个未检查（unchecked）赋值，有潜在的类型转换安全问题：
+
+~~~java
+List list = new ArrayList<Apple>();
+List<Orange> list2 = list;
+~~~
 
 
 
@@ -251,3 +311,8 @@ class Other<T extends Compare<T>> {}	//子类必须实现Compare接口
 
 
 自限定类型还可以实现参数协变性。这里不再介绍，需要的时候再补充。
+
+
+
+
+
