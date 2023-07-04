@@ -75,7 +75,7 @@ interface I {
 要创建一个符合特定接口（或一组接口）的类，请使用`implements`关键字：
 
 ~~~java
-class A implements {
+class A implements B{
     @Override void f() {};
 }
 ~~~

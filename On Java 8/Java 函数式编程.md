@@ -15,7 +15,11 @@
 
 
 
-在Java中，只能通过**函数式接口（Functional Interface）**，或者称为**单一抽象方法（Single Abstract Method，SAM）**，来操纵代码片段。 这类接口只定义了一个抽象方法。可以通过`@FunctionalInterface`注解来标识一个函数式接口
+在其他语言（例如Kotlin）中，原生支持Lambda类型。而在Java中，只能间接通过**函数式接口（Functional Interface）**，或者称为**单一抽象方法（Single Abstract Method，SAM）**，来操纵代码片段。 这类接口只定义了一个抽象方法。
+
+
+
+可以通过`@FunctionalInterface`注解来标识一个函数式接口
 
 ~~~java
 @FunctionalInterface
@@ -24,12 +28,14 @@ interface Strategy {
 }
 ~~~
 
-有四种方式将代码片段传递给方法
+有四种方式将代码片段作为实参传递给方法
 
 - 类
 - 匿名类
 - Lambda表达式
 - 方法引用
+
+
 
 给出一个例子：
 
@@ -39,24 +45,24 @@ interface Strategy {
 }
 
 class Soft implements Strategy {
-    @Override public String approach(String msg) {}
+    @Override public String approach(String msg) {}				//类
 }
 
 class Unrelated {
-    static String twice(String msg) { }
+    static String twice(String msg) { }						//方法引用
 }
 
 public class Strategize {
     public static void main(String[] args) {
         Strategy[] strategies = {
-            new Soft(),
-            new Strategy() {                    
+            new Soft(),										//类
+            new Strategy() {                    			  //匿名类
                 public String approach(String msg) {
                     return msg.toUpperCase() + "!";
                 }
             },
-            msg -> msg.substring(0, 5),      
-            Unrelated::twice                    
+            msg -> msg.substring(0, 5),      				 //Lambda表达式
+            Unrelated::twice                    			 //方法引用
         };
     }
 }

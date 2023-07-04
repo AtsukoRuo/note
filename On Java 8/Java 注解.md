@@ -1,6 +1,18 @@
 # 注解
 
-Java注解提供了Java源代码无法表达、却是完整表述程序所需的信息。也就是说，可以将一些元数据保存在Java源代码中。
+
+
+[TOC]
+
+## 概述
+
+Java注解提供了Java源代码无法表达、却是完整表述程序所需的信息（例如各种中间件的参数配置）。也就是说，可以将一些元数据保存在Java源代码中。
+
+然而除了通过注解将元数据保存在Java源代码中，还可以通过XML配置文件保存这些元数据，并通过Java代码读取这些XML配置文件获取相应的数据。这两种方法各有优劣，再次不过多讨论。
+
+注解是真正的语言组件，因此是结构化的，并可接受编译时类型检查。将所有信息都保存在真正的代码而不是注释中，会使代码更整洁，且更便于维护。通过直接使用或扩展注解API和工具，或者使用外部的字节码处理库（如本章后面所述），可以对源代码以及字节码执行强大的检查和操作。
+
+XML一个缺陷就是：每定义一个Java类，程序员都必须经过一个乏味的配置信息的过程，比如配置类名、包名等——这些都是类中本来就有的信息。无论你什么时候使用外部描述符文件，最终都会得到关于一个类的两个独立的信息源，这常常导致代码的信息同步问题，维护成本极大。
 
 
 
@@ -18,11 +30,165 @@ Java提供了5个内建（build-in）注解：
 
 ## 注解定义
 
-通过以下元注解可以自定义注解：
+通过以下元注解以及类似接口的特殊语法可以定义注解：
 
 - @Target
-	- CONSTRUCTOR
+	- ElementType.METHOD
 - @Retention
+  - RetentionPolicy.RUNTIME
+  - RetentionPolicy.SOURCE：这意味着该注解不会存活到编译后的代码中，此时`javac`是唯一有机会处理注解的。
 - @Documented
 - @Inherited
 - @Repearable
+
+
+
+~~~java
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Test {
+
+}
+~~~
+
+其中在定义注解时，元注解Target以及Retention是必须使用的，其他元注解都是可选的。
+
+## 编写注解处理器
+
+如果没有注解处理器，那么注解就与注释没有太大差别。Java在反射API中提供了扩展，以帮助创建这些注解处理器，而且还提供了一个javac编译器钩子，用来在编译时使用注解。
+
+
+
+Class、Method、Field等这些类都实现了AnnotatedElement接口，在该接口中有getAnnotation方法，该方法返回指定类型的注解对象。若未使用指定注解，那么返回null。然后在注解对象上，调用相应方法获取注解元素：
+
+~~~java
+@Target(ElementType.HETHOD)
+public @interface UseCase {
+    int id();
+    String description() default "nothing";
+}
+
+
+class Apple {
+    @UseCase(id = 17, description = "eat apple")
+    public void eat() {}
+    
+    public static void main(String[] args) {
+        Class object = Apple.class;
+        Method method = object.getDeclaredMethods()[0]
+        UseCase useCase = method.getAnnotation(UseCase.class);
+        int id = useCase.id();
+        String description = useCase.description();
+	}
+}
+~~~
+
+
+
+此外还有getDeclaredAnnotations()，获取到类所使用的所有注解
+
+~~~java
+class object = Apple.class;
+for (Annotation annotation: object.getFields.getDeclaredAnnotations()) {
+	if (annotation instanceof SQLString) {
+        SQLString = (SQLString)annotation;
+    }
+}
+~~~
+
+注意：**所有注解类型都继承自Annotation类！**
+
+
+
+## 使用javac处理注解
+
+通过`javac`，你可以创建编译时注解处理器，并将注解应用于Java源文件，而不是编译后的类文件。不过这里有个重要的限制：无法通过注解处理器来修改源代码。唯一能影响结果的方法是创建新的文件。
+
+如果注解处理器创建了一个新的源文件，则在新一轮处理中会检查该文件自身的注解。该工具会一轮接着一轮地持续处理，直到不再有新的源文件被创建，然后就编译所有的源文件。
+
+本节中的示例可带你入门，但是如果你需要深入了解，就要做好刻苦钻研的准备，多从Google和Stack Overflow上查找资料。
+
+
+
+
+
+## 注解元素
+
+注解可以定义**元素**，用户在使用注解时可以设置这些元素，而注解处理器可以读取到用户所设置的值：
+
+如果一个注解未定义任何一个元素，那么称该注解为**标记注解**
+
+~~~java
+public @interface UseCase {
+    int id();
+    String description() default "no description";			//该元素有默认值
+}
+
+public class PasswordUtils {
+    @UseCase(id = 47, description = "")
+    public boolean validatePassword(String pwd) {}
+    
+    @UseCase(id = 48)
+    public String encryptPassword(String pwd) {}
+}
+~~~
+
+
+
+注解元素所允许的所有元素类型：
+
+- 所有基本类型
+- String
+- Class
+- enum
+- Annotation
+- 以上类型的数组
+
+
+
+编译器对注解元素的其他要求：
+
+- 注解中的所有注解元素必须都要有确定的值，这意味着元素要么有默认值，要么由使用该注解的类（或注解）来设置注解元素。
+- 设置值会覆盖掉默认值
+
+- 在使用默认值时，不能设置为null，可以通过设置特殊值（-1，false，""）绕过这一限制。
+
+
+
+下面举一个嵌套注解的例子：
+
+~~~java
+@interface Constraints {
+    boolean primaryKey() default false;
+    boolean unique() default false;
+    boolean allowNull();
+}
+
+@interface SQLString {
+    int value() default 0;
+    String name() default "";
+    Constraints constraints() default @Constraints(unique = true, allowNull = true);
+    //这里必须设置allowNull
+}
+
+class Member {
+    @SQLString(value = 10, constraints = @Constraints(primaryKey = true, allowNull = true))
+    String reference;
+}
+~~~
+
+
+
+下面举一个数组的例子：
+
+~~~java
+@interface ArrayInterface {
+    int[] values() default {1, 2, 3, 4}
+}
+
+class Member {
+    @ArrayInterface(value = {2, 3, 5})
+    String name;
+}
+~~~
+

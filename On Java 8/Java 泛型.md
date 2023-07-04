@@ -33,7 +33,7 @@ C++ 和Java 的策略分别处于异构翻译和同构翻译的极端。而 C#/C
 
 类型擦除的优势：
 
-- **兼容性**。它完全维护了二进制兼容性和源代码兼容性。不会让社区生态产生巨大的分类
+- **兼容性**。它完全维护了二进制兼容性和源代码兼容性。不会因引入泛型后让社区生态产生巨大的分歧
 
 - **类型系统的自由度**：虽然 Java 和 JVM 常常被绑定在一起，但它们是各自独立的，有着各自的规范。由于通过类型擦除实现泛型，像 Scala 这样的语言可以以与 Java 泛型高度协同的方案实现远远超出 Java 类型系统表达能力的类型系统，同时保持高度的互操作性。
 
@@ -65,13 +65,14 @@ Object[] arr = strListArr;
 arr[0] = new ArrayList<Integer>();
 ~~~
 
-由于类型擦除， 在运行时允许`ArrayList<Integer>`放入到`List<String>[]`类型的数组中。**堆污染（Heap pollution）**就这样在编译和运行时都没有警告的时候发生了。这种情况是不被 Java 所允许的，所以 Java 禁止了一些泛型数组的相关操作（譬如通过new操作符来创建泛型数组）。Java设计者让用户必须使用类型不安全的手段（例如，原生类型`ArrayList`、强制类型转换），让开发者自己保证类型安全。
+由于泛型类型擦除， 在运行时允许将`ArrayList<Integer>`放入到`List<String>[]`类型的数组中。**堆污染（Heap pollution）**就这样在编译和运行时都没有警告的时候发生了。这种情况是不被 Java 所允许的，所以 Java 禁止了一些泛型数组的相关操作（譬如通过new操作符来创建泛型数组） `new T[size]; //Error`。Java设计者让用户必须使用类型不安全的手段（例如，原生类型`ArrayList`、强制类型转换），让开发者自己保证类型安全。
 
 
 
-我们可以通过两种方法创建一个泛型数组：
+我们可以通过三种方法创建一个与泛型数组作用相同的数组：
 
 - Object[]，在Object[]与泛型类型数组T[]进行强制类型转换。（不考虑通配符/边界的情况下）
+- 原生类型强制转换
 - 使用原生类型ArrayList。
 
 
@@ -141,6 +142,7 @@ arr[0] = 0;								//运行时错误，编译通过
 
 ~~~java
 List<Fruit> flist = new ArrayList<Apple>();		//Compile Error: incompatible types
+List<Fruit> flist = new ArrayList<Fruit>();		//OK
 ~~~
 
 问题本质在于我们讨论的是**集合自身的类型，而不是它所持有的元素类型**。
@@ -203,17 +205,9 @@ List<?>与List<? extends Object>是等价的表述，它们在添加元素时有
 
 
 
-在类型推断上
-
-- `List<?>推断为 capture of ？`
-- `List<? extends Apple>`推断为`capture of ？ extends Apple`
-- `List<? extends Object>`推断为`capture of ？ extends Object`
-- `List<Apple>`推断为`Apple`
-- `List<T>`推断为`T`
 
 
-
-这些泛型变量之间是不可以相互赋值的（除通配符的向上转型规则）
+它们之间赋值的例子：
 
 ~~~java
 List<Apple> list1 = new ArrayList<Apple>();
@@ -221,13 +215,13 @@ List<? extends Object> list2 = list1;
 List<? extends Apple> list3 = list2;		//语法错误
 /**
 Required type: List <? extends Apple>
-Provided: List <capture of ? extends Object>
+Provided: List <? extends Object>
 */
 
 List<Apple> list4 = list2;					//语法错误
 /**
 Required type: List <Apple>
-Provided: List <capture of ? extends Object>
+Provided: List <? extends Object>
 */
 
 List<Object> list5;

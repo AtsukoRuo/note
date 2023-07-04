@@ -51,7 +51,7 @@ var apple4 = new ArrayList<>();			//这会推断出ArrayList<Object>，不推荐
 
 ## 集合类
 
-Java集合类库是用来“持有对象”的，而且从设计上讲，它可以分为两个不同的概念，表示为库的两个基本接口。
+Java集合类库是用来“持有对象”的，而且从设计上讲，它可以分为两个不同的概念，表示以下两个基本接口。
 
 - `Collection`：Collection接口就是序列概念的一般化。它是由多个元素组成的序列，而且这些元素要符合一条或多条规则。
 	- `List`必须按照元素插入顺序来保存它们；例如`ArrayList`
@@ -171,12 +171,19 @@ public interface Collection<E> extends Iterable<E> {
 
 - **LinkedHashMap**：LinkedHashMap则按照插入顺序来保存键，同时保留了HashMap的查找速度。
 
-	
+
+
+**对象作为 Map 的 key 时，需重写 equals() 和 hashCode() 方法**
 
 
 
 ~~~java
 Map<String, Pet> petMap = new HashMap<>();
+
+petMap.of("My Hamster", new Hamster("bosco")
+         ,"My Dog", new Dog()
+         ,"My Cat", new Cat());		//一个不可变的map对象，而且参数最多支持十个键值对
+
 petMap.put("My Hamster", new Hamster("Bosco"));
 petMap.put("My Hamster", new Hamster("Molly"));	//插入键值对。If the map previously contained a mapping for the key, the old value is replaced by the specified value
 
@@ -255,6 +262,8 @@ System.out.println(list);
 
 
 
+ArrayList的set方法要满足(index < 0 || index >= size())，否则抛出异常IndexOutOfBoundsException – if the index is out of range 
+
 ### LinkedList
 
 和`ArrayList`一样，`LinkedList`实现了基本的`List`接口。同时它也实现了`Deque`接口。
@@ -303,7 +312,7 @@ public interface Queue<E> extends Collection<E> {
 
 ### Deque接口
 
-`Deque`实现了`Queue`接口
+`Deque`接口继承了`Queue`接口
 
 ~~~java
 public interface Deque<E> extends Queue<E> {

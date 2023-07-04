@@ -363,6 +363,39 @@ public class A {
 
 匿名类相对局部内部类唯一的优势：在仅需使用一次类的地方可简化代码编写。Lambda表达式在这方面会做得更好。
 
+
+
+### 双括号初始化
+
+双括号初始化就是实例初始化 + 匿名类，下面举一个例子：
+
+~~~java
+Map<Integer, Integer> map = HashMap<>() {{
+    put(1, 2);
+    put(3, 5);
+}}
+~~~
+
+实际上就是：
+
+~~~java
+Map<Integer, Integer> map = HashMap<>() {
+    //实例初始化
+    {
+        put(1, 2);
+        put(3, 5);
+	}
+    
+    //你甚至可以覆写一些方法
+    @override
+    public boolean put(E e, V v) {
+        
+    } 
+}//匿名类
+~~~
+
+
+
 ## 嵌套类（静态内部类）
 
 如果**不需要内部类对象和外部类对象之间的连接**，可以将内部类设置为static的。我们通常称之为**嵌套类**。此时只能访问外部类的静态字段或静态方法。
@@ -443,7 +476,8 @@ class WithInner {
 
 public class InheritInner extends WithInner.Inner {
     InheritInner(WithInner wi) {
-        wi.super(31);				//不是调用外围类的构造器，而是附着在外围对象上调用内部类的构造器
+        wi.super(31);				//不是调用外围类的构造器，而是调用附着在外围对象上内部类的构造器
+       	//这里wi.super()正是指代Inner()
     }
 
     public static void main(String[] args) {
@@ -451,7 +485,9 @@ public class InheritInner extends WithInner.Inner {
         InheritInner i = new InheritInner(wi);
     }
 }
-
+/**
+Inner
+*/
 ~~~
 
 
