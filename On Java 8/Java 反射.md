@@ -333,9 +333,35 @@ Optional 是 Java 8 引进的一个新特性，我们通常认为Optional是用�
 
 > Optional is intended to provide a limited mechanism for library method return types where there needed to be a clear way to represent “no result," and using null for such was overwhelmingly likely to cause errors.
 
-Optional的机制类似于 Java 的检查异常，**强迫API调用者面对没有返回值的现实**。不要将Optiona对象作为字段、参数，以及用它处理空指针异常问题或实现if-else逻辑。
+Optional的机制类似于 Java 的检查异常，**强迫API调用者面对没有返回值的现实**。**不要**将Optiona对象作为字段、参数，以及用它处理空指针异常问题或实现if-else逻辑。
+
+
+
+当我们在自己的代码中生成一个 **Optional**对象时，可以使用下面 3 个静态方法：
+
+- `empty()`：生成一个内容为null的 **Optional**对象（简称为空Optional）。相当于Optional.ofNullable(null)。
+- `of(value)`：将值保存在Optional中，若为null，则抛出异常。
+- `ofNullable(value)`： 将值保存在Optional中，可保存null值。
+
+
+
+当你接收到 **Optional** 对象时，应首先调用 `isPresent()` 检查内容是否为null。可使用 `get()` 获取Optional的内容。
+
+
+
+有许多便利函数可以解包 **Optional** ，这简化了上述“对所包含的对象的检查和执行操作”的过程：
+
+- `ifPresent(Consumer)`：当值不为null时调用 **Consumer**，否则什么也不做。
+- `orElse(otherObject)`：如果值不为null则直接返回，否则生成 **otherObject**。
+- `orElseGet(Supplier)`：如果值不为null则直接返回，否则使用 **Supplier** 函数生成一个可替代对象。
+- `orElseThrow(Supplier)`：如果值存在直接返回，否则使用 **Supplier** 函数生成一个异常。
 
 
 
 
 
+**Optional** 的后续能做更多的操作
+
+- `filter(Predicate)`：对 **Optional** 中的内容应用**Predicate** 并将结果返回。如果 **Optional** 不满足 **Predicate** ，将 **Optional** 转化为空 **Optional** 。如果 **Optional** 已经为空，则直接返回空**Optional** 。
+- `map(Function<? super T, ? extends U> mapper)`：如果 **Optional** 不为空，应用 **Function** 于 **Optional** 中的内容，并返回结果。否则直接返回空Optional。
+- `flatMap(Function<? super T, ? extends Optional<? extends U>)`：如果 **Optional** 不为空，应用 **Function** 于 **Optional** 内容中的内容，并返回结果。否则直接返回空Optional。
