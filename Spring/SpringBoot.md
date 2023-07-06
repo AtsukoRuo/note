@@ -1,6 +1,8 @@
+# springBoot
 
 
-在SpringFrame时代中，开发之前的配置工作有以下痛点：
+
+在Spring时代中，开发之前的配置工作有以下痛点：
 
 - 依赖包管理（pom.xml）
 - Web APP的配置（web.xml）
