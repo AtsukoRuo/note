@@ -319,16 +319,22 @@ public void groupByCompanyAndDepartment() {
 - `reduce(identity, BinaryOperator)`：功能同上，但是使用 **identity** 作为其组合的初始值。因此如果流为空，**identity** 就是结果。
 - `reduce(identity, BiFunction, BinaryOperator)`：更复杂的使用形式（暂不介绍）
 
+
+
 ### 匹配
 
 - `allMatch(Predicate)` ：如果流的每个元素提供给 **Predicate** 后都返回 true ，结果返回为 true。在第一个 false 时，则停止执行计算。
 - `anyMatch(Predicate)`：如果流的任意一个元素提供给 **Predicate** 后返回 true ，结果返回为 true。在第一个 true 是停止执行计算。
 - `noneMatch(Predicate)`：如果流的每个元素提供给 **Predicate** 都返回 false 时，结果返回为 true。在第一个 true 时停止执行计算。
 
+
+
 ### 查找
 
 - `findFirst()`： 找到第一个符合条件的元素时则终止流处理
 - `findAny()`找到任何一个符合条件的元素时则退出流处理，这个**对于串行流时与findFirst相同，对于并行流时比较高效**，任何分片中找到都会终止后续计算逻辑
+
+
 
 ### 其他
 
@@ -339,10 +345,3 @@ public void groupByCompanyAndDepartment() {
 - `max()` 和 `min()`：数值流操作无需 **Comparator**。
 - `sum()`：对所有流元素进行求和。
 - `iterator()`将流转换为Iterator对象
-
-
-
-
-
-
-

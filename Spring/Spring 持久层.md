@@ -19,11 +19,11 @@ spring.datasource.url=jdbc:h2:mem:testdb
 
 然后可以在浏览器http://localhost:8080/h2-console/中访问
 
-springboot每次启动时都会读取resources/schema.sql到h2中
+springboot每次启动时都会读取resources/.sql到h2中，
 
 
 
-CommandLineRunner是Spring Boot框架中的一个接口，用于在Spring Boot应用程序启动时运行一些代码。它提供了一个run方法，可以在应用程序启动时自动运行。
+
 
 
 
@@ -90,6 +90,10 @@ public class Course {
 	//setter、getter、constructor、toString
 }
 ~~~
+
+> CommandLineRunner是Spring Boot框架中的一个接口，用于在Spring Boot应用程序启动时运行一些代码。它提供了一个run方法，可以在应用程序启动时自动运行。
+
+
 
 
 
@@ -190,3 +194,64 @@ public class Course {
 JPA（Java Persistence API）是Java EE 5规范中定义的一套API，用于管理Java对象与关系型数据库之间的映射关系和持久化操作。JPA提供了一种标准化的方式来进行ORM（对象关系映射）操作，使得开发者可以通过一套API来访问不同的ORM框架。
 
 Hibernate是一个开源的、基于JPA规范的ORM框架，它实现了JPA的所有API，并提供了一些扩展功能。
+
+
+
+
+
+
+
+H2数据库会根据@Entity Bean对象创建一张表（其他数据库并不会这样），这是在SpringBoot启动阶段完成的。此时可以@Entity(name="")指定表名，默认使用类名作为表名。@Column(name="name")指定表中的属性名，默认使用字段名作为属性名。
+
+~~~java
+@Entity(name = "TodoABC") 
+public class Todo {
+    @Column("id")
+    private int ID;
+}
+~~~
+
+默认情况下，SpringBoot会先读取resource下的sql文件，再扫描Entity创建表，但是可以通过以下配置改变这一行为，即先创建表，再读取文件
+
+~~~properties
+spring.jpa.defer-datasource-initialization=true
+~~~
+
+可以通过以下配置在终端查看执行了什么SQL语句
+
+~~~properties
+spring.jpa.show-sql=true;
+~~~
+
+
+
+
+
+
+
+通过Docker启动MySQL，在终端中输入
+
+~~~shell
+docker run --detach --env MYSQL_ROOT_PASSWORD=root --env MYSQL_USER=todos-user --env MYSQL_PASSWORD=dummytodos --env MYSQL_DATABASE=todos --name mysql --publish 3310:3310 mysql:8-oracle
+~~~
+
+在依赖中
+
+~~~xml
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.33</version>
+</dependency>
+~~~
+
+在配置文件中（这个配置对本地数据库也适用）
+
+~~~properties
+spring.datasource.url=jdbc:mysql://localhost:3310/todos
+spring.datasource.username=todos-user
+spring.datasource.password=dummytodos
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
+spring.jpa.hibernate.ddl-auto=update
+~~~
+

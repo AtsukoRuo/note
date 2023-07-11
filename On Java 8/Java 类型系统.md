@@ -506,6 +506,10 @@ System.out.println(Integer.toBinaryString(b>>>10));
 
 `boolean-exp`表达式为`true`时，返回`value0`，反之返回`value1`。
 
+### 逗号表达式
+
+Java不支持逗号表达式，除了For语句以及变量初始化语句！
+
 ### 其他
 
 在C和C++中，sizeof()操作符会告诉你给数据项分配的字节数。这些语言使用sizeof()的最大原因是可移植性。而Java不需要sizeof()操作符来处理可移植性，因为所有的数据类型在任意机器中的大小都是相同的。我们不必考虑这种程度的可移植性——它已经被设计在语言里了。

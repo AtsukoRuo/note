@@ -89,7 +89,7 @@ class Apple {
 
 ~~~java
 class object = Apple.class;
-for (Annotation annotation: object.getFields.getDeclaredAnnotations()) {
+for (Annotation annotation: object.getFields().getDeclaredAnnotations()) {
 	if (annotation instanceof SQLString) {
         SQLString = (SQLString)annotation;
     }
