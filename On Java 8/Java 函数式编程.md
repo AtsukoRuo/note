@@ -156,6 +156,7 @@ public class MethodReferences {
     static void hello(String name) {
         System.out.println("Hello, " + name);
     }
+    
     void joke(String msg) {}
 
     static class Description {
