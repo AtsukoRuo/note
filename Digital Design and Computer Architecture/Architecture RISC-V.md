@@ -65,7 +65,7 @@ RISC-V instructions can use constant or *immediate* operands. These constants ar
 
 The RV32I RISC-V architecture uses 32-bit memory addresses and 32-bit data words（机器字长并不是存储字长）. RISC-V uses a *byte-addressable* memory.
 
-![image-20230719095151333](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719095151333.png)
+![image-20230719095151333](.\assets\image-20230719095151333.png)
 
 
 
@@ -137,7 +137,7 @@ auipc一般与jalr指令搭配使用
 
 RISC-V *logical operations* include and, or, and xor. These each operate bitwise on two source registers and write the result to a destination register,
 
-![image-20230719095855608](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719095855608.png)
+![image-20230719095855608](.\assets\image-20230719095855608.png)
 
 Immediate versions of these logical operations, andi, ori, and xori, use one source register and a 12-bit sign-extended immediate.
 
@@ -147,7 +147,7 @@ Immediate versions of these logical operations, andi, ori, and xori, use one sou
 
 *Shift instructions* shift the value in a register left or right, dropping bits off the end. RISC-V shift operations are **sll (shift left logical)**, **srl (shift right logical)**, and **sra (shift right arithmetic)**. However, right shifts can be either *logical* (zeros shift into the most significant bits) or *arithmetic* (the sign bit shifts into the most significant bits)
 
-![image-20230719100155320](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719100155320.png)
+![image-20230719100155320](.\assets\image-20230719100155320.png)
 
 Immediate versions of each instruction are also available (**slli, srli, and srai**), where the amount to shift is specified by a **5-bit unsigned immediate**.
 
@@ -159,11 +159,11 @@ shifting a value left by *N* is equivalent to multiplying it by 2*N*. Likewise, 
 
 *load word* instruction, lw, reads a data word from memory into a register.
 
-![image-20230719095417653](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719095417653.png)
+![image-20230719095417653](.\assets\image-20230719095417653.png)
 
 The *store word* instruction, sw, writes a data word from a register into memory
 
-![image-20230719095423666](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719095423666.png)
+![image-20230719095423666](.\assets\image-20230719095423666.png)
 
 Many RISC-V implementations require **word-aligned* addresses**—that is, a word address that is divisible by four—for lw and sw. Some architectures, such as x86, allow non-word-aligned data reads and writes. **we will assume strict alignment in RISC-V**
 
@@ -179,7 +179,7 @@ The *load byte* (lb), *load byte unsigned* (lbu), and *store byte* (sb) instruct
 
 
 
-![image-20230719103710383](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719103710383.png)
+![image-20230719103710383](.\assets\image-20230719103710383.png)
 
 #### lui
 
@@ -189,11 +189,11 @@ To create larger constants, use a *load upper immediate* instruction (lui) follo
 
 When creating large immediates, if the 12-bit immediate in addiis negative (i.e., bit 11 is 1), the upper immediate in the lui must be incremented by one.Remember that addi *sign*-extends the 12-bit immediate, so a negative immediate will have all 1’s in its upper 20 bits.
 
-![image-20230719095226487](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719095226487.png)
+![image-20230719095226487](.\assets\image-20230719095226487.png)
 
 ### Register Set
 
-![image-20230719092626882](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719092626882.png)
+![image-20230719092626882](.\assets\image-20230719092626882.png)
 
 寄存器`x0`硬编码为常数0，如何对它的写操作都会被忽略。
 
@@ -203,7 +203,7 @@ Specifically, the callee must leave the **saved registers (s0−s11)**
 
 RISC-V divides registers into **preserved** and **nonpreserved** categories. Preserved Register are ：`ra` `sp` `s0-s11`, and Nonpreserved Register are：`t0 - t6`、`a0 - a7`。其中并未对`gp`、`tp`做出规定
 
-![image-20230719110329104](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719110329104.png)
+![image-20230719110329104](.\assets\image-20230719110329104.png)
 
 > note : The convention of which registers are preserved or not preserved is part of the standard calling convention for the RISC-V Architecture（也就是Application的ABI规范）, instead of being part of the architecture itself.
 
@@ -213,7 +213,7 @@ RISC-V divides registers into **preserved** and **nonpreserved** categories. Pre
 
 The stack pointer, **sp (register 2)**, is an ordinary RISC-V register that, by convention, *points* to the **top of the stack**
 
-![image-20230719104848717](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719104848717.png)
+![image-20230719104848717](.\assets\image-20230719104848717.png)
 
 
 
@@ -246,7 +246,7 @@ Preserved and Nonpreserved require that
 - 将返回值存储到调用者能够访问到的位置，恢复寄存器，释放局部存储资源
 - 返回调用函数的位置（使用 ret 指令）
 
-![image-20230719115308629](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719115308629.png)
+![image-20230719115308629](.\assets\image-20230719115308629.png)
 
 
 
@@ -373,7 +373,7 @@ while:
 
 ### Pseudoinstructions
 
-![image-20230719115654570](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719115654570.png)
+![image-20230719115654570](.\assets\image-20230719115654570.png)
 
 这里的call伪指令描述有错，应该是
 
@@ -386,7 +386,7 @@ jalr ra, ra, offset[11:0]
 
 ### Assembler Directives & Memory Map
 
-![image-20230719125120553](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719125120553.png)
+![image-20230719125120553](.\assets\image-20230719125120553.png)
 
 -  **text segment** stores the machine language user program. In addition to code, it may include literals (constants) and read-only data.
 
@@ -406,9 +406,9 @@ jalr ra, ra, offset[11:0]
 
 
 
-![image-20230719130118229](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719130118229.png)
+![image-20230719130118229](.\assets\image-20230719130118229.png)
 
-![image-20230719130335185](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719130335185.png)
+![image-20230719130335185](.\assets\image-20230719130335185.png)
 
 
 
@@ -422,7 +422,7 @@ jalr ra, ra, offset[11:0]
 
 由于字节顺序仅在同时以按字访问和按字节访问同一份数据时才会有影响，字节序只会影响很少一部分的程序 员。
 
-![image-20230719130429120](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719130429120.png)
+![image-20230719130429120](.\assets\image-20230719130429120.png)
 
 RISC-V is typically little-endian
 
@@ -449,7 +449,7 @@ Exception handlers use four special-purpose registers, called **control and stat
 - Exception handlers must use program registers (x1−x31) to handle exceptions, so they use the memory pointed to by mscratch to store and restore these registers.
 - It then either aborts the program or returns to the program by executing the mret, machine exception return instruction, that jumps to the address in mepc
 
-![image-20230719131251348](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719131251348.png)
+![image-20230719131251348](.\assets\image-20230719131251348.png)
 
 The mepc and mcause registers are not part of the RISC-V program registers (x1−x31), so the exception handler must move these special-purpose (CSR) registers into the program registers to read and operate on them. RISC-V uses three instructions to read, write, or both read and write CSRs: **csrr **(read CSR), **csrw** (write CSR), and **csrrw**(read/write CSR). For example, csrr t1, mcause reads the value in mcause into t1; csrw mepc, t2 writes the value in t2 into mepc; and csrrw t1, mscratch,t0 simultaneously reads the value in mscratch into t1 and writes the value in t0 into mscratch.
 
@@ -469,19 +469,19 @@ The mepc and mcause registers are not part of the RISC-V program registers (x1�
 ## Machine Language
 ### R-Type
 
-![image-20230719121446065](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121446065.png)
+![image-20230719121446065](.\assets\image-20230719121446065.png)
 
-![image-20230719121456627](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121456627.png)
+![image-20230719121456627](.\assets\image-20230719121456627.png)
 
-![image-20230719121534545](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121534545.png)
+![image-20230719121534545](.\assets\image-20230719121534545.png)
 
 R-type operation is determined by the**opcode（op）** and the **function fields（funct3、funct7）**. These bits together are called the *control bits* because they control what operation to perform. 
 
 ### I-Type
 
-![image-20230719121551787](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121551787.png)
+![image-20230719121551787](.\assets\image-20230719121551787.png)
 
-![image-20230719121600646](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121600646.png)
+![image-20230719121600646](.\assets\image-20230719121600646.png)
 
 The immediate field represents a 12-bit signed (two’s complement) number for all I-type instructions except immediate shift instructions (slli, srli, and srai) .For these shift instructions, **imm4:0 is the 5-bit unsigned shift amount**; **the upper seven imm bits are 0 for srli and slli, but srai puts a 1 in imm10 (i.e., instruction bit 30)**
 
@@ -489,13 +489,13 @@ The immediate field represents a 12-bit signed (two’s complement) number for a
 
 ### S/B-Type
 
-![image-20230719121633224](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121633224.png)
+![image-20230719121633224](.\assets\image-20230719121633224.png)
 
-![image-20230719121644488](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121644488.png)
+![image-20230719121644488](.\assets\image-20230719121644488.png)
 
 
 
-![image-20230719123805115](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719123805115.png)
+![image-20230719123805115](.\assets\image-20230719123805115.png)
 
 B-type instructions encode a 13-bit signed immediate representing the *branch offset*, but only 12 of the bits are encoded in the instruction. The least significant bit is always 0, because **branch amounts are always an even number of bytes**, 因为指令长度要么是32位的，要么是16位的
 
@@ -503,21 +503,21 @@ B-type instructions encode a 13-bit signed immediate representing the *branch of
 
 下面给出一个例子。实际上，我们很少直接使用立即数，而是使用标签，由汇编器计算相应的偏移量。
 
-![image-20230719123119283](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719123119283.png)
+![image-20230719123119283](.\assets\image-20230719123119283.png)
 
 注意：branch指令的立即数部分是13位偏移量（12位表示，bit0总是为0不表示），因此偏移范围为$[-4048, 4047]$Byte
 
 ### U/J-Type
 
-![image-20230719121746394](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121746394.png)
+![image-20230719121746394](.\assets\image-20230719121746394.png)
 
-![image-20230719121754544](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121754544.png)
-
-
+![image-20230719121754544](.\assets\image-20230719121754544.png)
 
 
 
-![image-20230719124412784](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719124412784.png)
+
+
+![image-20230719124412784](.\assets\image-20230719124412784.png)
 
 In U-type instructions, the remaining bits specify the most significant 20 bits of a 32-bit immediate. **In J-type instructions, the remaining 20 bits specify the most significant 20 bits of a 21-bit immediate jump offset. As with B-type instructions, the least significant bit of the immediate is always 0** and is not encoded in the J-type instruction.
 
@@ -525,7 +525,7 @@ In U-type instructions, the remaining bits specify the most significant 20 bits 
 
 ### Immediate Encodings
 
-![image-20230719121956786](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719121956786.png)
+![image-20230719121956786](.\assets\image-20230719121956786.png)
 
 ### Address Modes
 
@@ -547,6 +547,5 @@ RISC-V has 32-, 64-, and 128-bit base instruction sets: RV32I/E, RV64I, and RV12
 
 All RISC-V processors must support one of the base architectures—RV32/64/128I or RV32E—and may optionally support extensions, such as the compressed or floating-point extensions.
 
-![image-20230719090716467](C:\Users\AtsukoRuo\Desktop\note\Digital Design and Computer Architecture\assets\image-20230719090716467.png)
-
+![image-20230719090716467](.\assets\image-20230719090716467.png)
 
