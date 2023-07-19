@@ -178,6 +178,17 @@ public interface Collection<E> extends Iterable<E> {
 
 
 ~~~java
+HashMap:
+
+HashMap() 		//构造一个空的HashMap,默认初始容量为16,负载因子为0.75
+HashMap(int initialCapacity) //构造一个指定初始容量的空HashMap
+HashMap(int initialCapacity, float loadFactor) //构造一个指定初始容量和负载因子的空HashMap
+HashMap(Map<? extends K, ? extends V> m) //构造一个包含指定Map的数据的新HashMap
+~~~
+
+
+
+~~~java
 Map<String, Pet> petMap = new HashMap<>();
 
 petMap.of("My Hamster", new Hamster("bosco")
@@ -193,6 +204,26 @@ System.out.println(petMap.get("My Hamster"));//根据键获取值，若未查找
 System.out.println(petMap.values());		//返回所有的value
 System.out.println(petMap.keySet());		//返回所有的key
 ~~~
+
+
+
+
+
+~~~java
+if (map.containsKey(words[i])) {
+    map.put(words[i], map.get(words[i]) + 1);
+} else {
+    map.put(words[i], 1);
+}
+~~~
+
+可以优化为
+
+~~~java
+map.put(words[i], map.getOrDefault(words[i], 0) + 1);
+~~~
+
+
 
 
 
@@ -234,8 +265,8 @@ ArrayList的构造器如下：
 ~~~java
 public class ArrayList<E> extends AbstractList<E>
         implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
-    public ArrayList(int initialCapacity)    // 初始容量
-    public ArrayList()
+    public ArrayList(int initialCapacity)    		// 初始容量
+    public ArrayList()							 //创建一个默认初始容量(10)空 ArrayList。
     public ArrayList(Collection<? extends E> c)    // 浅拷贝
         
 }
@@ -263,6 +294,15 @@ System.out.println(list);
 
 
 ArrayList的set方法要满足(index < 0 || index >= size())，否则抛出异常IndexOutOfBoundsException – if the index is out of range 
+
+
+
+另外,从 Java 9 开始,还提供了几个工厂方法来创建不可变的 ArrayList:
+
+- List.of()
+- List.copyOf()
+
+这些方法创建的 ArrayList 在添加和删除时会抛出异常。
 
 ### LinkedList
 

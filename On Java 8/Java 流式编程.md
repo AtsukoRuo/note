@@ -104,7 +104,7 @@ Stream.iterate(1, item -> item + 1)
  class A {
      Stream.Builder<T> builder = Stream.builder();	//获取一个对象
      void f(T item) { builder.add(item); }					//构建这一个对象
-     Stream<T> g() { return bhilder.build(); }		//返回这个流
+     Stream<T> g() { return builder.build(); }		//返回这个流
  }
 ~~~
 
@@ -112,7 +112,7 @@ Stream.iterate(1, item -> item + 1)
 
 ### 集合与数组
 
-有些集合类可以同通过调用stream()方法产生一个流。数组只能通过Arrays.stream(T[] t)方法将数组t转换为流
+有些集合类可以同通过调用stream()方法产生一个流。数组只能通过Arrays.stream(T[])方法将数组转换为流
 
 ~~~java
 List<String> list = Arrays.asList("java,python,ruby", "c++,scala", "javascript,kotlin");
@@ -126,9 +126,11 @@ IntStream s = Arrays.stream(i);
 
 ### 其他方法
 
-- Random.ints()
+- random.ints()
 - Pattern.splitAsStream();
 - Stream.empty()
+- IntStream.range();  可以代替迭代语句
+- string.chars();
 
 
 
@@ -277,6 +279,8 @@ public static <T, U extends Comparable<? super U>> Comparator<T> comparing(
 
 
 对于`groupingBy`分组操作而言，**分组函数**与**值收集器**二者必不可少。为了方便使用，在Collectors工具类中，提供了两个`groupingBy`重载实现，其中有一个方法只需要传入一个分组函数即可，这是因为其默认使用了toList()作为值收集器：![img](https://pics.codingcoder.cn/pics/202207161557070.png)
+
+注意：collect接受groupingBy的返回值`Collector<T, ?, Map<K, List<T>>>`作为参数后，其返回值为`Map<K, List<T>>`
 
 而如果不仅需要分组，还需要对分组后的数据进行处理的时候，则需要同时给定分组函数以及值收集器：
 

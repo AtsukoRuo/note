@@ -4,9 +4,11 @@
 
 ## 字符串
 
-### 接口
+`String`类的对象是不可变的。如果查看它的JDK文档你就会发现，每个看起来似乎会修改`String`值的方法，实际上都创建并返回了一个全新的`String`对象，该对象包含了修改的内容。而原始的`String`则保持不变。
 
-字符串的初始化
+
+
+### 字符串的创建
 
 - 字面值初始化
 
@@ -20,20 +22,39 @@
 
 	~~~java
 	String str = new String("Java Note")
+	
 	~~~
+	
+- repeat
+
+  ~~~java
+  "abc".repeat(10)
+  ~~~
+
+  
 
 
 
+### 字符串的拼接
 
-
-
-字符串的拼接
-
-当`+`接收一个String类型以及对象时，会自动调用对象的toString()方法。对于基本类型也会做相应的字符串转换
+当`+`接收一个String类型以及对象时，会自动调用对象的toString()方法。对于基本类型也会做相应的字符串转换。这是唯一一个内建的运算符重载
 
 ~~~java
 System.out.println(true + ""); //true
 ~~~
+
+
+
+当用+拼接字符串时
+
+~~~java
+String mango = "mango";
+String s = "abc" + mango + "def" + 47;
+~~~
+
+Java编译器可能会使用StringBuilder来优化这种操作
+
+
 
 
 
@@ -62,3 +83,40 @@ System.out.println(s1 == s6);  // true
 //注：== 判断引用在栈中的值。
 ~~~
 
+
+
+
+
+| 方法                                   | 参数，重载                                                   | 用途                                                         |
+| :------------------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| 构造器                                 | 重载版本包括：默认构造器；参数分别为`String`、`StringBuilder`、`StringBuffer`、`char`数组、`byte`数组的构造器 | 创建`String`对象                                             |
+| `length()`                             | —                                                            | `String`中的Unicode代码单元（code units）个数                |
+| `charAt()`                             | `int`索引                                                    | `String`中某个位置的`char`                                   |
+| `getChars()`、`getBytes()`             | 要复制的开始和结束索引，要复制到的目标数组，以及目标数组的起始索引 | 将`char`或`byte`复制到外部数组中                             |
+| `toCharArray()`                        | —                                                            | 生成一个`char[]`，包含了`String`中的所有字符                 |
+| `equals()`、`equalsIgnoreCase()`       | 要与之比较的`String`                                         | 对两个`String`的内容进行相等性检查。如果内容相等，则返回`true` |
+| `compareTo()`、`compareToIgnoreCase()` | 要与之比较的`String`                                         | 按字典顺序比较`String`的内容，结果可能为负数、零或正数。注意大写和小写不相等 |
+| `contains()`                           | 要查找的`CharSequence`                                       | 如果参数包含在`String`中，则结果为`true`                     |
+| `contentEquals()`                      | 用来比较的`CharSequence`或`StringBuffer`                     | 如果该`String`与参数的内容完全匹配，则结果为`true`           |
+| `isEmpty()`                            | —                                                            | 返回一个`boolean`值，表明该`String`的长度是否为0             |
+| `regionMatches()`                      | 该`String`的索引偏移量，参数`String`和它的索引偏移量，以及要比较的长度。重载方法添加了“忽略大小写”功能 | 返回一个`boolean`值，表明该区域是否匹配                      |
+| `startsWith()`                         | 该字符串可能的前缀`String`。重载方法在参数列表中增加了偏移量 | 返回一个`boolean`值，表明该`String`是否以参数字符串开头      |
+| `endsWith()`                           | 该字符串可能的后缀`String`                                   | 返回一个`boolean`值，表明参数字符串是否为后缀                |
+| `indexOf()`、`lastIndexOf()`           | 重载版本包括：`char`、`char`和起始索引；`String`、`String`和起始索引 | 如果在此`String`中找不到该参数，则返回-1；否则返回参数开始的索引。`lastIndexOf()`则从后向前搜索 |
+| `matches()`                            | 一个正则表达式                                               | 返回一个`boolean`值，表明此`String`是否与给定的正则表达式匹配 |
+| `split()`                              | 一个正则表达式。可选的第二个参数是要进行的最大分割数         | 根据正则表达式拆分`String`。返回结果数组                     |
+| `join()`（在Java 8中引入）             | 分隔符以及要合并的元素。通过将元素与分隔符连接在一起，生成一个新的`String` | 将片段合并成一个由分隔符分隔的新`String`                     |
+| `substring()`                          | 重载版本包括：起始索引；起始索引 + 结束索引                  | 返回一个`String`对象，包含了指定的字符集合                   |
+| `concat()`                             | 要拼接的`String`                                             | 返回一个新的`String`对象，其中包含了原始`String`的字符，后跟参数的字符 |
+| `replace()`                            | 要搜索的旧字符，以及用来替换的新字符。也可以用来在`CharSequence`之间进行替换 | 返回一个替换后的新`String`对象。如果没有匹配，则使用旧的`String` |
+| `replaceFirst()`                       | 用来进行搜索的正则表达式，以及用来替换的新`String`           | 返回替换后的新`String`对象                                   |
+| `replaceAll()`                         | 用来进行搜索的正则表达式，以及用来替换的新`String`           | 返回替换后的新`String`对象                                   |
+| `toLowerCase()`、`toUpperCase()`       | —                                                            | 返回一个新的`String`对象，所有字母的大小写都发生了相应的变化。如果没有任何更改，则使用旧的`String` |
+| `trim()`                               | —                                                            | 返回一个删除了两端空白字符的新`String`对象。如果没有任何更改，则使用旧的`String` |
+| `valueOf()` (静态)                     | 重载版本包括：`Object`、`char[]`、`char[]`和偏移量还有计数、`boolean`、`char`、`int`、`long`、`float`、`double` | 返回一个`String`，里面包含了参数的字符表示                   |
+| `intern()`                             | —                                                            | 为每个唯一的字符序列生成一个独一无二的`String`引用           |
+| `format()`                             | 格式字符串（内含要被替换的格式说明符）、参数                 | 生成格式化后的结果`String`                                   |
+
+当需要更改内容时，每个`String`方法都会小心地返回一个新的`String`对象。如果不需要更改内容，该方法就返回一个对原始`String`的引用。这节省了存储和开销。
+
+本章后面将讲解涉及**正则表达式**的`String`方法。
