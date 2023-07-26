@@ -185,12 +185,12 @@ Class<Toy> up2 = ftc.getSuperclass();
 关键字instanceof，它返回一个boolean值，表明一个对象是否是特定类型的实例：
 
 ~~~java
-Dog x = new Dog();
+Animal x = new Dog();
 x instanceof Dog		//true
 x instanceof Animal		//true
 ~~~
 
-
+它对根据对象实际运行类型来判断的
 
 `Class.isInstance()`方法提供另一种动态验证对象类型的方式。
 

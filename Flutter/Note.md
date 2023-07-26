@@ -87,6 +87,7 @@ Key属性可以唯一地表示一个Widget。考虑给一个表项排序的情�
 我们排序代码如下：
 
 ~~~dart
+//要比较的对象
 class CheckableTodoItem extends StatefulWidget {
     const CheckableTodoItem(this.text, this.priority, {super.key});
     final String text;
@@ -96,7 +97,7 @@ class CheckableTodoItem extends StatefulWidget {
 }
 
 class _CheckableTodoItemState extends State<CheckableTodoItem> {
-    var _done = false;			//内部状态
+    var _done = false;			//内部状态，表明是否被选中
     @override
     Widget build(BuildContext context) {
     	return Widget();
@@ -105,12 +106,11 @@ class _CheckableTodoItemState extends State<CheckableTodoItem> {
 
 
 class _KeysState extends State<Keys> {
-    
     List<Todo> get _orderedTodos {
         final sortedTodos = List.of(_todos);
         sortedTodos.sort((a, b) {
               final bComesAfterA = a.text.compareTo(b.text);
-              return _order == 'asc' ? bComesAfterA : -bComesAfterA;
+              return _order == 'asc' ? bComesAfterA : -bComesAfterA;		//升序排序
         });
         return sortedTodos;
     }
@@ -233,9 +233,9 @@ var result = await
     Navigator.push(
         context,
         MaterialPageRoute(
+            //从这里附加路由信息，并包裹着一个Widget
             builder: (context) {
                 return TipRoute(		//这是一个StatelessWidget
-                  // 路由参数
                   text: "我是提示xxxx",
                 );
         	},
@@ -254,8 +254,6 @@ MaterialPageRoute({
 
 - `builder` 是一个WidgetBuilder类型的回调函数，它的作用是构建路由页面的具体内容，返回值是一个widget。
 - `maintainState`：默认情况下，当入栈一个新路由时，原来的路由仍然会被保存在内存中，如果想在路由没用的时候释放其所占用的所有资源，可以设置`maintainState`为 `false`。
-
-
 
 
 
@@ -651,92 +649,5 @@ watch 的工作流程是:
 
 
 
-## Animation
 
-![image-20230717164514334](C:\Users\AtsukoRuo\Desktop\note\Flutter\assets\image-20230717164514334.png)
-
-
-
-**`Animation`是一个抽象类**，它本身和UI渲染没有任何关系，而它主要的功能是保存动画的插值和状态；
-
-在动画的每一帧中，我们可以通过`Animation`对象的`value`属性获取动画的当前状态值。
-
-我们可以通过`Animation`来监听动画每一帧以及执行状态的变化，`Animation`有如下两个方法：
-
-1. `addListener()`；它可以用于给`Animation`添加帧监听器，在每一帧都会被调用。
-2. `addStatusListener()`；它可以给`Animation`添加“动画状态改变”监听器；动画开始、结束、正向或反向（见`AnimationStatus`定义）时会调用状态改变的监听器。
-
-
-
-动画过程可以是匀速的、匀加速的或者先加速后减速等。Flutter中通过`Curve`（曲线）来描述动画过程
-
-我们可以通过`CurvedAnimation`来指定动画的曲线：
-
-~~~dart
-final CurvedAnimation curve =
-    CurvedAnimation(parent: controller, curve: Curves.easeIn);
-~~~
-
-`CurvedAnimation`和`AnimationController`（下面介绍）都是`Animation<double>`类型。`CurvedAnimation`可以通过包装`AnimationController`和`Curve`生成一个新的动画对象 ，我们正是通过这种方式来将动画和动画执行的曲线关联起来的。
-
-
-
-当然我们也可以创建自己Curve，例如我们定义一个正弦曲线：
-
-~~~dart
-class ShakeCurve extends Curve {
-  @override
-  double transform(double t) {
-    return math.sin(t * math.PI * 2);
-  }
-}
-~~~
-
-
-
-`AnimationController`用于控制动画，它包含动画的启动`forward()`、停止`stop()` 、反向播放 `reverse()`等方法。`AnimationController`会在动画的每一帧，就会生成一个新的值。默认情况下，`AnimationController`在给定的时间段内线性的生成从 0.0 到1.0（默认区间）的数字。 例如，下面代码创建一个`Animation`对象（但不会启动动画）：
-
-~~~dart
-final AnimationController controller = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-);
-~~~
-
-`AnimationController`生成数字的区间可以通过`lowerBound`和`upperBound`来指定，如：
-
-~~~dart
-final AnimationController controller = AnimationController( 
-    duration: const Duration(milliseconds: 2000), 
-    lowerBound: 10.0,
-    upperBound: 20.0,
-    vsync: this
-);
-~~~
-
-注意：`AnimationController`派生自`Animation<double>`
-
-
-
-当创建一个`AnimationController`时，需要传递一个`vsync`参数，它接收一个`TickerProvider`类型的对象，它的主要职责是创建`Ticker`，定义如下：
-
-
-
-四种主要的 Material 转场模式如下：
-
-- **容器转换**：用于包含容器的界面元素之间的过渡；通过将一个元素无缝转换为另一个元素，在两个不同的界面元素之间创造可视化的连接。
-
-![11807bdf36c66657.gif](https://codelabs.developers.google.com/static/codelabs/material-motion-flutter/img/11807bdf36c66657.gif?hl=zh-cn)
-
-- **共享轴**：用于具有空间或导航关系的界面元素之间的过渡；让元素在转换时共用 x 轴、y 轴或 z 轴，用以强调元素间的关系。
-
-![71218f390abae07e.gif](https://codelabs.developers.google.com/static/codelabs/material-motion-flutter/img/71218f390abae07e.gif?hl=zh-cn)
-
-- **淡出后淡入**：用于彼此之间没有密切关系的界面元素之间的过渡；使用依序淡出和淡入的效果，并会对转入的元素进行缩放。
-
-![385ba37b8da68969.gif](https://codelabs.developers.google.com/static/codelabs/material-motion-flutter/img/385ba37b8da68969.gif?hl=zh-cn)
-
-- **淡出**：用于进入或退出屏幕画面范围的界面元素。
-
-![cfc40fd6e27753b6.gif](https://codelabs.developers.google.com/static/codelabs/material-motion-flutter/img/cfc40fd6e27753b6.gif?hl=zh-cn)
 

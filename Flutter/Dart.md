@@ -325,6 +325,8 @@ int? aNullableInt = null;
 
 ## 面向对象机制
 
+
+
 Dart 没有类似于 Java 那样的 `public`、`protected` 和 `private` 成员访问限定符。如果一个标识符以下划线 (`_`) 开头则表示该标识符在库内是私有的。
 
 
@@ -446,6 +448,103 @@ void main() {
     A a = A();
     a.data;
 }
+~~~
+
+
+
+### 内部类
+
+在Dart中**不存在内部类**
+
+### Mixin（混合）
+
+> Mixins are a way of reusing a class’s code in multiple class hierarchies.
+>
+> Mixins 是一种在多个类层次结构中重用类代码的方法。
+
+>In object-oriented programming languages, a mixin (or mix-in) is a class that contains methods for use by other classes without having to be the parent class of those other classes. How those other classes gain access to the mixin's methods depends on the language. Mixins are sometimes described as being "included" rather than "inherited".
+>
+>Mixins encourage code reuse and can be used to avoid the inheritance ambiguity that multiple inheritance can cause (the "diamond problem"), or to work around lack of support for multiple inheritance in a language. A mixin can also be viewed as an interface with implemented methods. This pattern is an example of enforcing the dependency inversion principle.
+>
+>在面向对象的编程语言中，mixin（或mix-in）是一个类，其中包含供其他类使用的方法，而不必成为其他类的父类。 这些其他类如何获得对mixin方法的访问权限取决于语言。 混合素有时被描述为“包含”而不是“继承”。
+>
+>Mixins鼓励代码重用，并且可用于避免多重继承可能导致的继承歧义（“钻石问题”），或解决语言中对多重继承的支持不足的问题。 混合也可以看作是已实现方法的接口。 此模式是强制执行依赖关系反转原理的示例。
+
+
+
+这就是Java中的interface + default方法
+
+~~~dart
+class Person  {
+  void eat() {
+    print("person eat");
+  }
+}
+
+mixin Dance {
+  void dance() {
+    print("Dance dance");
+  }
+}
+
+mixin Sing {
+
+  void sing() {
+    print("Sing int");
+  }
+}
+
+mixin Code on Person {				//只有Person与其子类可以with这个mixin类
+  void code() {
+    print("Code code");
+  }
+}
+
+class A extends Person with Dance, Sing {}
+
+class B extends Person with Sing, Code {}
+
+class C extends Person with Code, Dance{}
+
+class Dog with Code {}			//Error
+
+
+~~~
+
+ 如何处理多个类有同一方法的情况？就一条规则进行混合的多个类是线性覆盖的
+
+~~~dart
+class A {
+  void say() {print("A");}
+}
+
+mixin B {
+  void say() {print("B"); }
+}
+
+mixin C {
+  void say() {print("C"); }
+}
+
+class D extends A with B, C{
+  @override
+  void say() {
+    print("D");
+    super.say();
+  }
+}
+
+void main()
+{
+    D d = new D();
+  	d.say();
+  	return;
+}
+
+/**
+flutter: D
+flutter: C
+*/
 ~~~
 
 
