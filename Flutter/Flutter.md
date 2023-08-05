@@ -664,6 +664,10 @@ Container(
     padding : EdgeInsets.all(20),
     decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
+        Border.all(
+          width : 1,
+          color : Theme.of(context).colorScheme.primary.withOpacity(0.2)
+        )
         boxShadow: [
             BoxShadow(
                   color: Colors.black26,
