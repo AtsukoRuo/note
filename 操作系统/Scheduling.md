@@ -547,7 +547,7 @@ wait(uint64 addr)
 
 
 
-
+![1691462316073-screenshot](C:\Users\AtsukoRuo\Desktop\note\操作系统\assets\1691462316073-screenshot.png)
 
 ## Kill
 

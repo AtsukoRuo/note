@@ -48,6 +48,7 @@ void consoleinit(void)
   devsw[CONSOLE].write = consolewrite;			//注册write函数
 }
 
+//配置UART电路
 void
 uartinit(void)
 {
@@ -523,3 +524,25 @@ timervec:
 
 基本上就是消费者-生成者模型，基本上是由bottom唤醒top
 
+
+
+## Lab Net
+
+- ~~~c
+  struct mbuf {
+    struct mbuf  *next; // the next mbuf in the chain
+    char         *head; // the current start position of the buffer
+    unsigned int len;   // the length of the buffer
+    char         buf[MBUF_SIZE]; // the backing store
+  };
+  ~~~
+
+  一开始我还以为这里next是长度大于MBUF_SUZE的数据部分
+
+  后来看看tx_desc，发现mbuf的链表式存储不起作用。
+
+  很好奇这个next字段到底有什么用？
+
+- 在e1000_recv中，一次中断应该把所有的recv读出来，否则在multi-process的测试中过不去。因为e1000只会在这次测试中发送一次中断，这个在文档中有说明：
+
+  > When the E1000 receives each packet from the ethernet, it DMAs the packet to the memory pointed to by `addr` in the next RX (receive) ring descriptor. If an E1000 interrupt is not already pending, the E1000 asks the PLIC to deliver one as soon as interrupts are enabled. Your `e1000_recv()` code must scan the RX ring and deliver each new packet's mbuf to the network stack (in `net.c`) by calling `net_rx()`

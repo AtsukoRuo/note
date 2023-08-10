@@ -19,8 +19,8 @@ amount of code is small for fewer bugs 微核
 
 
 
-
 thread相比process，它的通信、上下文切换的代价小
+
 satp寄存器 
 
 物理地址空间大小的上限由硬件设计者来决定（地址线的根数可以减少），对应地，页表中的PA字段具有相应的位数。

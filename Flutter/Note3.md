@@ -489,6 +489,10 @@ Flutter SDK中也预置了很多动画过渡组件，实现方式和大都和`An
 | AnimatedContainer        | 当Container属性发生变化时会执行过渡动画到新的状态。          |
 | AnimatedDefaultTextStyle | 当字体样式发生变化时，子组件中继承了该样式的文本组件会动态过渡到新样式。 |
 
+这些动画会作用在本Widget的属性上面，并不应用在子Widget上。
+
+
+
 ## Mateiral 转场模式
 
 四种主要的 Material 转场模式如下：
