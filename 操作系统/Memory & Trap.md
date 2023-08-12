@@ -70,6 +70,298 @@ RISC-V区分以下三种page fault：
 - store page fault： when a store instruction cannot translate its virtual address
 - instruction page fault： when the address in the program counter doesn’t translate
 
+### Code ： Init
+
+~~~c
+//main.c
+void main() {
+	//...
+    printf("xv6 kernel is booting\n");
+    printf("\n");
+    kvminit();       // create kernel page table
+    kvminithart();   // turn on paging
+    procinit();      // process table
+	//...     
+}
+
+//kalloc.c
+
+extern char end[]; // first address after kernel.
+                   // defined by kernel.ld.
+
+void kinit()
+{
+  initlock(&kmem.lock, "kmem");
+  freerange(end, (void*)PHYSTOP);
+  //这里PHYSTOP是物理内存的最大地址（不是整个物理地址空间的最大地址），在xv6上为0x88000000
+  //MAXVA是虚拟内存的最大地址，在xv6上为80 0000 0000
+}
+
+//将内核代码后的第一行代码地址到物理内存最大地址之间的页面注册到kmem上
+void freerange(void *pa_start, void *pa_end)
+{
+  char *p;
+  p = (char*)PGROUNDUP((uint64)pa_start);
+  for(; p + PGSIZE <= (char*)pa_end; p += PGSIZE)
+    kfree(p);
+  //kfree以及kmem见下面memory allocate一节
+}
+
+//vm.c
+typedef uint64 *pagetable_t; // 512 PTEs
+/*
+ * the kernel's page table.
+ */
+pagetable_t kernel_pagetable;
+
+void kvminit(void)
+{
+  kernel_pagetable = kvmmake();
+}
+
+// Switch h/w page table register to the kernel's page table,
+// and enable paging.
+void kvminithart()
+{
+  // wait for any previous writes to the page table memory to finish.
+  sfence_vma();
+  w_satp(MAKE_SATP(kernel_pagetable));
+  // flush stale entries from the TLB.
+  sfence_vma();
+}
+
+// 内核页表采用直接映射的方式进行地址翻译
+pagetable_t kvmmake(void)
+{
+  pagetable_t kpgtbl;
+
+  //这里先分配一个物理页面，作为第一级页表！
+  kpgtbl = (pagetable_t) kalloc();
+  memset(kpgtbl, 0, PGSIZE);
+
+  // uart registers
+  kvmmap(kpgtbl, UART0, UART0, PGSIZE, PTE_R | PTE_W);
+
+  // virtio mmio disk interface
+  kvmmap(kpgtbl, VIRTIO0, VIRTIO0, PGSIZE, PTE_R | PTE_W);
+
+  // PLIC
+  kvmmap(kpgtbl, PLIC, PLIC, 0x400000, PTE_R | PTE_W);
+
+  // map kernel text executable and read-only.
+  kvmmap(kpgtbl, KERNBASE, KERNBASE, (uint64)etext-KERNBASE, PTE_R | PTE_X);
+
+  // map kernel data and the physical RAM we'll make use of.
+  kvmmap(kpgtbl, (uint64)etext, (uint64)etext, PHYSTOP-(uint64)etext, PTE_R | PTE_W);
+
+  // map the trampoline for trap entry/exit to
+  // the highest virtual address in the kernel.
+  kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
+
+  // allocate and map a kernel stack for each process.
+  proc_mapstacks(kpgtbl);
+  
+  return kpgtbl;
+}
+~~~
+
+
+
+### Code：Page Allocate & Free
+
+~~~c
+struct run {
+  struct run *next;
+};
+
+struct {
+  struct spinlock lock;
+  struct run *freelist;
+} kmem;
+
+
+// Free the page of physical memory pointed at by pa,
+// which normally should have been returned by a
+// call to kalloc().  (The exception is when
+// initializing the allocator; see kinit above.)
+//释放一个物理页面
+void kfree(void *pa)
+{
+  struct run *r;
+  //传入地址的范围要合法并且pa是以PGSIZE对齐的
+  if(((uint64)pa % PGSIZE) != 0 || (char*)pa < end || (uint64)pa >= PHYSTOP)
+    panic("kfree");
+
+  //填入垃圾数据，这样解引用悬挂指针时可以报错
+  memset(pa, 1, PGSIZE);
+
+  r = (struct run*)pa;
+
+  acquire(&kmem.lock);
+  //归还页面，页面的前sizeof(kmem)个字节用于保存空闲链表的信息
+  r->next = kmem.freelist;
+  kmem.freelist = r;
+  release(&kmem.lock);
+}
+
+// Allocate one 4096-byte page of physical memory.
+// Returns a pointer that the kernel can use.
+// Returns 0 if the memory cannot be allocated.
+
+//返回一个物理页面的基地址(以PGSIZE对齐的)，若没有页面可以分配，则返回0
+void *kalloc(void)
+{
+  struct run *r;
+
+  acquire(&kmem.lock);
+  r = kmem.freelist;
+  if(r)
+    kmem.freelist = r->next;
+  release(&kmem.lock);
+
+  if(r)
+    memset((char*)r, 5, PGSIZE); // fill with junk
+  return (void*)r;
+}
+
+~~~
+
+
+
+### Code：vm
+
+~~~c
+// add a mapping to the kernel page table.
+// only used when booting.
+// does not flush TLB or enable paging.
+void kvmmap(pagetable_t kpgtbl, uint64 va, uint64 pa, uint64 sz, int perm)
+{
+  if(mappages(kpgtbl, va, sz, pa, perm) != 0)
+    panic("kvmmap");
+}
+
+
+// Create PTEs for virtual addresses starting at va that refer to
+// physical addresses starting at pa. va and size might not
+// be page-aligned. Returns 0 on success, -1 if walk() couldn't
+// allocate a needed page-table page.
+
+//修改页表pagetable，将[va, va + size]映射到[pa, pa + size]，权限为perm
+//必要时，会自动分配一个子级页表的
+//va与size可以不用PGSIZE对齐
+int mappages(pagetable_t pagetable, uint64 va, uint64 size, uint64 pa, int perm)
+{
+  uint64 a, last;
+  pte_t *pte;
+
+  if(size == 0)
+    panic("mappages: size");
+  
+  a = PGROUNDDOWN(va);
+  last = PGROUNDDOWN(va + size - 1);
+  for(;;){
+    if((pte = walk(pagetable, a, 1)) == 0)
+      return -1;
+    if(*pte & PTE_V)
+      panic("mappages: remap");
+    *pte = PA2PTE(pa) | perm | PTE_V;
+    if(a == last)
+      break;
+    a += PGSIZE;
+    pa += PGSIZE;
+  }
+  return 0;
+}
+
+// 64-bit virtual address
+//   39..63 -- must be zero.
+//   30..38 -- 9 bits of level-2 index.
+//   21..29 -- 9 bits of level-1 index.
+//   12..20 -- 9 bits of level-0 index.
+//    0..11 -- 12 bits of byte offset within the page.
+
+// PTE
+// 10...53 --  PPN
+// 0...9 -- Flags
+// shift a physical address to the right place for a PTE.
+#define PA2PTE(pa) ((((uint64)pa) >> 12) << 10)
+#define PTE2PA(pte) (((pte) >> 10) << 12)
+#define PTE_FLAGS(pte) ((pte) & 0x3FF)
+
+// extract the three 9-bit page table indices from a virtual address.
+#define PXMASK          0x1FF // 9 bits
+#define PGSHIFT 12  // bits of offset within a page
+#define PXSHIFT(level)  (PGSHIFT+(9*(level)))
+#define PX(level, va) ((((uint64) (va)) >> PXSHIFT(level)) & PXMASK)
+
+//根据va，返回最后一级页表中对应的PTE
+//若alloc为1，则按需分配页表。并不分配到用户进程所使用的物理页面
+//否则，当查找过程中某个pte不存在，则返回0
+pte_t *walk(pagetable_t pagetable, uint64 va, int alloc)
+{
+  if(va >= MAXVA)
+    panic("walk");
+
+  for(int level = 2; level > 0; level--) {
+    //PX提取出对应level级的index
+    pte_t *pte = &pagetable[PX(level, va)];		
+    if(*pte & PTE_V) {
+      pagetable = (pagetable_t)PTE2PA(*pte);
+    } else {
+      //如果此页表还没有分配
+      if(!alloc || (pagetable = (pde_t*)kalloc()) == 0)
+        //没有物理页面了 或者 不需要分配，那么返回0
+        return 0;
+      memset(pagetable, 0, PGSIZE);
+      //此时pagetable是新分配的、下一级的页表，不是当前level页表
+      //更新PTE
+      *pte = PA2PTE(pagetable) | PTE_V;
+    }
+  }
+  return &pagetable[PX(0, va)];
+}
+~~~
+
+
+
+### Code：uvm
+
+> **注意还需要维护proc->sz这个不变式**
+
+- void uvmunmap(pagetable_t pagetable, uint64 va, uint64 npages, int do_free)：将最后一级页表中虚拟地址[va, va + npages * PGSIZE]对应的PTE清理为0，若do_free不为0，那么释放相应的物理页面。va必须PGSIZE对齐，PGROUNDUP(oldsz);
+
+- uint64 uvmalloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz, int xperm)：将虚拟地址[oldsz, newsz]映射到自动分配的物理页面上，自动分配并修改页表，权限为xperm | PTE_R | PTE_U。oldsiz与newsz可以不用PGSIZE对齐。
+
+- uint64 uvmdealloc(pagetable_t pagetable, uint64 oldsz, uint64 newsz)：将最后一级页表中虚拟地址[oldsz, newsz]对应的PTE清理为0，并释放相应的物理页面。
+
+- void freewalk(pagetable_t pagetable)：将多级页表中的所有PTE清理为0。这段代码中有一个很有意思的一点：
+
+  ~~~c
+  // Recursively free page-table pages.
+  // All leaf mappings must already have been removed.
+  void freewalk(pagetable_t pagetable)
+  {
+    // there are 2^9 = 512 PTEs in a page table.
+    for(int i = 0; i < 512; i++){
+      pte_t pte = pagetable[i];
+      //在walk中我们可以得知：用户进程的一、二级页表的权限位仅有PTE_V(内核页表具有所有权限)
+      
+      if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
+        // this PTE points to a lower-level page table.
+        uint64 child = PTE2PA(pte);
+        freewalk((pagetable_t)child);
+        pagetable[i] = 0;
+     	//这个函数要求我们必须先释放最后一级的所有PTE，
+      } else if(pte & PTE_V){
+        panic("freewalk: leaf");
+      }
+    }
+    kfree((void*)pagetable);
+  }
+  ~~~
+
+  
+
 ## Trap
 
 在RISC-V中，每个CPU核都有自己的控制寄存器。下面列出比较重要的寄存器：
