@@ -227,6 +227,8 @@ Colors.white;
 
 ### 图片
 
+
+
 在pubspec.yaml文件中 flutter下的assets中添加图片在项目中的路径即可
 
 ~~~yaml
@@ -310,6 +312,16 @@ Image(
 ![图3-13](https://book.flutterchina.club/assets/img/3-13.feb336de.png)
 
 通过这个可以透明化纯色图片
+
+
+
+
+
+方便的构造函数：
+
+~~~dart
+Image.network("");			//
+~~~
 
 
 

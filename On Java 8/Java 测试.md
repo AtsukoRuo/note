@@ -26,16 +26,21 @@
 </dependencies>
 ~~~
 
-- `@Test`注解标识即将测试的方法
-
+- `@Test`注解标识即将测试的方法，该方法必须是public的
+  - **@Test(timeout=毫秒 )**：这个参数表示如果测试方法在指定的timeout内没有完成，就会强制停止。
 - `@BeforeAll`注解标注的方法会在**所有测试**执行**之前**运行一次。方法都必须是静态的。
-
 - `@AfterAll`注解标注的方法会在**所有测试**执行**之后**运行一次。方法都必须是静态的。
-
 - `@BeforeEach`注解标注的方法会在**每次测试**执行**之前**运行一次。
-
 - `@AfterEach`注解标注的方法会在**每次测试**执行**之后**运行一次。
-- `assert`
+
+
+
+Assert
+
+- assertEquals
+- assertTrue
+- assertNull
+- assertSame
 
 
 
@@ -53,3 +58,4 @@ assert boolean-expression: information-expression;
 如果断言失败，即boolean-expression为false，那么抛出`AssertionError`异常。
 
 断言在一般情况下并不会执行。可以在虚拟机中设置`-ea`标志来启用断言，它也可以拼写为`-enableassertions`。或者执行`ClassLoader.getSystemClassLoader().setDefaultAssertionStatus(true)`语句为之后所有加载的类启动断言。
+

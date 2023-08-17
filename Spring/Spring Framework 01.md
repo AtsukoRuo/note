@@ -2,7 +2,7 @@
 
 https://start.spring.io/ 创建SpringBoot项目
 
-框架与设计模式的出现就是为了**抵抗变化**。可以通过增加中间层（本质上降低程序的耦合度），来尽可能地隔离变化所带来的影响。而Spring Framework就是一个中间层，让开发者专注于业务逻辑的开发，而无需关心请求处理等与业务无关的部分。
+框架与设计模式的出现就是为了**抵抗变化**。可以通过增加中间层，降低程序的耦合度，来尽可能地隔离变化所带来的影响。而Spring Framework就是一个中间层，让开发者专注于业务逻辑的开发，而无需关心请求处理等与业务无关的部分。
 
 > 注：可以通过衡量修改程序的某一项功能所花费的时间、资金来定义代码的耦合度。
 
@@ -427,9 +427,9 @@ XML与代码耦合度低，但是维护成本极高。推荐使用注解
 
 
 
-Spring框架分为多个Spring project，包括Spring Famework、SpringBoot、Spring JPA等。每个Spring poject又分为多个Spring Moudules。应用程序可以按需使用这些Moudules，这有很大的灵活性。
+Spring框架分为多个Spring Project，包括但不限于Spring Famework、SpringBoot、Spring JPA。每个Spring poject又分为多个Spring Moudules。开发人员可以按需使用Moudules。
 
-Spring框架的演进是通过引入新的Spring project来实现的
+通过引入新的Spring Project来推动Spring框架的演化
 
 ![image-20230704141946297](C:\Users\AtsukoRuo\Desktop\note\Spring\assets\image-20230704141946297.png)
 

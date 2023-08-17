@@ -190,7 +190,7 @@ x instanceof Dog		//true
 x instanceof Animal		//true
 ~~~
 
-它对根据对象实际运行类型来判断的
+它对根据对象实际运行类型来判断的，而不是静态类型，毕竟这是一个运行期的操作
 
 `Class.isInstance()`方法提供另一种动态验证对象类型的方式。
 
@@ -208,6 +208,17 @@ Class类和java.lang.reflect库一起支持了反射，这个库里包含Field�
 
 - getFields()：获取所有public字段,包括父类的public字段
 - getDeclaredFields()：获取所有字段,public和protected和private,但是不包括父类字段
+
+
+
+~~~java
+Class<Vector> vectorClass = (Class<Vector>)Vector.class;
+Field field = vectorClass.getDeclaredField("capacity");
+field.setAccessible(true);
+Object value = field.get(vector);
+~~~
+
+
 
 ### Method
 
@@ -333,13 +344,13 @@ Optional 是 Java 8 引进的一个新特性，我们通常认为Optional是用�
 
 > Optional is intended to provide a limited mechanism for library method return types where there needed to be a clear way to represent “no result," and using null for such was overwhelmingly likely to cause errors.
 
-Optional的机制类似于 Java 的检查异常，**强迫API调用者面对没有返回值的现实**。**不要**将Optiona对象作为字段、参数，以及用它处理空指针异常问题或实现if-else逻辑。
+Optional的机制类似于 Java 的检查异常，**强迫API调用者面对没有返回值的现实**。不要将Optiona对象作为字段、参数，以及用它处理空指针异常问题或实现if-else逻辑。
 
 
 
 当我们在自己的代码中生成一个 **Optional**对象时，可以使用下面 3 个静态方法：
 
-- `empty()`：生成一个内容为null的 **Optional**对象（简称为空Optional）。相当于Optional.ofNullable(null)。
+- `empty()`：生成一个内容为null的 **Optional**对象（简称为空Optional）。相当于`Optional.ofNullable(null)`。
 - `of(value)`：将值保存在Optional中，若为null，则抛出异常。
 - `ofNullable(value)`： 将值保存在Optional中，可保存null值。
 

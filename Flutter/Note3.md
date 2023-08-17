@@ -8,7 +8,7 @@
 
 
 
-**`Animation<T>`是一个抽象类**，它本身和UI渲染没有任何关系，而它主要的功能是保存动画的插值和状态；
+**`Animation<T>`是一个抽象类**，它本身和UI渲染没有任何关系，而它主要的功能是保存动画的插值；
 
 
 
@@ -55,6 +55,8 @@ controller.forward();
 
 
 
+当控件的动画执行完毕后，控件会保持住最后一帧所处的状态。
+
 ## Curve
 
 动画过程可以是匀速的、匀加速的或者先加速后减速等。Flutter中通过`Curve`（曲线）来描述动画过程
@@ -69,14 +71,17 @@ final CurvedAnimation curve = CurvedAnimation(parent: controller, curve: Curves.
 
  [Curves (opens new window)](https://docs.flutter.io/flutter/animation/Curves-class.html)类是一个预置的枚举类，定义了许多常用的曲线，下面列几种常用的：
 
-| Curves曲线 | 动画过程                     |
-| ---------- | ---------------------------- |
-| linear     | 匀速的                       |
-| decelerate | 匀减速                       |
-| ease       | 开始加速，后面减速           |
-| easeIn     | 开始慢，后面快               |
-| easeOut    | 开始快，后面慢               |
-| easeInOut  | 开始慢，然后加速，最后再减速 |
+| Curves曲线     | 动画过程                                                     |
+| -------------- | ------------------------------------------------------------ |
+| linear         | 匀速的                                                       |
+| decelerate     | 匀减速                                                       |
+| ease           | 开始加速，后面减速                                           |
+| easeIn         | 开始慢，后面快                                               |
+| easeOut        | 开始快，后面慢                                               |
+| easeInOut      | 开始慢，然后加速，最后再减速                                 |
+| Interval(a, b) | 假设动画的持续时间为x秒，动画开始执行的时间为a，那么Interval(0.3, 0.4)就是在时间[a + 0.3 * x, a + 0.4 * x]中执行完全部动画 |
+
+> 利用Interval可以实现交织动画
 
 当然我们也可以创建自己Curve，例如我们定义一个正弦曲线：
 
@@ -447,6 +452,7 @@ class MySlideTransition extends AnimatedWidget {
   Widget build(BuildContext context) {
     final position = listenable as Animation<Offset>;
     Offset offset = position.value;
+    //关键代码
     if (position.status == AnimationStatus.reverse) {
       offset = Offset(-offset.dx, offset.dy);
     }

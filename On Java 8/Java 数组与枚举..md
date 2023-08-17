@@ -157,6 +157,20 @@ Arrays.sort(intervals, new Comparator<int[]>() {
 
 
 
+### 数组拷贝
+
+~~~java
+public static native void arraycopy(Object src,  int  srcPos,
+                                        Object dest, int destPos,
+                                        int length);
+
+System.arraycopy(src, 0, dest, 0, length)
+~~~
+
+
+
+> If the src and dest arguments refer to the same array object, then the copying is performed as if the components at positions srcPos through srcPos+length-1 were first copied to a temporary array with length components and then the contents of the temporary array were copied into positions destPos through destPos+length-1 of the destination array
+
 ## 枚举
 
 Java 5中添加了`enum`关键字

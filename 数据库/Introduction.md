@@ -34,7 +34,7 @@ Broadly speaking, there are two modes in which databases are used：
 
 在早期，程序员使用操作系统提供的文件系统来管理数据， 它有以下问题：
 
-- 复杂性高，难以维护与扩展，对程序员编程并不友好。这容易使得数据冗余，或者造成数据不一致性。
+- 复杂性高，难以维护与扩展，对程序员编程并不友好。这容易使程序员心智负担过大，而造成数据冗余，或者数据不一致性。
 - 访问数据低效
 - 并发问题、安全性问题
 
@@ -85,13 +85,13 @@ The collection of information stored in the database at a particular moment is c
 
 > 数据库语言可以看作是数据抽象的一部分，它正是这样一种接口和抽象工具。
 
-Database Languages有以下两种：
+对于Relation Database Languages可以划分为以下两种子语言：
 
-- **data-defifinition language** (**DDL**)： specify the database schema，例如 storage structure、access methods、constraints. 
+- **data-defifinition language** (**DDL**)： specify the database schema and other things，例如 storage structure、access methods、constraints、View、indices、Security等. 
 
   The processing of DDL statements generates some output. The output of the DDL is placed in the **data dictionary**, which contains **metadata**。例如表结构、视图、索引、存储位置等
-
-
+  
+  
 
 - **data-manipulation language** (**DML**）： enables users to access data. The types of access are:
 
@@ -107,7 +107,7 @@ Database Languages有以下两种：
   - **Procedural** **DML**： require a user to specify *what* data are needed and *how* to get those data
   - **Declarative** **DML**： require a user to specify *what* data are needed *without* specifying how to get those data.
 
-  > DML that involves information retrieval is called a **query language**. it is common practice to use the terms *query language* and *data-manipulation**language* synonymously. 因为查询语句是最常用的DML
+  > DML that involves information retrieval is called a **query language**. it is common practice to use the terms query language and data-manipulation language synonymously. 因为查询语句是最常用的DML
 
 
 
@@ -115,15 +115,12 @@ The Java Database Connectivity (JDBC) standard定义了一些接口，这些接�
 
 ## Constraint
 
-In general,**a constraint can be an arbitrary predicate pertaining** to the database. However, arbitrary predicates **may be costly to test**. Thus, database systems **implement only those integrity constraints** that can be tested with minimal overhead:
+In general,**a constraint can be an arbitrary predicate pertaining** to the database. However, arbitrary predicates **may be costly to test**. Thus, database systems **implement only those integrity constraints（完整性约束）** that can be tested with minimal overhead:
 
 - **Domain Constraints**（值域约束）. A domain of possible values must be associated with every attribute
 - **Referential Integrity**（参照完整性）：a value that appears in one relation for a given set of attributes also appears in a certain set of attributes in another relation
-- **Authorization**：
-  - **read authorization**
-  - **insert authorization**
-  - **update authorization**
-  - **delete authorization**
+- **Authorization**： **read authorization**、**insert authorization**、**update authorization**、**delete authorization**
+- Other： Key Constraints、Not Null、Default、Check...
 
 
 
@@ -131,7 +128,7 @@ In general,**a constraint can be an arbitrary predicate pertaining** to the data
 
 
 
-
+![image-20230812114437180](C:\Users\AtsukoRuo\Desktop\note\数据库\assets\image-20230812114437180.png)
 
 
 
