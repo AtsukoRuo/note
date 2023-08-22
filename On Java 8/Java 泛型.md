@@ -39,6 +39,51 @@ C++ 和Java 的策略分别处于异构翻译和同构翻译的极端。而 C#/C
 
 ## 泛型的基本语法
 
+1. 定义泛型类
+
+   ~~~java
+   class GenericClass<T> {
+     private T element;
+   
+     public T getElement() {
+       return element; 
+     }
+     
+     public static T getElement() {}		//错误的，静态方法不能使用类的泛型参数
+   }
+   ~~~
+
+2. 定义泛型方法
+
+   ~~~java
+   class GenericMethod {
+     public static <T> T identity(T t) {
+       return t;
+     }
+   }
+   ~~~
+
+3. 泛型类不支持继承具体类型
+
+   ~~~java
+   class Child extends GenericClass<String> //错误
+   ~~~
+
+
+
+下面看一个类型擦除的潜在问题：
+
+~~~java
+public static <U extends Comparable<U>> int foo(Vector<U> u) {}
+foo(new Vector<Integer>());					//java.lang.ClassCastException
+~~~
+
+这段代码在编译时无报错。但是在运行时，由于类型擦除，解释器试图将Object转换为Comparable时抛出异常。即使这个Object的真实类型为Integer，但是解释器却不执行向下转型操作。解决方案：
+
+~~~java
+public static <U extends Object & Comparable<U>> int foo(Vector<U> u) {}
+~~~
+
 
 
 ## 泛型数组

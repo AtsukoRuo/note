@@ -42,6 +42,39 @@ Assert
 - assertNull
 - assertSame
 
+### 参数化测试
+
+https://zhuanlan.zhihu.com/p/262508766
+
+~~~java
+@ParameterizedTest
+@MethodSource("stringProvider")
+void testWithSimpleMethodSource(String argument) {
+    assertNotNull(argument);
+}
+
+static Stream<String> stringProvider() {
+    return Stream.of("foo", "bar");
+}
+~~~
+
+~~~java
+@ParameterizedTest
+@MethodSource("stringIntAndListProvider")
+void testWithMultiArgMethodSource(String str, int num, List<String> list) {
+    assertEquals(3, str.length());
+    assertTrue(num >=1 && num <=2);
+    assertEquals(2, list.size());
+}
+
+static Stream<Arguments> stringIntAndListProvider() {
+    return Stream.of(
+        Arguments.of("foo", 1, Arrays.asList("a", "b")),
+        Arguments.of("bar", 2, Arrays.asList("x", "y"))
+    );
+}
+~~~
+
 
 
 ## 前置条件

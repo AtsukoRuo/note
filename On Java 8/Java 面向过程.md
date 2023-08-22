@@ -29,6 +29,17 @@ ObjectReference.methodName(arg1, arg2, arg3);
 
 **比较遗憾的是，Java并不支持默认参数**
 
+
+
+在Java中，**函数的返回值只能是右值**：
+
+~~~java
+Integer getNumber(int i) { return Integer.valueOf(i); }
+getNumber(10) = 12;			//错误的！！！
+~~~
+
+
+
 ### 方法重载
 
 通常来说，同一个词可以表达几种不同的含义，这就是**重载（overloaded）**。重载很有用，尤其是在涉及细微差别时，它允许不同参数类型的方法有着相同的名字。
