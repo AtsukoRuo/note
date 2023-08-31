@@ -78,10 +78,23 @@ public static <U extends Comparable<U>> int foo(Vector<U> u) {}
 foo(new Vector<Integer>());					//java.lang.ClassCastException
 ~~~
 
-这段代码在编译时无报错。但是在运行时，由于类型擦除，解释器试图将Object转换为Comparable时抛出异常。即使这个Object的真实类型为Integer，但是解释器却不执行向下转型操作。解决方案：
+这段代码在编译时无报错。但是在运行时，由于类型擦除，解释器试图将Object转换为Comparable时抛出异常。即使这个Object的真实类型为Integer，原因未知。解决方案：
 
 ~~~java
 public static <U extends Object & Comparable<U>> int foo(Vector<U> u) {}
+~~~
+
+
+
+原生类型的问题
+
+~~~java
+class List<T> {
+    public Vector<Integer> getVector() {}
+}
+
+List list = new List();
+for (Integer v : list.getVector()) 		//错误的，因为这里使用了原生类型List，所以Vector<Integer>变成了Vector<Object>。原因未知
 ~~~
 
 
