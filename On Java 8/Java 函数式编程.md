@@ -109,7 +109,7 @@ i -> i * 2;
 | 1 参数； 返回类型相同                                       | **UnaryOperator** `apply()`                                  | **`UnaryOperator<T>` IntUnaryOperator LongUnaryOperator DoubleUnaryOperator** |
 | 2 参数，类型相同； 返回类型相同                             | **BinaryOperator** `apply()`                                 | **`BinaryOperator<T>` IntBinaryOperator LongBinaryOperator DoubleBinaryOperator** |
 | 2 参数，类型相同; 返回整型                                  | Comparator (java.util) `compare()`                           | **`Comparator<T>`**                                          |
-| 1/2 参数； 返回布尔型                                       | **Predicate** `test()`                                       | **`Predicate<T>` `BiPredicate<T,U>` IntPredicate LongPredicate DoublePredicate** |
+| 1或2 参数； 返回布尔型                                      | **Predicate** `test()`                                       | **`Predicate<T>` `BiPredicate<T,U>` IntPredicate LongPredicate DoublePredicate** |
 | 参数基本类型； 返回基本类型                                 | **类型To类型Function** `applyAs类型()`                       | **IntToLongFunction IntToDoubleFunction LongToIntFunction LongToDoubleFunction DoubleToIntFunction DoubleToLongFunction** |
 | 2 参数； 类型不同                                           | **Bi操作** (不同方法名)                                      | **`BiFunction<T,U,R>` `BiConsumer<T,U>` `BiPredicate<T,U>` `ToIntBiFunction<T,U>` `ToLongBiFunction<T,U>` `ToDoubleBiFunction<T>`** |
 
