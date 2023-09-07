@@ -4,7 +4,7 @@
 
 ## Basic Knowledge
 
-The ***architecture* **is the programmer’s view of a computer. It is defined by the instruction set (language) and operand locations (registers and memory)
+The ***architecture* **is the programmer’s view of a computer. It is defined by the a **instruction set **(language) and **operand locations** (registers and memory)
 
 
 

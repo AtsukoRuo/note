@@ -4,6 +4,14 @@
 
 ## 概述
 
+
+
+让代码只需依赖于“某种不具体指定的类型”，而不是某个特定的接口或类，那么就可以编写出更为通用的代码。这便是泛型的概念——**参数化类型**。尽可能让程序员在编写类或方法时拥有尽量丰富的表达力。
+
+
+
+
+
 [Java 不能实现真正泛型的原因是什么？](https://www.zhihu.com/question/28665443/answer/1873474818)
 
 事实上，对于泛型的翻译有两种策略：
@@ -19,9 +27,9 @@ C++ 和Java 的策略分别处于异构翻译和同构翻译的极端。而 C#/C
 
 类型擦除的问题：
 
-- **获取泛型参数的具体值。**程序员可能会想要知道一个 `List` 到底是 `List<String>` 还是 `List<Integer>`，想要拿到实际泛型参数相关的信息，而因为类型擦除，实际上并不能做到这一点。可以通过传递Class对象补偿这一点损失
-- **布局特化。**当前基于擦除的实现要求泛型参数类型必须拥有公共运行时表示（common runtime representation），在 Java 里这意味着只能是一组引用类型，而不能为原始类型。这导致我们只能用 `List<Integer>`，而用不了针对 `int` 进行布局特化的 `List<int>`，底层存放的全是对 `Integer` 对象的引用，这造成了巨大的内存浪费，同时对现代 CPU 的缓存策略极端不友好，大量间接寻址产生大量 cache miss，产生大量的性能下降。这也是当前 Java 泛型擦除最大的问题。
-- **运行时类型检查。**因为泛型实际参数会被擦除，`List<String>` 会被擦除为 `List`，所以当通过一些手段（强制转换，raw type 等）将其他类型的值放入这个 List 的时候并不会出错，直到实际访问时才会发生问题。
+- **难以获取泛型参数的具体值。**程序员可能会想要知道一个 `List` 到底是 `List<String>` 还是 `List<Integer>`，想要拿到实际泛型参数相关的信息，而因为类型擦除，实际上并不能做到这一点。可以通过传递Class对象补偿这一点损失
+- **不能布局特化。**当前基于擦除的实现要求泛型参数类型必须拥有公共运行时表示（common runtime representation），在 Java 里这意味着只能是一组引用类型，而不能为原始类型。这导致我们只能用 `List<Integer>`，而用不了针对 `int` 进行布局特化的 `List<int>`，底层存放的全是对 `Integer` 对象的引用，这造成了巨大的内存浪费，同时对现代 CPU 的缓存策略极端不友好，大量间接寻址产生大量 cache miss，造成性能下降。这也是当前 Java 泛型擦除最大的问题。
+- **运行时错误。**因为泛型实际参数会被擦除，`List<String>` 会被擦除为 `List`，所以当通过一些手段（强制转换，raw type 等）将其他类型的值放入这个 List 的时候并不会出错，直到实际访问时才会发生问题。
 
 
 
@@ -36,6 +44,8 @@ C++ 和Java 的策略分别处于异构翻译和同构翻译的极端。而 C#/C
 - **兼容性**。它完全维护了二进制兼容性和源代码兼容性。不会因引入泛型后让社区生态产生巨大的分歧
 
 - **类型系统的自由度**：虽然 Java 和 JVM 常常被绑定在一起，但它们是各自独立的，有着各自的规范。由于通过类型擦除实现泛型，像 Scala 这样的语言可以以与 Java 泛型高度协同的方案实现远远超出 Java 类型系统表达能力的类型系统，同时保持高度的互操作性。
+
+
 
 ## 泛型的基本语法
 
@@ -63,7 +73,9 @@ C++ 和Java 的策略分别处于异构翻译和同构翻译的极端。而 C#/C
    }
    ~~~
 
-3. 泛型类不支持继承具体类型
+   
+
+不支持继承拥有具体类型的泛型类
 
    ~~~java
    class Child extends GenericClass<String> //错误
@@ -78,7 +90,7 @@ public static <U extends Comparable<U>> int foo(Vector<U> u) {}
 foo(new Vector<Integer>());					//java.lang.ClassCastException
 ~~~
 
-这段代码在编译时无报错。但是在运行时，由于类型擦除，解释器试图将Object转换为Comparable时抛出异常。即使这个Object的真实类型为Integer，原因未知。解决方案：
+这段代码在编译时无报错。但是在运行时，由于类型擦除，解释器试图将Object转换为Comparable时抛出异常，即使这个Object的真实类型为Integer，原因未知。解决方案：
 
 ~~~java
 public static <U extends Object & Comparable<U>> int foo(Vector<U> u) {}
@@ -94,7 +106,7 @@ class List<T> {
 }
 
 List list = new List();
-for (Integer v : list.getVector()) 		//错误的，因为这里使用了原生类型List，所以Vector<Integer>变成了Vector<Object>。原因未知
+for (Integer v : list.getVector()) 		//错误的，因为这里使用了原生类型List，所以Vector<Integer>变成了Vector<Object>。
 ~~~
 
 
@@ -123,13 +135,13 @@ Object[] arr = strListArr;
 arr[0] = new ArrayList<Integer>();
 ~~~
 
-由于泛型类型擦除， 在运行时允许将`ArrayList<Integer>`放入到`List<String>[]`类型的数组中。**堆污染（Heap pollution）**就这样在编译和运行时都没有警告的时候发生了。这种情况是不被 Java 所允许的，所以 Java 禁止了一些泛型数组的相关操作（譬如通过new操作符来创建泛型数组） `new T[size]; //Error`。Java设计者让用户必须使用类型不安全的手段（例如，原生类型`ArrayList`、强制类型转换），让开发者自己保证类型安全。
+由于泛型类型擦除， 在运行时允许将`ArrayList<Integer>`放入到`List<String>[]`类型的数组中。**堆污染（Heap pollution）**就这样在编译和运行时都没有警告的时候发生了。这种情况是不被 Java 所允许的，所以 Java 禁止了一些泛型数组的相关操作（譬如通过new操作符来创建泛型数组） `new T[size];`。Java设计者让用户必须使用类型不安全的手段（例如，原生类型`ArrayList`、强制类型转换），让开发者自己保证类型安全。
 
 
 
-我们可以通过三种方法创建一个与泛型数组作用相同的数组：
+我们可以通过种方法创建一个与泛型数组作用相同的数组：
 
-- Object[]，在Object[]与泛型类型数组T[]进行强制类型转换。（不考虑通配符/边界的情况下）
+- Object[]，在Object[]与泛型类型数组T[]进行强制类型转换。
 - 原生类型强制转换
 - 使用原生类型ArrayList。
 

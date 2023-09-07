@@ -15,15 +15,17 @@ Paths.get("C:\\path\\to");		 //绝对路径
 Paths.get("src");				//相对路径，相对项目工程的根目录
 
 Path.of("C:", "path", "to");	 //推荐使用，屏蔽各个平台文件分割符的差异
-Path.of("PathInfo.java");
-Path.of(new URI());				//根据URI构建路径
+Path.of("PathInfo.java");		//构建了一个相对路径
+Path.of(new URI(...));			//根据URI构建路径
 ~~~
 
 
 
 > 在Windows中，文件分割符为反斜杠`\`，而在Linux中，文件分割符为`/`。
 >
-> Windows文件路径示例`C:\Users\AtsukoRuo\Desktop`
+> Windows文件路径示例`C:\Users\AtsukoRuo\Desktop`。
+>
+> 注意相对路径是相对工程根目录的，而不是代码文件所在的目录
 
 
 
@@ -163,7 +165,7 @@ System.out.println(p3.resolve(p4));			//C:\src\c
 
 ### 创建与删除
 
-这些静态方法都是Files类的
+**这些静态方法都是Files类的**
 
 删除目录或者文件
 
@@ -244,7 +246,7 @@ public static DirectoryStream<Path> newDirectoryStream(Path dir) throws IOExcept
 
 ### 文件系统
 
-
+//TODO
 
 ### 查找文件
 
@@ -260,8 +262,6 @@ Files.walk(test)
   .filter(matcher::matches)
   .forEach(System.out::println);
 ~~~
-
-
 
 ### 读写文件
 
