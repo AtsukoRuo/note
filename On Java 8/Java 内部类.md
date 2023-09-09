@@ -128,6 +128,7 @@ public class A {
     public class B {
         public class C {}
     }
+    
     B f() { return new B(); }			//正确的，通过隐含this指针可以获取外围对象
     static B g() { return new B(); }	//错误的，没有办法获取到this指针
     B.C g() { return new B.C(); }		//错误的，此时没有类型为B的外部对象
@@ -321,6 +322,8 @@ list.forEach(e -> { sum += e.num; }); // ERROR
 这段代码会引发多线程中的竞争条件问题。
 
 为了解决这个问题，Java规定如果局部内部类要捕获局部变量，那么该局部变量必须是final或者 effectively final（非final，但不修改它的值），否则将会报错。
+
+但是可以作为一个对象（数组）的成员来避免这一点。
 
 
 
