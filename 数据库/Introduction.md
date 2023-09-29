@@ -8,7 +8,7 @@
 
 A **database-management system** (**DBMS**) is a collection of interrelated data and a set of programs to access those data. The collection of data, usually referred to as the **database**.
 
-
+在早期，程序所要访问大批数据的物理层与其逻辑层紧密耦合，这难以维护与扩展。于是就提出了数据库来解决这一问题。
 
 the primary goal of DBMS includes :
 
@@ -32,22 +32,28 @@ Broadly speaking, there are two modes in which databases are used：
 
 
 
-在早期，程序员使用操作系统提供的文件系统来管理数据， 它有以下问题：
+用操作系统提供的文件系统来管理数据（例如，使用CSV文件）， 它有以下问题：
 
-- 复杂性高，难以维护与扩展，对程序员编程并不友好。这容易使程序员心智负担过大，而造成数据冗余，或者数据不一致性。
+- 复杂性高，难以维护与扩展，对程序员编程并不友好，使得程序员心智负担过大。
 - 访问数据低效
-- 并发问题、安全性问题
+- 并发问题、安全性问题、分布式
+- 应用的数据层与某一种编程语言绑定，不易扩展。
+- 模型简单，表达力不丰富，外键约束等难以实现
+
+
 
 
 
 ## Data Model & Data Abstraction
 
-**data model**: a collection of conceptual tools for **describing data, data relationships, data semantics, and consistency constraints**. 大致可以分为以下四类：
+**data model**: a collection of conceptual tools for **describing data, data relationships, data semantics, and consistency constraints**. 通常对现实世界中的各种数据进行抽象和概念化
+
+
 
 - Relational Model
-- Entity-Relation Model
-- Semi-structured Data Model：例如JSON、XML
-- Object-Based Data Model
+- NoSQL：例如，Key/Value、Graph、Documnet/XML/JSON、Wide-Column
+- Array/Matrix/Vector：用于MachineLearning
+- Network、Hierarchical等是已经废用了
 
 
 
@@ -56,6 +62,8 @@ Broadly speaking, there are two modes in which databases are used：
 > 数据抽象建立在合适的数据模型之上，它需要根据数据模型中定义的结构和关系来组织和抽象数据
 
 在确定数据模型后，我们还要考虑数据抽象，它将复杂的数据模型实现细节或者数据模型本身的细节隐藏起来，向用户提供简单和合适的接口（更具体来说，是提供一个更高级的概念模型）。
+
+
 
 数据抽象有三个层次：
 
@@ -67,7 +75,7 @@ Broadly speaking, there are two modes in which databases are used：
 
 
 
-在数据抽象的基础上，我们来设计整个数据库。
+在数据抽象的基础上，我们来设计整个数据库。data schema是数据模型在具体系统中的具体实现方式
 
 > instance与schema的关系就如同编程语言中type与variable的关系
 
@@ -78,6 +86,8 @@ The collection of information stored in the database at a particular moment is c
 - **subschemas**, that describe different views of the database.
 
  
+
+data model侧重概念，data schema侧重实现，data abstraction侧重封装。
 
 ## Database Languages
 

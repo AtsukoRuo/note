@@ -6,14 +6,12 @@
 
 The purpose of a file system is to organize and store data **persistently**. 
 
-本质上FS就是一个在磁盘上的数据结构，它在磁盘上的布局如下
+本质上文件系统就是一个在磁盘上的数据结构。以xv6文件系统为例，它在磁盘上的布局如下：
 
 ![image-20230806092110852](C:\Users\AtsukoRuo\Desktop\note\操作系统\assets\image-20230806092110852.png)
 
 - superblock:  保存文件系统的元信息，例如有多少数据块、inode的数量
 - boot：在qemu上，直接把代码复制到内存0x80000000上，无需考虑boot块。
-
-
 
 
 
@@ -25,9 +23,7 @@ The file system addresses several challenges:
 
 - **concurrent**： Different processes may operate on the file system at the same time, so the file-system code must coordinate to maintain invariants.
 
-- **cache**：Accessing a disk is orders of magnitude slower than accessing memory, so the file system
-
-  must maintain an in-memory cache of popular blocks.
+- **cache**：Accessing a disk is orders of magnitude slower than accessing memory, so the file system must maintain an in-memory cache of popular blocks.
 
 
 

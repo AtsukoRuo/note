@@ -2,13 +2,15 @@
 
 
 
-并发执行从何而来？
+并发执行在哪里发生？
 
-- 每个核都独立执行指令流
+- 每个核都独立执行指令流（并行，Parallelism）
 - 在某个核中，切换到不同线程中
 - 中断设备驱动代码与CPU代码（操作系统代码与用户代码）之间的切换
 
 
+
+**并发（concurrent）**与**并行（parallelism）**的区别：并发使用时分复用技术来执行多个任务，而并行在硬件支持下可以同时执行多个任务。
 
 The word **concurrency** refers to situations in which multiple instruction streams are interleaved, due to multiprocessor parallelism, thread switching,or interrupts.
 
@@ -26,7 +28,7 @@ Strategies aimed at correctness under concurrency, and abstractions that support
 
 ## 锁🔒
 
-**锁（lock）**提供了**互斥（mutual exclusion）**语义，保证了在某一时刻只有一个CPU持有该🔒。
+**锁（lock）**提供了**互斥（mutual exclusion）**语义，保证了在某一时刻只有一个对象持有该🔒。
 
 
 
