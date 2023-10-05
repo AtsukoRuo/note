@@ -8,7 +8,7 @@
 
 Flutter 中的可滚动组件主要由三个角色组成：Scrollable、Viewport 和 Sliver：
 
-- Scrollable ：用于处理滑动手势，确定滑动偏移，滑动偏移变化时构建 Viewport 。
+- Scrollable ：用于处理滑动手势，确定滑动偏移，滑动偏移变化时构建 Viewport 
 - Viewport：显示的视窗，即列表的可视区域；
 - Sliver：视窗里显示的元素
 
@@ -41,14 +41,7 @@ Scrollable({
 ```
 
 - `axisDirection` 滚动方向。
-- `physics`：此属性接受一个`ScrollPhysics`类型的对象，它决定可滚动组件如何响应用户操作。Flutter SDK中包含了四个`ScrollPhysics`的子类：
-  - BouncingScrollPhysics()：允许滚动超出边界，但之后内容会**反弹**回来
-
-  - ClampingScrollPhysics()： 防止滚动超出边界
-
-  - NeverScrollableScrollPhysics()：禁止用户滚动
-
-  - AlwaysScrollableScrollPhysics() ：始终响应用户的滚动。
+- `physics`：此属性接受一个`ScrollPhysics`类型的对象，它决定可滚动组件如何响应用户操作。
 - `controller`：控制滚动位置和监听滚动事件。
 - `viewportBuilder`：当用户滑动时，Scrollable 会调用此回调构建新的 Viewport
 
@@ -90,306 +83,6 @@ Sliver 的布局协议如下：
 1. Viewport 将当前布局和配置信息通过 SliverConstraints 传递给已经进入了构建区域的Sliver。
 2. Sliver 确定自身的位置、绘制等信息，保存在 geometry 中（一个 SliverGeometry 类型的对象）。
 3. Viewport 读取 geometry 中的信息来对 Sliver 进行布局和绘制。
-
-
-
-
-
-###  SliverConstraints 
-
-~~~dart
-class SliverConstraints extends Constraints {
-    //主轴方向
-    AxisDirection? axisDirection;
-    
-    //Sliver 沿着主轴从列表的哪个方向插入？枚举类型，正向或反向
-    GrowthDirection? growthDirection;
-    
-    //用户滑动方向
-    ScrollDirection? userScrollDirection;
-    
-    //当前Sliver已经滑出可视区域的总偏移
-    double? scrollOffset;
-    
-    //当前Sliver之前的Sliver占据的总高度，因为列表是懒加载，如果不能预估时，该值为double.infinity
-    double? precedingScrollExtent;
-    
-    //上一个 sliver 覆盖当前 sliver 的长度（重叠部分的长度），通常在 sliver 是 pinned/floating
-    double? overlap;
-    
-    //该属性指当前Sliver应绘制多少逻辑像素的内容。若该Sliver最终绘制了远超出该数值的内容，则其超出部分也不会显示在视窗内（毕竟视窗尺寸有限），因此可能会造成性能的浪费。
-    double? remainingPaintExtent;
-    
-    //纵轴的长度；如果列表滚动方向是垂直方向，则表示列表宽度。
-    double? crossAxisExtent;
-    
-    //纵轴方向
-    AxisDirection? crossAxisDirection;
-    
-    //Viewport在主轴方向的长度；如果列表滚动方向是垂直方向，则表示列表高度。
-    double? viewportMainAxisExtent;
-    
-    //Viewport 预渲染区域的起点[-Viewport.cacheExtent, 0]
-    double? cacheOrigin;
-    
-    //Viewport加载区域的长度，范围:
-    //[viewportMainAxisExtent,viewportMainAxisExtent + Viewport.cacheExtent*2]
-    double? remainingCacheExtent;
-}
-~~~
-
-
-
-- scrollOffset
-
-  ![image-20231003122234705](assets/image-20231003122234705.png)
-
-- remaingPaintExtent：例如在一个向下滚动的视窗中，
-
-  假设某Sliver暂时还没出现在视窗范围内，如图13-13的第1种情况所示，则此时remainingPaintExtent属性值为0，表示该Sliver无须绘制任何内容。
-
-  当它开始出现在视窗内时，如图13-13的第2种或第3种情况所示，则remainingPaintExtent属性值为该Sliver顶部至视窗底部的距离。
-
-  最后，当该Sliver完全移出视窗时，如图13-13第4种情况所示，它仍然可享有整个视窗高度的remainingPaintExtent供其绘制
-
-### SliverGeometry
-
-~~~dart
-const SliverGeometry({
-  //Sliver在主轴方向预估长度，大多数情况是固定值，用于计算sliverConstraints.scrollOffset
-  this.scrollExtent = 0.0, 
-    
-  this.paintExtent = 0.0, // 可视区域中的绘制长度
-    
-  this.paintOrigin = 0.0, // 绘制的坐标原点，相对于自身布局位置
-    
-  //在 Viewport中占用的长度；如果列表滚动方向是垂直方向，则表示列表高度。
-  //范围[0,paintExtent]
-  double? layoutExtent, 
-    
-  this.maxPaintExtent = 0.0,//最大绘制长度
-    
-  this.maxScrollObstructionExtent = 0.0,
-    
-  double? hitTestExtent, // 点击测试的范围
-    
-  bool? visible,// 是否显示
-    
-  //是否会溢出Viewport，如果为true，Viewport便会裁剪
-  this.hasVisualOverflow = false,
-    
-  //scrollExtent的修正值：layoutExtent变化后，为了防止sliver突然跳动（应用新的layoutExtent）
-  this.scrollOffsetCorrection,
-    
-  double? cacheExtent, // 在预渲染区域中占据的长度
-}) 
-~~~
-
-
-
-## ScrollPhysics
-
-`ScrollPhysics` 的作用是 **确定可滚动控件的物理特性**。这里的物理特性就是指：当某些滚动事件触发时（当用户滑动到最大位置时、当用户停止滑动时），滚动组件的行为如何？ 
-
-以下是一些方法：
-
-~~~dart
-double applyPhysicsToUserOffset(ScrollMetrics position, double offset)
-
-//对边界条件进行判断
-double applyBoundaryConditions(ScrollMetrics position, double value)
-
-//触发边界后的动画
-Simulation createBallisticSimulation(ScrollMetrics position, double velocity)  
-
-double get minFlingVelocity
-
-double carriedMomentum(double existingVelocity)
-
-double get dragStartDistanceMotionThreshold
-
-Tolerance get tolerance
-~~~
-
-
-
-有以下实现类：
-
-- **`BouncingScrollPhysics`** ：允许滚动超出边界，但之后内容会**反弹**回来。
-- **`ClampingScrollPhysics`** ： 防止滚动超出边界，**夹住** 。
-- **`AlwaysScrollableScrollPhysics`** ：始终**响应**用户的滚动。
-- **`NeverScrollableScrollPhysics`** ：**不响应**用户的滚动。
-- 等等
-
-
-
-![Flutter With/Without FixedExtentScrollPhysics Preview](assets/1dOZ_Mkjs6Uha_CYHJL786A.gif)
-
-
-
-`BouncingScrollPhysics` 中的 `applyPhysicsToUserOffset`：用户没有达到边界前，依旧返回默认的`offset`，当用户到达边界时，通过算法来达到模拟溢出阻尼效果。
-
-~~~dart
- ///摩擦因子
- double frictionFactor(double overscrollFraction) => 0.52 * math.pow(1 - overscrollFraction, 2);
-
-@override
-double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
-    assert(offset != 0.0);
-    assert(position.minScrollExtent <= position.maxScrollExtent);
-
-    if (!position.outOfRange)
-      return offset;
-
-    final double overscrollPastStart = math.max(position.minScrollExtent - position.pixels, 0.0);
-    final double overscrollPastEnd = math.max(position.pixels - position.maxScrollExtent, 0.0);
-    final double overscrollPast = math.max(overscrollPastStart, overscrollPastEnd);
-    final bool easing = (overscrollPastStart > 0.0 && offset < 0.0)
-        || (overscrollPastEnd > 0.0 && offset > 0.0);
-
-    final double friction = easing
-        // Apply less resistance when easing the overscroll vs tensioning.
-        ? frictionFactor((overscrollPast - offset.abs()) / position.viewportDimension)
-        : frictionFactor(overscrollPast / position.viewportDimension);
-    final double direction = offset.sign;
-
-    return direction * _applyFriction(overscrollPast, offset.abs(), friction);
-}
-~~~
-
-`ClampingScrollPhysics` 的 `applyBoundaryConditions`：在计算边界条件值的时候，滑动值会和边界值相减得到相反的数据，使得滑动边界相对静止，从而达到“夹住”的作用。
-
-~~~dart
-  @override
-  double applyBoundaryConditions(ScrollMetrics position, double value) {
-    if (value < position.pixels && position.pixels <= position.minScrollExtent) // underscroll
-      return value - position.pixels;
-    if (position.maxScrollExtent <= position.pixels && position.pixels < value) // overscroll
-      return value - position.pixels;
-    if (value < position.minScrollExtent && position.minScrollExtent < position.pixels) // hit top edge
-      return value - position.minScrollExtent;
-    if (position.pixels < position.maxScrollExtent && position.maxScrollExtent < value) // hit bottom edge
-      return value - position.maxScrollExtent;
-    return 0.0;
-  }
-~~~
-
-`BouncingScrollPhysics` 中 `applyBoundaryConditions`：达到 0 是就边界，过了 0 的就是边界外的拖拽效果了。
-
-~~~dart
-  @override
-  double applyBoundaryConditions(ScrollMetrics position, double value) => 0.0;
-~~~
-
-
-
-
-
-
-下面给出一个模拟器`Simulation`例子：以200单位的速度进行滚动
-
-~~~dart
-class AutoScrollPhysicsPage extends StatelessWidget {
-  const AutoScrollPhysicsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemBuilder: (_, index) => Text("$index"),
-      physics: AutoScrollPhysics(),
-    );
-  }
-}
-
-class AutoScrollPhysics extends ScrollPhysics {
-  @override
-  ScrollPhysics applyTo(ScrollPhysics? ancestor) => AutoScrollPhysics();
-
-  @override
-  bool shouldAcceptUserOffset(ScrollMetrics position) => false;
-
-  @override
-  Simulation? createBallisticSimulation(
-          ScrollMetrics position, double velocity) =>
-      AutoScrollSimulation();
-}
-
-class AutoScrollSimulation extends Simulation {
-  static const velocity = 200.0;
-
-  @override
-  double x(double time) => velocity * time;			//位置
-
-  @override
-  double dx(double time) => velocity;				//速度
-
-  @override
-  bool isDone(double time) => false;
-}
-~~~
-
-
-
-总结起来就是  `ScrollPhysics`  中控制了用户触摸转化和边界条件，并且在用户停止触摸时，利用 `Simulation`  实现了自动滚动与溢出回弹的动画效果。
-
-## ScrollBehavior
-
-如何使用ScrollBehavior
-
-- 使用ScrollConfiguration包裹滑动组件，并将其behavior设置成自己实现的behavior。
-
-  ~~~dart
-  ScrollConfiguration(
-     behavior: ChatScrollBehavior(),
-     child: yourScrollViewWidget,
-  ),
-  ~~~
-
-- 或者将CustomScrollView的scrollBehavior属性设置为自己实现的behavior
-
-  ~~~dart
-  CustomScrollView(
-    physics: BouncingScrollPhysics(),
-    scrollBehavior: MyBehavior(),
-    slivers: <Widget>[],
-  );
-  ~~~
-
-  
-
-~~~dart
-class MyBehavior extends ScrollBehavior {
-  
-  //返回一个physics
-  @override
-  ScrollPhysics getScrollPhysics(BuildContext context) {
-    return super.getScrollPhysics(context);
-  }
-    
-  //它在滚动到可滚动组件的边界时被调用,用于构建一个小部件来表示过冲状态。
-  @override
-  Widget buildOverscrollIndicator(
-      BuildContext context, Widget child, ScrollableDetails details) {
-    return GlowingOverscrollIndicator(
-      //不显示头部水波纹
-      showLeading: true,
-      //不显示尾部水波纹
-      showTrailing: true,
-      axisDirection: AxisDirection.up,
-      color: Colors.red,
-      child: child,
-    );
-  }
-  
-  //限制只能垂直或水平滚动
-  @override
-  AxisDirection getDirection(BuildContext context) {
-    return AxisDirection.up; 
-  }
-    
-}
-
-~~~
 
 
 
@@ -475,21 +168,6 @@ ScrollConfiguration(
 - OverscrollNotification：过度滚动通知
 
 
-
-### ScrollMetrics
-
-`ScrollNotification`包括一个`metrics`属性，它的类型是`ScrollMetrics`，该属性包含当前ViewPort及滚动位置等信息：
-
-- `pixels`：当前滚动位置。
-- `maxScrollExtent`：最大可滚动长度。
-- `extentBefore`：滑出ViewPort顶部的长度；此示例中相当于顶部滑出屏幕上方的列表长度。
-- `extentInside`：ViewPort内部长度；此示例中屏幕显示的列表部分的长度。
-- `extentAfter`：ViewPort之后的可滚动长度
-- `atEdge`：是否滑到了可滚动组件的边界
-
-
-
-当`NotificationListener`组件选择拦截通知时，其父级的`Scrollable`组件将无法获得滚动通知。
 
 ## ScrollBar
 
@@ -599,6 +277,8 @@ ListView.builder({
 
 AnimatedList 和 ListView 的功能大体相似，不同的是， AnimatedList 可以在列表中插入或删除节点。并且执行一个动画。
 
+
+
 AnimatedList 是一个 StatefulWidget，它对应的 State 类型为 AnimatedListState，添加和删除元素的方法位于 AnimatedListState 中：
 
 ~~~dart
@@ -665,18 +345,21 @@ class _MyHomePage extends State<MyHomePage> {
     Widget buildItem(Context, index) {
     	return Widget();
   	}
-    
-    
-    globalKey.currentState.insertItem(index);			
-    globalKey.currentState.removeItem(index, (context, animation) {
-        return FadeTransition(
-        	child : buildItem(context, index);			//原表项被直接删除，所以这里需要一个Widget来应用删除动画。
-        )
-    })
 }
+
+globalKey.currentState.insertItem(index);			
+globalKey.currentState.removeItem(index, (context, animation) {
+    return FadeTransition(
+        child : buildItem(context, index);			//原表项被直接删除，所以这里需要一个Widget来应用删除动画。
+    )
+})
 ~~~
 
 我们需要特别注意地是：调用 AnimatedListState 的插入和移除方法相当于发送一个通知：在什么位置执行插入或移除动画，它并不执行滚动操作。并且我们列表的渲染区域是由数据驱动的，这个数据是由我们单独维护的。
+
+## ReorderableListView
+
+该滚动列表支持拖拽排序
 
 ## GridView
 
