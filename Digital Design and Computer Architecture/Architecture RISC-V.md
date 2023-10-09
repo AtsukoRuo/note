@@ -51,15 +51,13 @@ The RISC-V architecture has 32 registers, called the **register set**, stored in
 
 
 
-RISC-V instructions can use constant or *immediate* operands. These constants are called *immediates* because their values are immediately available from the instruction and do not require a register or memory access. In assembly code, the immediate can be written in decimal, hexadecimal, or binary. Hexadecimal constants in RISC-V assembly language start with 0x and binary constants start with 0b.
+RISC-V instructions can use constant or **immediate** operands. These constants are called *immediates* because their values are immediately available from the instruction and do not require a register or memory access. In assembly code, the immediate can be written in decimal, hexadecimal, or binary. Hexadecimal constants in RISC-V assembly language start with 0x and binary constants start with 0b.
 
 **Immediates are 12-bit two’s complement numbers**, so they are sign-extended to 32 bits. 
 
 
 
-对于CPU来说，它并不知道oprand是signed还是unsigned的。操作数的符号性是由汇编语言提供的特性，由程序员来解释。所以程序语义的正确性由程序员来保证，即源操作数的符号性必须满足指令的要求，否则结果的正确性得不到保证。
-
-
+对于CPU来说，它并不知道oprand是signed还是unsigned的。操作数的符号性是由汇编语言提供的特性，程序语义的正确性由程序员来保证，即源操作数的符号性必须满足指令的要求，否则结果的正确性得不到保证。
 
 
 
@@ -214,12 +212,6 @@ RISC-V divides registers into **preserved** and **nonpreserved** categories. Pre
 The stack pointer, **sp (register 2)**, is an ordinary RISC-V register that, by convention, *points* to the **top of the stack**
 
 ![image-20230719104848717](assets\image-20230719104848717.png)
-
-
-
-
-
-
 
 
 
