@@ -23,9 +23,9 @@ RISC-V is a **reduced instruction set computer** (RISC) architecture. Architectu
 **the design principle of the RISC-V architecture **
 
 - regularity supports simplicity
-  - 指令格式类似，降低了硬件的复杂性。
+  - 每种类型的指令格式都类似，降低了硬件的复杂性。
 - make the common case fast; 
-  - 只设计简单而又常用的指令，More elaborate operations that are less common are performed using sequences of multiple simple instructions
+  - 只设计简单而又常用的指令，更复杂的指令可以用多个简单指令来代替
   - 常数0硬编码到寄存器x0中
 - smaller is faster; 
   - The fewer the registers, the faster they can be accessed
@@ -374,13 +374,12 @@ auipc ra, (offset[31:12] << 12 + offset[11])
 jalr ra, ra, offset[11:0]
 ~~~
 
+补充la伪指令：`la rd, symbol`
 
-
-la rd, symbol
-
+~~~risc-v
 auipc rd, offset[31:12] + offset[11]
-
 addi rd, rd delta[11:0]
+~~~
 
 ### Assembler Directives & Memory Map
 

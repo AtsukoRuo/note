@@ -28,7 +28,12 @@ Flutter 中的可滚动组件主要由三个角色组成：Scrollable、Viewport
 
 ## Scrollable
 
+Scrollable 是一个可滚动的 Widget，它主要负责：
 
+- 监听用户的手势，计算滚动状态发出 Notification
+- 计算 offset 通知 listeners
+
+Scrollable 本身不具有绘制内容的能力，它通过构造注入的 viewportBuilder 来创建一个 Viewport 来显示内容，当滚动状态变化的时候，Scrollable 就会不断的更新 Viewport 的 offset ，Viewport 就会不断的更新显示内容。
 
 ```dart
 Scrollable({
@@ -46,6 +51,35 @@ Scrollable({
 - `viewportBuilder`：当用户滑动时，Scrollable 会调用此回调构建新的 Viewport
 
 
+
+Scrollable 主要结构如下：
+
+~~~dart
+Widget result = _ScrollableScope(
+      scrollable: this,
+      position: position,
+      child: Listener(
+        onPointerSignal: _receivedPointerSignal,
+        child: RawGestureDetector(
+          gestures: _gestureRecognizers,
+          ...,
+          child: Semantics(
+            ...
+            child: IgnorePointer(
+			...
+              child: widget.viewportBuilder(context, position),
+            ),
+          ),
+        ),
+      ),
+    );
+~~~
+
+- _ScrollableScope 继承自 InheritedWidget，这样它的 children 可以方便的获取 scrollable 和 position；
+
+- RawGestureDetector 负责手势监听，手势变化时会回调 _gestureRecognizers；
+
+- viewportBuilder 会生成 viewport；
 
 ## Viewport
 
@@ -71,6 +105,129 @@ Viewport({
 - `CacheExtentStyle`
   - `pixel `，预渲染区域的具体像素长度为$cacheExtent$
   - ` viewport`，预渲染区域的具体像素长度为$cacheExtent * viewport$
+
+
+
+ViewPort 有一些重要属性：
+
+~~~dart
+class Viewport extends MultiChildRenderObjectWidget {
+  /// 主轴方向
+  final AxisDirection axisDirection;
+  /// 纵轴方向
+  final AxisDirection crossAxisDirection;
+    
+  /// center 决定 viewport 的 zero 基准线，也就是 viewport 从哪个地方开始绘制，默认是第一个 sliver
+  /// center 必须是 viewport slivers 中的一员的 key
+  final Key center;
+  
+/// 锚点，取值[0,1]，和 zero 的相对位置，比如 0.5 代表 zero 被放到了 Viewport.height / 2 处
+  final double anchor;
+    
+  /// 滚动的累计值，确切的说是 viewport 从什么地方开始显示
+  final ViewportOffset offset;
+    
+  /// 缓存区域，也就是相对有头尾需要预加载的高度
+  final double cacheExtent;
+
+  /// children widget
+  List<Widget> slivers；
+}
+
+~~~
+
+假设每个 sliver 的 height 都相等且等于屏幕高度的 ⅕
+
+![img](assets/172087a995e51ba4tplv-t2oaga2asx-jj-mark3024000q75.webp)
+
+
+
+## ScrollPostion
+
+ScrollPosition包含了Viewport 的滚动信息，它的主要成员变量如下：
+
+~~~dart
+abstract class ScrollPosition extends ViewportOffset with ScrollMetrics {
+  // 滚动偏移量
+  double _pixels;
+    
+  // 设置滚动响应效果，比如滑动停止后的动画
+  final ScrollPhysics physics;
+    
+  // 保存当前的滚动偏移量到 PageStore 中，当 Scrollable 重建后可以恢复到当前偏移量
+  final bool keepScrollOffset;
+    
+  // 最小滚动值
+  double _minScrollExtent;
+    
+  // 最大滚动值
+  double _maxScrollExtent;
+  ...
+}
+~~~
+
+## SliverConstraints
+
+与BoxConstraints 约束类似，Sliver 布局采用 SliverConstraints 作为约束。
+
+~~~dart
+class SliverConstraints extends Constraints {
+  // 主轴方向
+  final AxisDirection axisDirection;
+    
+  // 滚动的方向（正向/反向）
+  final GrowthDirection growthDirection;
+    
+  // 当前Sliver已经滑出可视区域的总偏移
+  final double scrollOffset;
+    
+  // 上一个 sliver 覆盖当前 sliver 的长度（重叠部分的长度）
+  // 当过量滚动时，该属性就为负数  
+  final double overlap;
+    
+  // 当前Sliver在Viewport中的最大可以绘制的区域
+  // 在过量滚动时，该  
+  final double remainingPaintExtent;
+    
+  // Viewport在主轴方向的长度
+  final double viewportMainAxisExtent;
+    
+
+  ...
+}
+~~~
+
+![img](assets/1720880655116400tplv-t2oaga2asx-jj-mark3024000q75.webp)
+
+
+
+## SliverGeometry
+
+Sliver 则通过 SliverGeometry 反馈给 Viewport 需要占用多少空间量。
+
+~~~dart
+class SliverGeometry extends Diagnosticable {
+  // sliver滚动的范围
+  final double scrollExtent;
+    
+  // 绘制起点，相对于布局起点的
+  final double paintOrigin;
+    
+  // 绘制范围
+  final double paintExtent;
+    
+  // 布局范围
+  final double layoutExtent;
+    
+  // 最大绘制大小，设置为paintExtent值即可
+  final double maxPaintExtent;
+    
+  // 点击有效区域的大小，默认为paintExtent
+  final double hitTestExtent;
+    
+  ...
+}
+~~~
 
 
 
@@ -108,7 +265,7 @@ ListView(key:PageStorageKey(1), ...);
 
 - `offset`：可滚动组件当前的滚动位置。只在控制器唯一绑定一个可滚动组件时，才可以访问这个属性。
 
-- `positions`：一个`ScrollController`对象可以同时被多个可滚动组件使用，`ScrollController`会为每一个可滚动组件创建一个`ScrollPosition`对象，这些`ScrollPosition`保存在该属性中。
+- `positions`：`ScrollController`会获取每一个可滚动组件的`ScrollPosition`对象，然后将这些`ScrollPosition`保存在该属性中。
 
   假设一个`ScrollController`同时被两个可滚动组件使用，那么我们可以通过如下方式分别读取他们的滚动位置：
 
@@ -169,6 +326,53 @@ ScrollConfiguration(
 
 
 
+在接收到滚动事件时，参数类型为`ScrollNotification`，它包括一个`metrics`属性，它的类型是`ScrollMetrics`，该属性包含当前ViewPort及滚动位置等信息：
+
+- pixels：当前绝对位置
+
+- atEdge：是否在顶部或底部
+
+- axis：垂直或水平滚动
+
+- axisDirection：滚动方向描述是down还是up，这个受列表reverse影响，正序就是down倒序就是up，并不代表列表是上滑还是下滑
+
+- extentAfter：视口底部距离列表底部有多大
+
+- extentBefore：视口顶部距离列表顶部有多大
+
+- extentInside：视口范围内的列表长度
+
+- maxScrollExtent：最大滚动距离，列表长度-视口长度
+
+- minScrollExtent：最小滚动距离
+
+- viewportDimension：沿滚动方向视口的长度
+
+- outOfRange：是否越过边界
+
+~~~dart
+NotificationListener<ScrollNotification>(
+onNotification: (notification) {
+  ScrollMetrics metrics = notification.metrics;
+  print('ScrollNotification####################');
+  print('pixels = ${metrics.pixels}');
+  print('atEdge = ${metrics.atEdge}');
+  print('axis = ${metrics.axis}');
+  print('axisDirection = ${metrics.axisDirection}');
+  print('extentAfter = ${metrics.extentAfter}');
+  print('extentBefore = ${metrics.extentBefore}');
+  print('extentInside = ${metrics.extentInside}');
+  print('maxScrollExtent = ${metrics.maxScrollExtent}');
+  print('minScrollExtent = ${metrics.minScrollExtent}');
+  print('viewportDimension = ${metrics.viewportDimension}');
+  print('outOfRange = ${metrics.outOfRange}');
+  print('ScrollNotification####################');
+  return false;
+},
+~~~
+
+
+
 ## ScrollBar
 
 Scrollbar组件可以为大部分滚动列表添加滚动条，若需要在任何设备上都显示iOS风格的滚动条，则可以直接使用CupertinoScrollbar组件。
@@ -179,7 +383,9 @@ Scrollbar组件可以为大部分滚动列表添加滚动条，若需要在任�
 
 ## ListView
 
-`ListView`是最常用的可滚动组件之一，它可以沿一个方向线性排布所有子组件，并且它也支持列表项懒加载。ListView内部使用了SliverChildBuilderDelegate来构建item。
+`ListView`是最常用的可滚动组件之一，它可以沿一个方向线性排布所有子组件，并且它也支持列表项懒加载。
+
+
 
 它会尽量扩展到父Widget所允许的最大尺寸，而且将自己在滚动副轴上的长度，以紧约束的形式传递给它的子Widget。如果父约束是无边界（例如，其父Widget为Column），那么将会抛出异常。
 
@@ -248,6 +454,22 @@ ListView.builder({
 
 
 `ListView.separated()`可以在生成的列表项之间添加一个分割组件，它比`ListView.builder`多了一个`separatorBuilder`参数，该参数是一个分割组件生成器。
+
+
+
+`ListView.custom()`可以自己指定一个委托：
+
+~~~dart
+const ListView.custom({
+  // 暂略其他无关内容...
+  required this.childrenDelegate,
+  // 暂略其他无关内容...
+}) : assert(childrenDelegate != null),
+~~~
+
+
+
+
 
 
 
@@ -560,26 +782,6 @@ SliverFixedExtentList(
 );
 ~~~
 
-### SliverAppBar
-
-`SliverAppBar`可以结合`FlexibleSpaceBar`实现Material Design中头部伸缩的模型。`SliverAppBar`组件是通过封装`SliverPersistentHeader`组件来实现的。
-
-这些属性的含义请见`SliverPersistentHeader`
-
-~~~dart
-const SliverAppBar({
-  this.collapsedHeight, 	// 收缩起来的高度
-  this.expandedHeight,		// 展开时的高度
-  this.pinned = false, 		// 是否固定
-  this.floating = false, 	// 是否漂浮
-  this.snap = false, 		
-  bool forceElevated 		// 导航栏下面是否一直显示阴影
-  ...
-})
-~~~
-
-- snap：当手指放开时，`SliverAppBar`会根据当前的位置进行调整，始终保持展开或收起的状态；`snap`效果要求`float`为`true`。
-
 ### SliverToBoxAdapter
 
 `SliverToBoxAdapter `组件可以将 RenderBox 适配为 Sliver，这样我们可以往 CustomScrollView 中添加一些非Sliver版本的组件。如果该SliverToBoxAdapter的孩子为可滚动组件，那么该孩子不会与CustomScrollView共享一套滚动逻辑。
@@ -589,8 +791,6 @@ const SliverAppBar({
 SliverFillRemaining会自动充满视图的全部空间，通常用于slivers的最后一个。
 
 ### SliverPersistentHeader
-
-
 
 
 ~~~dart
@@ -646,47 +846,5 @@ SliverLayoutBuilder(
 
 
 
-## NestedScrollView
 
-它的功能是组合（协调）两个可滚动组件。
-
-~~~dart
-const NestedScrollView({
-  ... //省略可滚动组件的通用属性
-  //header，sliver构造器
-  required this.headerSliverBuilder,
-  //可以接受任意的可滚动组件
-  required this.body,
-  this.floatHeaderSlivers = false,
-}) 
-~~~
-
-![图6-33](https://book.flutterchina.club/assets/img/6-33.ec44c54a.png)
-
-协调器的实现原理就是分别给内外可滚动组件分别设置一个 controller，然后通过这两个controller 来协调控制它们的滚动。这样body与header可以共享一套滚动逻辑
-
-## RefreshIndicator
-
-~~~dart
-RefreshIndicator(
-    key: _refreshIndicatorKey,
-    color: Colors.white,
-    backgroundColor: Colors.blue,
-    strokeWidth: 4.0,
-    onRefresh: () async {
-      return Future<void>.delayed(const Duration(seconds: 3));
-    },
-    
-    notificationPredicate: (ScrollNotification notification) {
-          return notification.depth == 0;
-    },
-    
-    child: child
-)
-    
-    
-_refreshIndicatorKey.currentState?.show();		//立即显示指示器
-~~~
-
-当onRefresh异步函数执行完毕后，指示器才会消失。
 

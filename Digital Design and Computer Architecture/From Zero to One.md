@@ -60,7 +60,7 @@ within a word, the bytes are identified as **least significant byte(LSB)** throu
 
 ![image-20231009092753431](assets/image-20231009092753431.png)
 
-1024 bytes is called a **kilobyte (KB)** or **kibibyte (KiB).** 1024 bits is called a **kilobit (Kb or Kbit)** or **kibibit (Kib or Kibit)**。 Similarly, **MB/MiB**, **Mb/Mib**, **GB/GiB**, and **Gb/Gib**. Memory capacity is usually measured in bytes. Communication speed is usually measured **in powers of ten bits/second**（$1000B = 1KB$）. and storage capacity is measured **in powers of ten GB**（$1000B = 1KB$）
+1024 bytes is called a **kilobyte (KB)** or **kibibyte (KiB).** 1024 bits is called a **kilobit (Kb or Kbit)** or **kibibit (Kib or Kibit)**。 Similarly, **MB/MiB**, **Mb/Mib**, **GB/GiB**, and **Gb/Gib**. Memory capacity is usually measured in bytes. Communication speed is usually measured **in powers of ten bits/second**（$1000B = 1KB$）. and storage capacity is measured **in powers of ten Byte**（$1000B = 1KB$）
 
 
 
@@ -297,6 +297,8 @@ At times, designers find it convenient to use an ideal switch that can pass both
  *N*-input CMOS NOR gate uses *N* nMOS transistors in parallel and *N* pMOS transistors in series. Transistors in series are slower than transistors in parallel, just as resistors in series have more resistance than resistors in parallel. Moreover, pMOS transistors are slower than nMOS transistors because holes cannot move around the silicon lattice as fast as electrons. Therefore, the parallel nMOS transistors are fast and the series pMOS transistors are slow.
 
 Pseudo-nMOS logic replaces the slow stack of pMOS transistors with a single weak pMOS transistor that is always ON, as shown in Figure 1.39. This pMOS transistor is often called a **weak pull-up**. The physical dimensions of the pMOS transistor are selected so that the pMOS transistor will pull the output *Y* HIGH weakly（翻译：选择pMOS晶体管的物理尺寸，使pMOS晶体管将微弱地拉动输出Y）—that is, only if none of the nMOS transistors are ON. But if any nMOS transistor is ON, it overpowers the weak pull-up and pulls *Y* down close enough to GND to produce a logic 0.
+
+![image-20231011154847202](assets/image-20231011154847202.png)
 
 The advantage of pseudo-nMOS logic is that it can be used to build fast NOR gates with many inputs. The disadvantage is that a short circuit exists between $V_{DD}$​ and GND when the output is LOW. The short circuit draws continuous power, so pseudo-nMOS logic must be used sparingly
 
