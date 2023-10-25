@@ -14,11 +14,11 @@
 
 ## ListView
 
-![img](assets/d7a45e28875848e798ef088946cf3babtplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/d7a45e28875848e798ef088946cf3babtplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom: 50%;" />
 
 ListView的构造函数根据参数，创建出一个SliverChildDelegate对象。Delegate类是用来说明Sliver的配置信息的。
 
-![img](assets/4e1b762090f64adfa4ce3d67df9a20e3tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/4e1b762090f64adfa4ce3d67df9a20e3tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -50,11 +50,11 @@ ListView的构造函数根据参数，创建出一个SliverChildDelegate对象�
 
 `BoxScrollView` 类信息：可以看出它是一个抽象类，只有一个 `buildChildLayout` 抽象方法。只维护一个 `padding` 成员
 
-![img](assets/810e002a468f43bb84ea2730a98328b4tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/810e002a468f43bb84ea2730a98328b4tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 `BoxScrollView` 中覆写了父类的 `buildSlivers` 方法（本身是一个模板设计模式），返回`List<Widget>`：
 
-![img](assets/87df8dd7037a46ef81ca5204db2ff200tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/87df8dd7037a46ef81ca5204db2ff200tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 这里的 `buildSlivers` 就是负责创建`Sliver`列表的，虽然这个列表只有一个元素。
 
@@ -62,7 +62,7 @@ ListView的构造函数根据参数，创建出一个SliverChildDelegate对象�
 
 `BoxScrollView` 作为抽象类，只是为了在构建时通过 `SliverPadding` 组件处理边距。并通过抽象方法 `buildChildLayout` 构建滑动内容，而具体实现会交由子类完成。
 
-![img](assets/745e0a17aadb4457951f406777707df2tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/745e0a17aadb4457951f406777707df2tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -70,9 +70,9 @@ ListView的构造函数根据参数，创建出一个SliverChildDelegate对象�
 
 `ScrollView` 是一个继承自 `StatelessWidget` 抽象类。下面是 `ScrollView` 类的结构：它抽象出一个 `buildSlivers` 方法：
 
-![img](assets/384f4c5a440c456ea766f8c83b542f92tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/384f4c5a440c456ea766f8c83b542f92tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
-![img](assets/2108121749a84211bf0adab8824ac599tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/2108121749a84211bf0adab8824ac599tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -90,15 +90,15 @@ ListView的构造函数根据参数，创建出一个SliverChildDelegate对象�
 
 在创建完内容列表 `slives` 后，下来 `第 393 行`会使用 `成员属性` 创建 `Scrollable` 组件对象。`Scrollable` 组件便是负责监听拖动事件，处理偏移逻辑的核心类。
 
-![img](assets/b4f09ed7634a4f6ba6be1cc33cc3ec3dtplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/b4f09ed7634a4f6ba6be1cc33cc3ec3dtplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 构造Scrollable对象时，最为关键的就是viewportBuilder参数，这个回调函数调用buildViewport方法来构建一个Viewport组件。Viewport组件并不关心滑动偏移量的计算过程。随着触点的拖动， `Scrollable` 会通过一定的手段将偏移量告诉它，从而更新显示。
 
-![img](assets/ecf4a90a1fa6425e8e34d61ea9795649tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/ecf4a90a1fa6425e8e34d61ea9795649tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
-![img](assets/1fc9df58ba144cb7aab64515dbd07c02tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/1fc9df58ba144cb7aab64515dbd07c02tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
-![img](assets/b75368902c3a4b2b92765ec389d43eb9tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/b75368902c3a4b2b92765ec389d43eb9tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -110,7 +110,7 @@ ListView的构造函数根据参数，创建出一个SliverChildDelegate对象�
 
 `GridView` 中有两个成员 `childrenDelegate` 和 `gridDelegate` ，这两个成员将作为入参用来创建 `SliverGrid` 。
 
-![img](assets/bcebd85e17f6472b82f497fd21f6336ctplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/bcebd85e17f6472b82f497fd21f6336ctplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 ~~~dart
   final SliverGridDelegate gridDelegate;
@@ -121,33 +121,33 @@ ListView的构造函数根据参数，创建出一个SliverChildDelegate对象�
 
 其中 `gridDelegate` 成员是必须传入的参数，通过 `this.属性` 在入参中进行初始化。另外 `childrenDelegate` 成员的初始化和 `ListView`一样：使用入参在构造时创建 `SliverChildListDelegate` 对象为它赋值
 
-![img](assets/cf880d35e19f4ddfbc2137909b35f0a6tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/cf880d35e19f4ddfbc2137909b35f0a6tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 由于普通构造必须传入 `gridDelegate`，使用时需要创建 `SliverGridDelegate` 对象，而 `SliverGridDelegate` 是抽象类，`Flutter` 中提供了如下两个可用的实现类：
 
-![img](assets/c3bb2c2903954ce2a1b205f5babca0b3tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/c3bb2c2903954ce2a1b205f5babca0b3tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 `SliverGridDelegateWithFixedCrossAxisCount` 特点是固定`交叉轴`的数量，并会为每个条目`进行强约束`：
 
 |                                                              |                                                              |                                                              |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![img](assets/69e39fa563cd449782d93089f1eed129tplv-k3u1fbpfcp-jj-mark1512000q75.webp) | ![img](assets/30abf13ea8bb429385e9c6a3bc0a1c21tplv-k3u1fbpfcp-jj-mark1512000q75.webp) | ![img](assets/ea18e7489e9d420d81021071317144cftplv-k3u1fbpfcp-jj-mark1512000q75.webp) |
+| <img src="assets/69e39fa563cd449782d93089f1eed129tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:33%;" /> | <img src="assets/30abf13ea8bb429385e9c6a3bc0a1c21tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:33%;" /> | <img src="assets/ea18e7489e9d420d81021071317144cftplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:33%;" /> |
 
 SliverGridDelegateWithMaxCrossAxisExtent指定条目在`交叉轴方向`的最大尺寸，其中count = 交叉轴视口可用尺寸/maxCrossAxisExtent 向上取整
 
 GridView地count构造和extent构造都是避免与Delegate打交道地，方便使用
 
-![img](assets/65cccd178d8d4c689252060542c616f3tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/65cccd178d8d4c689252060542c616f3tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
-![img](assets/e9b7f5c8774949eba6f74cd3dbcf66a4tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/e9b7f5c8774949eba6f74cd3dbcf66a4tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
 此外还有builder构造以及custom构造
 
-![img](assets/b02619d0fd7d4841ab5697d976ef03a2tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/b02619d0fd7d4841ab5697d976ef03a2tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
-![img](assets/e03f7ea94cd74018a00a7c35f63f7e4ctplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/e03f7ea94cd74018a00a7c35f63f7e4ctplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 `GridView` 源码核心是对 `gridDelegate` 和 `childrenDelegate` 成员的维护，五个构造方法只是使用不同的方式为这两个成员赋值。把握住这个核心，你就能在纷繁的代码中看到一条清晰的线索，从而不被表象所迷惑。
 
@@ -159,19 +159,19 @@ GridView地count构造和extent构造都是避免与Delegate打交道地，方�
 
 `CustomScrollView` 直接继承自 `ScrollView` ，说明它需要实现父类的抽象方法 `buildSlivers` 来构建滑动内容组件列表 
 
-![img](assets/9f67645639fe4c4d837a2ac999e740bctplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/9f67645639fe4c4d837a2ac999e740bctplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
 可以看到其中有一个 `slivers` 成员，类型为`List<Widget>` ，即`组件列表`。这个成员是在入参时被初始化的，也就是说使用 `CustomScrollView` 时，滑动内容组件列表构建的任务是交由`使用者` 来完成的。
 
-![img](assets/c0643a1b67ff4c278a88857aab49bfcatplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/c0643a1b67ff4c278a88857aab49bfcatplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
 `buildSlivers` 的具体实现直接返回使用者传入的 `slivers`
 
-![img](assets/48e0d8012ec143549a30662cfd088193tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/48e0d8012ec143549a30662cfd088193tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -187,7 +187,7 @@ GridView地count构造和extent构造都是避免与Delegate打交道地，方�
 
 首先， `Scrollable` 是一个 `StatefulWidget`
 
-![img](assets/cc70414ff07a4866847726577a6fda50tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/cc70414ff07a4866847726577a6fda50tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -200,13 +200,13 @@ final ViewportBuilder viewportBuilder;
 
 之所以设置`ViewportBuilder`回调，是因为 `Scrollable` 希望将组件构建的逻辑交由外界处理，自身只处理手势事件，这样很符合单一职责原则。如下是 `ScrollableState#build` 的逻辑 ，可以看出内部集成了 `RawGestureDetector` 来处理手势事件：
 
-![img](assets/77d8f7068ba44cff80709312601817a9tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/77d8f7068ba44cff80709312601817a9tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
 `ScrollableState` 是一个比较复杂的类，其中实现了拖动手势事件处理的核心逻辑。如下，它实现 `ScrollContext` 接口，而且混入了 `TickerProviderStateMixin` 和 `RestorationMixin` 。 
 
-![img](assets/0793af2c46844d4ebcd4f46c3f5c72f5tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/0793af2c46844d4ebcd4f46c3f5c72f5tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 `ScrollPosition` 类型的 `_position` 对象是 `ScrollableState` 类非常重要的一个成员。其中包含滑动的偏移量 `pixels` ，视口会根据该偏移量决定显示的内容，当用户滑动视口时，该值会改变，从而达到内容滑动的效果。
 
@@ -216,17 +216,17 @@ final ViewportBuilder viewportBuilder;
 
 `Viewport` 组件继承自 `MultiChildRenderObjectWidget` ，这就说明它可以容纳`多个子组件`。它主要是通过给定的偏移量来决定显示的内容区域，随着偏移量的变化，显示区域就会变化，从而就可以看到不同的内容。
 
-![img](assets/0b0c0ce9751f4928a397831fbe65517atplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/0b0c0ce9751f4928a397831fbe65517atplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
-![img](assets/26a855637cae44eb87f055d42a6adafdtplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/26a855637cae44eb87f055d42a6adafdtplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 从下面的 `createRenderObject` 方法中可以看出：`Viewport` 组件维护的渲染对象类型是 `RenderViewport` 。另外，`Viewport` 组件的 8 个成员属性都会用于创建 `RenderViewport` 对象。
 
-![img](assets/8f4b622b2973429880e0b6f065c8f01ftplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/8f4b622b2973429880e0b6f065c8f01ftplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 `Viewport` 构造中会通过入参对八个成员进行赋值，从 `73 行` 可以看出 `slivers` 参数传入到super构造函数中 ，为 父类中的 `children` 成员赋值：
 
-![img](assets/9d38e76468fe4ece8b084d95a6458e1atplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/9d38e76468fe4ece8b084d95a6458e1atplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 另外，值得注意的是 `offset` 参数是必须传入的。从成员声明中可以看出 `offset` 的类型为 `ViewportOffset` 。
 
@@ -236,15 +236,15 @@ final ViewportOffset offset;
 
 在`ScrollView` 组件的实现中，`Viewport` 对象的`offset` 成员是通过 `buildViewport` 的参数offset来赋值的：
 
-![img](assets/b7c78d97829b4efda94d524fc983de28tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/b7c78d97829b4efda94d524fc983de28tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 而buildViewport()在viewportBuilder回调函数中调用，而viewportBuilder回调函数是构造Scrollable对象时传入的参数。
 
-![img](assets/3bf92f86e21642b39f6feeb9eba03b13tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/3bf92f86e21642b39f6feeb9eba03b13tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 当Scrollable监听到滚动手势后，计算出position，并将position传入到viewportBuilder这个回调函数中：
 
-![img](assets/77d8f7068ba44cff80709312601817a9tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/77d8f7068ba44cff80709312601817a9tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 这样Scrollable中的position变量就传递给了Viewport的offset变量了
 
@@ -264,7 +264,7 @@ final ViewportOffset offset;
 
 ![img](assets/3e1b6c1f8b78476b8be8c3f90a6d6eaetplv-k3u1fbpfcp-jj-mark1512000q75.webp)
 
-![img](assets/d9c13e2168e043df96393d6c27f95135tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/d9c13e2168e043df96393d6c27f95135tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -293,11 +293,11 @@ dart复制代码enum AxisDirection {
 
 其类型为 `ScrollController`，它继承自 `ChangeNotifier` ，说明是一个可监听对象，我们可以通过监听它获取`滑动信息`。
 
-![img](assets/f7726e811417411288af857ce655c99btplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/f7726e811417411288af857ce655c99btplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 另外 `ScrollController` 提供了一个获取 `ScrollPosition` 对象的访问器，其中记录着更加`详细`的滑动信息。`offset` 属性其实就是 `ScrollPosition` 的偏移像素值。
 
-![img](assets/33b50746c8e44c61baaafa9d88f344cftplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/33b50746c8e44c61baaafa9d88f344cftplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 通过 `ScrollPosition` 对象，可以获得最大滑动长度、用户滑动方向、滑动轴的方向等信息：
 
@@ -330,7 +330,7 @@ enum DragStartBehavior {
 
 该成员用于对在`ScrollableState`类的`setCanDrag`方法中的手势检测器`VerticalDragGestureRecognizer`的`dragStartBehavior`属性进行赋值：
 
-![img](assets/27814d573dc74ee18aa7af3985cd8997tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/27814d573dc74ee18aa7af3985cd8997tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 由于涉及到手势竞争，这一部分内容先不介绍。https://juejin.cn/book/6984685333312962573/section/7056218205529833486
 
@@ -342,7 +342,7 @@ enum DragStartBehavior {
 
 Flutter框架中提供了如下七个可用的实现类：
 
-![img](assets/9bc3282090f5431aa43e56370d46e28ftplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/9bc3282090f5431aa43e56370d46e28ftplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 - ClampingScrollPhysics：当用户想要滑动超过边界时，会被阻止
 - BouncingScrollPhysics：允许滑动超出边界
@@ -366,7 +366,7 @@ Flutter框架中提供了如下七个可用的实现类：
 在`ScrollableState`类（`Scrollable`对应的状态类）的 `_updatePosition` 方法中，`407` 行中会为 `_configuration` 赋值。 如果`widget.scrollBehavior` 非空，会取其值；否则，会从`context` 中查询上层最邻近的 `ScrollConfiguration` 组件提供的配置信息。
 这里很容易想到， `ScrollConfiguration` 是一个 `InheritedWidget` 的子类，可以为下层子树提供默认的 `scrollBehavior` 配置。
 
-![img](assets/c2e5c7bf43724ee985eb97b5878a836ftplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/c2e5c7bf43724ee985eb97b5878a836ftplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 第411行的else if 完全是多余的....
 
@@ -374,7 +374,7 @@ Flutter框架中提供了如下七个可用的实现类：
 
 下图是`ScrollBehavior`对象的 `getScrollPhysics` 方法的实现，在 `iOS` 和 `macOS` 中会使用 `BouncingScrollPhysics` ，其他平台使用 `ClampingScrollPhysics` 。这就是不同平台下默认 `physics` 不同的根本原因。
 
-![img](assets/b2353ce69c1b460294014dd19919b405tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/b2353ce69c1b460294014dd19919b405tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -393,7 +393,7 @@ const Set<PointerDeviceKind> _kTouchLikeDeviceTypes = <PointerDeviceKind>{
 
 然后`ScrollBehavior`类的`dragDevices`属性在手势检测器中使用：
 
-![](assets/b0885ed686864256bedb01483403a3f1tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/b0885ed686864256bedb01483403a3f1tplv-k3u1fbpfcp-jj-mark1512000q75.webp" style="zoom:50%;" />
 
 注：这里`_configuration`就是`Scrollable`所使用的`ScrollBehevior`对象。
 
@@ -401,17 +401,17 @@ const Set<PointerDeviceKind> _kTouchLikeDeviceTypes = <PointerDeviceKind>{
 
 `ScrollBehavior`类的`velocityTrackerBuilder` 方法可以为 手势检测器提供速度跟踪构造器。如下所示 `ScrollBehavior` 也对平台进行了区分对待，在 `ios` 和 `macOS` 中，使用的是 `IOSScrollViewFlingVelocityTracker` ，在其他平台通过 `VelocityTracker.withKind` 创建对象。
 
-![img](assets/2e86379f779043c28747d492496703e6tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/2e86379f779043c28747d492496703e6tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
 最后 `ScrollBehavior` 还有一处作用：在 `build` 方法返回组件时，会通过 `buildScrollbar` 和 `buildOverscrollIndicator` 进行包裹。
 
-![img](assets/fde1c2baaf44478f8f19040f16958bdctplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/fde1c2baaf44478f8f19040f16958bdctplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 如下是 `ScrollBehavior#buildScrollbar` 的源码处理，在 `linux`、`macOS`、`windows `平台时，会套一个 `RowScrollBar` 。这就是目前在桌面应用中，可滑动组件默认会有 `ScrollBar` 的本质原因：
 
-![img](assets/39b2dde73c6b4d04b810bc8302962d39tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/39b2dde73c6b4d04b810bc8302962d39tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -426,7 +426,7 @@ Widget buildOverscrollIndicator(BuildContext context,
 }
 ~~~
 
-![img](assets/da09b2ef01064a70a5c83e76a93e4625tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/da09b2ef01064a70a5c83e76a93e4625tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 如果不想要蓝色阴影，只要自定义一个 `ScrollBehavior` 即可。
 
@@ -509,15 +509,15 @@ class _RestorableCounterState extends State<RestorableCounter>
 
  `ScrollableState` 状态类，它混入了 `RestorationMixin` ，用于存储的对象类型为 `_RestorableScrollOffset` 。
 
-![img](assets/9b627bd0b6b24b689139ea48dc7f1c8etplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/9b627bd0b6b24b689139ea48dc7f1c8etplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 其中覆写的 `restorationId` 返回组件的 `restorationId` 属性。
 
-![img](assets/6a5d7c6cbf304bc09b068e80d39539d2tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/6a5d7c6cbf304bc09b068e80d39539d2tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 覆写的 `restoreState` 方法中会通过 `registerForRestoration` 对 `_persistedScrollOffset` 进行注册。当 `_persistedScrollOffset` 值非空 ，`position` 对象就会恢复到该值，这样就能保证视口维持之前的偏移量。
 
-![img](assets/e19d1ad34a63485e887f58599a26d2a2tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/e19d1ad34a63485e887f58599a26d2a2tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 ## Viewport 成员属性
 
@@ -525,7 +525,7 @@ class _RestorableCounterState extends State<RestorableCounter>
 
 `Viewport` 继承自 `MultiChildRenderObjectWidget`：
 
-![img](assets/00e6eded01214bd59e69503467c8f341tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/00e6eded01214bd59e69503467c8f341tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
@@ -541,13 +541,11 @@ class _RestorableCounterState extends State<RestorableCounter>
 
 | AxisDirection.up                                             | AxisDirection.right                                          | AxisDirection.left                                           |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![img](assets/c87654e776544c758d6e91767cdf0163tplv-k3u1fbpfcp-jj-mark1512000q75.webp) | ![img](assets/2d0cd0a572c54f0daa55ed96bb9c8235tplv-k3u1fbpfcp-jj-mark1512000q75.webp) | ![img](assets/162e211ecc6d412a8dd1ac6433e3411atplv-k3u1fbpfcp-jj-mark1512000q75.webp) |
+| <img src="assets/c87654e776544c758d6e91767cdf0163tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:33%;" /> | <img src="assets/2d0cd0a572c54f0daa55ed96bb9c8235tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:33%;" /> | <img src="assets/162e211ecc6d412a8dd1ac6433e3411atplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:33%;" /> |
 
 ### crossAxisDirection
 
 考虑到不同地域的阅读习惯不同，就提供了该属性
-
-
 
 ### 缓存
 
@@ -569,7 +567,7 @@ class _RestorableCounterState extends State<RestorableCounter>
 
 | 0.1                                                          | 0.5                                                          | 0.8                                                          |
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![img](assets/557845ba0089416f83273c89b0942c26tplv-k3u1fbpfcp-jj-mark1512000q75.webp) | ![img](assets/952844683d21447ea950377a6eafb986tplv-k3u1fbpfcp-jj-mark1512000q75.webp) | ![img](assets/e0868eddd6ef4facb36093df7004ace7tplv-k3u1fbpfcp-jj-mark1512000q75.webp) |
+| <img src="assets/557845ba0089416f83273c89b0942c26tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom: 50%;" /> | <img src="assets/952844683d21447ea950377a6eafb986tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom: 50%;" /> | <img src="assets/e0868eddd6ef4facb36093df7004ace7tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" /> |
 
 对 `anchor` 属性设置值时，限制 `anchor` 的值在`[0.0,1.0]` 区间。
 
@@ -577,7 +575,7 @@ class _RestorableCounterState extends State<RestorableCounter>
 
 `center` 的类型是 `Key`，当 `center` 属性非 `null `时，内容组件列表中必须有一个组件的 `key` 和 `center` 一致。
 
-![img](assets/8ac1ba5e111c4edb9555094e3705f357tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/8ac1ba5e111c4edb9555094e3705f357tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 当指定 `Viewport` 的 `center` 属性为 `centerKey` ，且 `Sliver2` 的 `key` 为 `centerKey` ，这样的话 `Sliver2` 将会被作为滑动内容的`中心`，默认置于视口顶部。
 
@@ -604,13 +602,11 @@ enum Clip {
 
 ## 再探ScrollView
 
-从 `ScrollView` 组件构造方法中可以发现：绝大多数都是属性都是为 `Scrollable` 和 `Viewport` 准备的
+从 `ScrollView` 组件构造方法中可以发现：绝大多数都是属性都是为 创建`Scrollable` 和 `Viewport` 而准备的
 
 ![img](assets/ea3418dd30f64c16aa61821241e99557tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
 
-
-
-我们在使用 `ScrollView` 时，轴向传入的是 `Axis` 对象，只能确定滑动方向是 `水平` 还 `竖直` 。 但 `Scrollable` 和 `Viewport` 组需要的是 `AxisDirection` 对象，它有 `上下左右` 四个情况。
+我们在使用 `ScrollView` 时，轴向传入的是 `Axis` 对象，只能确定滑动方向是 水平 还 竖直。 但 `Scrollable` 和 `Viewport` 组需要的是 `AxisDirection` 对象，它有 上下左右 四个情况。
 
 ~~~dart
 enum Axis {
@@ -633,21 +629,55 @@ AxisDirection getDirection(BuildContext context) {
 }
 ~~~
 
-![img](assets/88d7b5a68e3d43629ec6843b67ad933ftplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/88d7b5a68e3d43629ec6843b67ad933ftplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
-如下图 `389 行` 中使用 `getDirection` 方法得到 `axisDirection` 对象；该对象在 `395 行` 作为 `Scrollable` 的构造入参；在 `402 行` ，传入 `buildViewport` 方法，作为 `Viewport` 的入参。通过这样的封装，使得`Scrollable` 和 `Viewport` 组件的轴向总是一致的。
+如下图 在调用`ScrollView`的`build`方法时 使用 `getDirection` 方法得到 `axisDirection` 对象；该对象在 `395 行` 作为 `Scrollable` 的构造入参；在 `402 行` ，传入 `buildViewport` 方法，作为 `Viewport` 的入参。通过这样的封装，使得`Scrollable` 和 `Viewport` 组件的轴向总是一致的。
 
-![img](assets/50a0654066934e30951082dc1ec547e1tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+<img src="assets/50a0654066934e30951082dc1ec547e1tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
 
 
 
-`shrinkWrap` 成员在源码的 `buildViewport` 方法中被使用，该方法用于创建视口组件。如下所示：当 `shrinkWrap` 为 `true` 时，会返回 `ShrinkWrappingViewport` 组件，否则返回 `Viewport` 组件:
 
-![img](assets/1a599a4b704e446ca17c1d215088e01btplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+
+`shrinkWrap` 成员在源码的 `buildViewport` 方法中被使用，该方法用于创建视口组件。如下所示：当 `shrinkWrap` 为 `true` 时，会返回 `ShrinkWrappingViewport` 组件，否则返回 `Viewport` 组件。如果父节点的在主轴上无约束，就会导致 `Viewport` 组件无法确定大小而报错，这种情况下只能使用 `ShrinkWrappingViewport` 组件。
+
+<img src="assets/1a599a4b704e446ca17c1d215088e01btplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom: 50%;" />
 
 `ShrinkWrappingViewport` 与 `Viewport` 组件的差异是什么呢？
 
 | Viewport 的尺寸                                              | ShrinkWrappingViewport 的尺寸                                |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![img](assets/5a8e7a6057c943f8bea05d277ad14007tplv-k3u1fbpfcp-jj-mark1512000q75.webp) | ![img](assets/f0e68c2503694439bfe449db76ec93a0tplv-k3u1fbpfcp-jj-mark1512000q75.webp) |
+| <img src="assets/5a8e7a6057c943f8bea05d277ad14007tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom: 25%;" /> | <img src="assets/f0e68c2503694439bfe449db76ec93a0tplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:25%;" /> |
+
+
+
+渲染对象 `RenderObject`负责布局与绘制，本身没有 `size` 属性。只有 `RenderBox` 及其子类才有`尺寸的概念`。
+
+`Viewport` 组件维护的渲染对象是 `RenderViewport` ，它是 `RenderBox` 的子类。`RenderViewport`覆写了 `computeDryLayout` 方法，返回约束的最大尺寸 `biggest` ，这也是为什么`Viewport` 组件会尽可能延伸尺寸的根本原因。
+
+~~~dart
+---->[RenderViewport#computeDryLayout]----
+@override
+Size computeDryLayout(BoxConstraints constraints) {
+  return constraints.biggest;
+}
+
+---->[RenderBox#performResize]----
+@override
+void performResize() {
+  size = computeDryLayout(constraints);
+}
+~~~
+
+而`ShrinkWrappingViewport` 维护的渲染对象是 `RenderShrinkWrappingViewport`。`RenderShrinkWrappingViewport`覆写了`performLayout` 方法，设置size为constrainDimensions
+
+<img src="assets/2708308e9d6d4e22932cabb03de4109ctplv-k3u1fbpfcp-jj-mark1512000q75.webp" alt="img" style="zoom:50%;" />
+
+这里传入的effectiveExtent是通过_shrinkWrapExtent成员得到的
+
+![img](assets/b4d38353ffa449baa46b76c95439c39btplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+
+而`_shrinkWrapExtent` 会在 `updateOutOfBandData` 中被赋值，其值为子渲染对象高度的累计值
+
+![img](assets/0a98a1ad9e1a4b7fa317b6775c28cf3etplv-k3u1fbpfcp-jj-mark1512000q75.webp)
 
