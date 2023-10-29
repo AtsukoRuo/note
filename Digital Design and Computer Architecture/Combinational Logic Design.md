@@ -1,5 +1,9 @@
 # Combinational Logic Design
 
+[TOC]
+
+
+
 ## 概述
 
  A circuit can be viewed as a black box, shown in Figure 2.1, with

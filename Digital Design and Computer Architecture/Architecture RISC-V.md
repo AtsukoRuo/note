@@ -81,7 +81,7 @@ These instructions are not part of RV32I but are included in the RVM (RISC-V mul
 
 
 
-The *multiply* instruction (mul) multiplies two 32-bit numbers and produces a 32-bit product. mul s1,s2,s3 multiplies the values in s2 and s3 and places the least significant 32 bits of the product in s1; the most significant 32 bits of the product are discarded.
+The **multiply instruction (mul)** multiplies two 32-bit numbers and produces a 32-bit product. mul s1,s2,s3 multiplies the values in s2 and s3 and places the least significant 32 bits of the product in s1; the most significant 32 bits of the product are discarded.
 
 
 
@@ -95,23 +95,36 @@ Three versions of the “multiply high” operation exist: mulh, mulhsu, and mul
 
 - **mulhu(*multiply high unsigned unsigned*) **treats both operands as unsigned. 
 
+
+
 #### Branch
 
 **Conditional branch** instructions perform a test and branch only if the test is TRUE. **Unconditional branch** instructions, called **jumps**, always branch.
 
+|                                          |          格式           |                         解释                         |
+| :--------------------------------------: | :---------------------: | :--------------------------------------------------: |
+|       **beq (*branch if equal*)**        | `BEQ rs1，rs2，offset`  |        `if (rs1 == rs2)  pc += sext(offset)`         |
+|     **bne (*branch if not equal*) **     | `BNE rs1，rs2，offset`  |         `if (rs1 ≠ rs2) pc += sext(offset)`          |
+|     **blt (*branch if less than*) **     | `BLT rs1，rs2，offset`  | `if (rs1 < rs2) pc += sext(offset)`，rs解释为signed  |
+| **BLTU(branch if less than，unsigned）** | `BLTU rs1，rs2，offset` | `if (rs1 < rs2) pc += sext(offset)` rs解释为unsigned |
 
 
-- **beq (*branch if equal*)** branches when the values in the two source registers are equal. 
 
-- **bne (*branch if not equal*) **branches when they are unequal.
 
-- **blt (*branch if less than*) **branches when the value in the first source register is less than the value in the second
 
-- **bge (*branch if* *greater than or equal to*)** branches when the first is greater than or equal to the second. 
+- branches when the values in the two source registers are equal. 	
+
+- branches when they are unequal.
+
+- ranches when the value in the first source register is less than the value in the second
+
+-  branches when the first is greater than or equal to the second. 
 
 blt and bge treat the operands as signed numbers, while bltu and bgeu treat the operands as unsigned.
 
 注意：branch指令的立即数部分是13位偏移量（12位表示，bit0总是为0不表示），因此偏移范围为$[-4048, 4047]$B
+
+
 
 
 

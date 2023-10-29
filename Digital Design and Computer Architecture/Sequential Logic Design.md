@@ -389,7 +389,11 @@ The speed of a system is characterized by the**latency** and **throughput** of i
 **parallelism** comes in two forms: 
 
 - **spatial parallelism**：multiple copies of the hardware are provided so that multiple tasks can be done at the same time
+
 - **temporal parallelism**：a task is broken into stages, like an assembly line. 
+
+  针对资源复用的不同情况，我们可以将「时间并行」进一步分为：
+
   - 在操作系统中，阻塞方法以及抢占式调度都是线程的阶段点。同一时间只有一个子任务在执行
   - 在处理器中，一条流水线可以划分为多个阶段，用于同时处理不同阶段的子任务。同一时间有多个子任务在执行
 
@@ -403,6 +407,8 @@ Temporal parallelism is commonly called **pipelining**. Spatial parallelism is s
 
 Consider a task with latency $L$. In a system with no parallelism, the throughput is $1/L$. In a spatially parallel system with *N* copies of the hardware, the throughput is $N/L$. In a temporally parallel system, the task is ideally broken into $N$ steps, or stages, of equal length. In such a case, the throughput is also $N/L$, and only one copy of the hardware is required.  finding $N$ steps of equal length is often impractical. If the longest step has a latency $L_{1}$, the pipelined throughput is $1/L_1$.
 
-Pipelining (temporal parallelism) is particularly attractive because it speeds up a circuit without duplicating the hardware. Instead, registers are placed between blocks of combinational logic to divide the logic into shorter stages that can run with a faster clock. The registers prevent a token in one pipeline stage from catching up with and corrupting the token in the next stage. （此时，时钟周期取决于子任务中的最长延迟）
+Pipelining (temporal parallelism) is particularly attractive because it speeds up a circuit without duplicating the hardware. Instead, registers are placed between blocks of combinational logic to divide the logic into shorter stages that can run with a faster clock. The registers prevent a token corrupting the token in the next stage 
 
-**Adding a pipeline stage improves throughput at the expense of some latency**
+**Adding a pipeline stage improves throughput at the expense of some latency**. 
+
+此时，理器的时钟周期取决于子任务中的最长延迟。每个任务的执行时间与这个最长延迟的差额总和，就是延迟的代价。
