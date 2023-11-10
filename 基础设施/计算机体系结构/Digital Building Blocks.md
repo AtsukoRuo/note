@@ -445,10 +445,6 @@ Compute 0.75 + (−0.625) using Q4.4 fixed-point numbers：
 
 The IEEE floating-point standard represents a number in a form $V = (−1)^s × M * 2^E$:
 
-
-
-
-
 ![image-20231016141227925](assets/image-20231016141227925.png)
 
 The value encoded by a given bit representation can be divided into three different cases (the latter having two variants), depending on the value of exp：
@@ -471,7 +467,7 @@ The value encoded by a given bit representation can be divided into three differ
 
   When the exponent field is all zeros, the represented number is in denormalized form
 
-  In this case, the exponent value is$E = 1 − Bias$, and the significand value is $M = f$
+  In this case, the exponent value is $E = 1 − Bias$, and the significand value is $M = f$
 
   Denormalized numbers serve two purposes.
 

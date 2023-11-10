@@ -230,8 +230,6 @@ S find<S>({String? tag}) => GetInstance().find<S>(tag: tag);
 
 put方法会返回一个控制器。
 
-
-
 ~~~dart
 class SimplePage extends StatefulWidget {
   @override
