@@ -45,9 +45,7 @@
   - Component：桌面端与手机端共用的组件，一般是响应式布局
   - Mobile：适配移动端的布局、组件（一个文件夹内，放与内容主题相关的控件，例如footer、header、nav等等）
   - Desktop：适配Windows端布局、组件
-- `Helper`
-  - Util：工具类
-  - Config：配置信息类
+- `Util`：工具类
 - `Assets`：项目的资源文件
   - images：图片资源
   - font：字体资源
@@ -114,6 +112,22 @@ class RootWidget extends StatelessWidget {
   }
 }
 ~~~
+
+其中，ThemeMode是一个枚举类型，取值如下：
+
+~~~dart
+enum ThemeMode {
+  /// Use either the light or dark theme based on what the user has selected in
+  /// the system settings.
+  system,
+  /// Always use the light mode regardless of system preference.
+  light,
+  /// Always use the dark mode (if available) regardless of system preference.
+  dark,
+}
+~~~
+
+
 
 ## 首屏加载页面
 
@@ -710,3 +724,6 @@ while (!scanner.isDone) {
     scanner.position++;
 }
 ~~~
+
+## 
+
