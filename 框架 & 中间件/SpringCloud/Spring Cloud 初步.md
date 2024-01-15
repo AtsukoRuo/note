@@ -286,3 +286,478 @@ One of the core parts of a microservice architecture is that each instance of a 
 Our goal with these patterns and topics is to ruthlessly expose and stamp out（无情地暴露并消除） configuration drift as quickly as possible before it can hit your upper environments (stage or production).
 
 ![image-20240105165222617](assets/image-20240105165222617.png)
+
+## Microservices with SpringCloud
+
+> The more distributed a system is, the more places it can fail.
+
+
+
+实现所有微服务模式将需要大量的工作。幸运的是，Spring团队将大量经过实战测试的开源项目整合到一个称为Spring Cloud的Spring子项目中(https://projects.spring.io/spring-cloud/).。Spring Cloud提供一组特性（如服务注册和发现、断路器、监控等），使我们能够快速构建需要最少配置的微服务架构，这正是Spring Cloud背后的真正优雅之处。
+
+
+
+![image-20240106114600693](assets/image-20240106114600693.png)
+
+
+
+- **Spring Cloud Config**：Spring Cloud Config通过中心化的服务管理应用配置数据。你的应用配置数据（尤其是特定环境配置数据）被整洁地从部署的微服务中分离出来。这确保无论你启动多少微服务实例，他们的配置总是一致的。Spring Cloud Config有自己的属性管理库，也整合了如下的开源项目：
+
+  - Git (https://git-scm.com/)：Spring Cloud Config integrates with a Git backend repository and reads the application’s configuration data from the repository
+  - Consul (https://www.consul.io/)：—An open source service discovery that allows service instances to register themselves with a service. Service clients can then query Consul to find the location of their service instances. Consul also includes a key-value store database that Spring Cloud Config uses to store application configuration data.
+  - Eureka (https://github.com/Netflix/eureka)：An open source Netflix project that, like Consul, offers similar service discovery capabilities. Eureka also has a key-value database that can be used with Spring Cloud Config.
+
+- **Spring Cloud Service Discovery**：With Spring Cloud Service Discovery, you can abstract away the physical location (IP and/or server name) of where your servers are deployed from the clients consuming the service. Spring Cloud Service Discovery also handles the registration and deregistration of service instances as these are started and shut down. Spring Cloud Service Discovery can be implemented using the following services:
+
+  - Consul (https:// www.consul.io/)
+  - Zookeeper (https://spring.io/projects/spring-cloud-zookeeper)
+  - Eureka (https://github.com/Netflix/eureka) 
+
+- **Spring Cloud LoadBalancer and Resilience4j**：
+
+  - **Resilience4j**（ https://github.com/resilience4j/resilience4j） —you can quickly implement service client resiliency patterns such as circuit breaker, retry, bulkhead, and more. 
+  - **Spring Cloud LoadBalance** —While the Spring Cloud LoadBalancer project simplifies integrating with service discovery agents such as Eureka, it also provides client-side load balancing of calls from a service consumer
+
+- **Spring Cloud API Gateway**：The API Gateway provides service-routing capabilities for your microservice application. Like the name says, it is a service gateway that proxies service requests and makes sure that all calls to your microservices go through a single “front door” before the targeted service is invoked. With this centralization of service calls, you can enforce standard service policies such as security authorization, authentication, content filtering, and routing rules. You can implement the API Gateway using Spring Cloud Gateway (https://spring.io/projects/spring-cloud-gateway).
+
+- **Spring Cloud Stream**—Using Spring Cloud Stream, you can build intelligent microservices that use asynchronous events. You can also quickly integrate your microservices with message brokers such as RabbitMQ (https://www.rabbitmq .com) and Kafka (http://kafka.apache.org).
+
+- **Spring Cloud Sleuth**—Spring Cloud Sleuth (https://cloud.spring.io/spring-cloud-sleuth/) lets you integrate **unique tracking identifiers**（correlation ID or  trace ID） into the HTTP calls and message channels (RabbitMQ, Apache Kafka) used within your application.  The real beauty of Spring Cloud Sleuth is seen when it’s combined with loggingaggregation technology tools like the ELK Stack (https://www.elastic.co/what-is/ elk-stack) and tracking tools like Zipkin (http://zipkin.io).
+
+  The ELK Stack is the acronym for three open source projects: 
+
+  - **Elasticsearch** (https://www.elastic.co) is a search and analytics engine. 
+  - **Logstash** (https://www.elastic.co/products/logstash) is a server-side, data-processing pipeline that consumes data and then transforms it in order to send it to a “stash.”
+  - **Kibana** (https://www.elastic.co/products/kibana) is a client UI that allows the user to query and visualize the data of the whole stack. 
+
+- **Spring Cloud Security**：Spring Cloud Security (https://cloud.spring.io/spring-cloud-security/) is an authentication（认证） and authorization（授权） framework that controls who can access your services and what they can do with them. Because Spring Cloud Security is token-based, it allows services to communicate with one another through a token issued by an authentication server. Each service receiving an HTTP call can check the provided token to validate the user’s identity and their access rights. 
+
+  Spring Cloud Security also supports JSON Web Tokens (JWT). JWT (https://jwt.io) standardizes the format for creating an OAuth2 token and normalizes digital signatures for a generated token.
+
+
+
+
+
+## 云原生微服务
+
+
+
+**Cloud** is a technology resource management system that lets you replace local machines and private data centers by using a **virtual infrastructure**. There are several levels or types of cloud applications：
+
+- A **cloud-ready** application：A cloud-ready application is an application that was once used on a computer or on an onsite server. With the arrival of the cloud, these types of applications have moved from static to dynamic environments with the aim of running in the cloud. we need to externalize the application’s configuration so that it quickly adapts to different environments. By doing this, we can ensure the application will run on multiple environments without changing any source code during the builds. （是将传统应用无缝移植到云环境的一种技术）
+
+- A **cloud-native** application is designed specifically for a cloud computing architecture to take advantage of all of its benefits and services.  When creating this type of application, developers divide the functions into microservices with scalable components like containers, enabling these to run on several servers. These services are then managed by virtual infrastructures through the DevOps processes with continuous delivery workflows.
+
+  ![image-20240106144655742](assets/image-20240106144655742.png)
+
+- ......
+
+
+
+
+
+ The four principles of native cloud development are：
+
+- **DevOps is the acronym for development (Dev) and operations (Ops)**：It refers to a software development methodology that focuses on communication, collaboration, and integration among software developers and IT operations. The main goal is to automate the software delivery processes and infrastructure changes at lower costs.
+- **Microservices are small, loosely coupled, distributed services**：These allow you to take a large application and decompose it into easy-to-manage components with narrowly defined responsibilities.
+- **Continuous delivery is a software development practice.**：With this practice, the process of delivering software is automated to allow short-term deliveries to a production environment.
+- **Containers are a natural extension of deploying your microservices on a virtual machine (VM) image**：Rather than deploying a service to a full VM, many developers deploy their services as Docker containers (or similar container technology) to the cloud.
+
+
+
+
+
+## Twelve-Factor App
+
+In order to build high-quality microservices, we will use Heroku’s best practice guide—called **the twelve-factor app**(https://12factor.net/)
+
+
+
+![image-20240107100135534](assets/image-20240107100135534.png)
+
+
+
+- **Codebase**：With this practice, each microservice should have a single, source-controlled codebase. the server provisioning information should be in version control as well.Remember, **version control** is the management of changes to a file or set of files. 
+
+  The codebase can have multiple instances of deployment environments. 每个微服务都应该有自己独立的代码库。如果所有的微服务公用一个代码库，每当一个微服务需要更新时，都会产生一个不可更改的新版本。这会导致大量的版本产生，每个环境都有多个版本，管理和追踪将会变得非常复杂。
+
+  ![image-20240107101152019](assets/image-20240107101152019.png)
+
+- **Dependencies**：This best practice explicitly declares the dependencies your application uses through build tools like Maven or Gradle (Java). 
+
+  ![image-20240107102131535](assets/image-20240107102131535.png)
+
+- **Config**
+
+  This practice refers to how you store your application configurations. **Never add embedded configurations to your source code!** ，即**配置与代码分离**
+
+  ![image-20240107102907093](assets/image-20240107102907093.png)
+
+- **Backing Service**：Your microservice will often communicate over a network with databases, API RESTful services, other servers, or messaging systems. When it does, you should ensure that you can swap your deployment implementations between local and third-party connections without any changes to the application code.（有助于在发生问题时快速迁移你的服务）
+
+- **Build, Release, Run**：
+
+  This best practice reminds us to keep our build, release, and run stages of application deployment completely separated
+
+  - Once our code is built, any runtime changes need to go back to the build process and be redeployed. A built service is immutable and cannot be changed. 
+  - The release phase is in charge of combining the built service with a specific configuration for each targeted environment
+
+  ![image-20240107103914048](assets/image-20240107103914048.png)
+
+- **Processes**：**Your microservices should always be stateless**，这意味着微服务不应维护关于过去请求的任何信息。每个请求都应当独立处理，所需的所有信息都应包含在请求本身中。Microservices can be killed and replaced at any time without the fear that a loss of a service instance will result in data loss.
+
+  虽然微服务是无状态的，但是有时候在服务实例之间共享信息是必要的。此时我们可以使用内存缓存（如Redis）来实现这一点
+
+- **Port Binding**：Port binding means to publish services through a specific port. 
+
+  In a microservices architecture, a microservice is completely self-contained with the run-time engine for the service packaged in the service executable. You should run the service without the need for a separate web or application server. The service should start by itself on the command line and be accessed immediately through an exposed HTTP port.
+
+- **Concurrency**
+
+  The concurrency best practice explains that cloud-native applications should scale out using the process model.rather than making a single significant process larger, we can create multiple processes and then distribute the service’s load among different processes. 
+
+  - **Vertical scaling** (scale up) refers to increasing the hardware infrastructure (CPU, RAM). 
+  - **Horizontal scaling** (scale out) refers to adding more instances of the application. 
+
+  ![image-20240107105230321](assets/image-20240107105230321.png)
+
+- **Disposability**（一次性）：Microservices are disposable and can start and stop on demand in order to facilitate elastic scaling and to quickly deploy application code and configuration changes. 
+
+- **Dev/Prod Parity**（开发环境与线上环境是等同的）：This best practice refers to having different environments (for example, development, staging, production) as analogous（相似的） as possible. This can be done with continuous deployment.
+
+- **Logs**：Logs are a stream of events. As these are written, logs should be managed by tools such as Logstash (https://www.elastic.co/logstash) . The microservice should never be concerned about the mechanisms of how this happens. It only needs to focus on writing the log entries into the standard output (stdout). 
+
+  ![image-20240107110433687](assets/image-20240107110433687.png)
+
+- **Admin Processes**：Developers will often have to do administrative tasks for their services (data migration or conversion, for example). These tasks should never be ad hoc and instead should be done via scripts that are managed and maintained through a source code repository. The scripts should be repeatable and non-changing (the script code isn’t modified for each environment) across each environment they’re run against. we have multiple microservices with these scripts, we are able to execute all of the administrative tasks without having to do this manually.
+
+
+
+## CI/CD DevOps
+
+**持续集成（CI）**和**持续部署（CD）**是DevOps实践的一部分。它们以自动化的方式提高了软件发布的速度和质量。
+
+- **Continuous integration (CI)** is a series of software development practices where the team members integrate their changes to a repository within a short period of time to detect possible errors and to analyze the software’s quality that they created. This is accomplished by using an automatic and continuous code check (build) that includes the execution of tests
+- **continuous delivery (CD)** is a software development practice in which the process of delivering software is automated to allow short-term deliveries into a production environment.
+
+When we apply these processes to our microservices architecture, it’s essential to keep in mind that there should **never be a “waiting list”** for integration and release to production
+
+
+
+CI/CD流程一般如下
+
+1. 开发人员在本地编写代码。
+2. 开发人员将代码提交到版本控制系统（例如：Git）中。
+3. CI服务器定期（或在每次代码提交后）从版本控制系统中拉取代码，并进行构建和测试。（CI）
+4. 如果所有测试通过，系统将自动将新代码部署到生产环境。（CD）
+
+这样做有以下几个好处
+
+- **错误识别**：尽早的测试可以帮助我们尽快发现和修复错误
+- **快速反馈**：当代码从开发环境提升到生产环境后，可以使得开发者得到更快的客户反馈。
+
+
+
+## REST API
+
+REST API遵循**REST（Representational State Transfer，表现层状态转换**）设计风格：
+
+- **以资源为基础**
+- **统一接口**：对资源的操作包括获取、创建、修改和删除，这正好对应HTTP中的GET等谓词：
+  - GET（SELECT）：获取资源（一项或多项）。
+  - POST（CREATE）：新建一个资源。
+  - PUT（UPDATE）：更新全部资源，幂等的
+  - PATCH（UPDATE）：更新部分资源，非幂等的
+  - DELETE（DELETE）：删除资源。
+- **URI指向资源**，**在REST API中，用URI表示名词，用HTTP方法表示动词。**
+- **无状态**：服务器不能保存客户端的信息， 每一次从客户端发送的请求中，要包含所有必须的状态信息，会话信息由客户端保存， 服务器端根据这些状态信息来处理请求。
+
+
+
+
+
+
+
+We’ve found the following guidelines useful for naming service endpoints:
+
+- **Use clear URL names that establish what resource the service represents**
+
+- **Use the URL to establish relationships between resources.**   
+
+  在RESTful API中，每个资源都可以被看作是一个最小的独立单元。这些资源之间的关系可以用不同的方式进行建模，例如父子关系、属于关系、集合关系等。
+
+  一种常见的关系是**父子关系**，也称为**层级关系**。例如，一个博客系统的 API 中，我们可以把文章（post）和评论（comment）看作是父子关系。每篇文章可以有多个评论，而每个评论又属于特定的文章。
+
+  要实现这个父子关系，我们可以设计以下 API 端点：
+
+  ```
+  GET /posts - 获取所有文章
+  GET /posts/{postId} - 获取特定文章
+  POST /posts - 创建一篇文章
+  PUT /posts/{postId} - 更新特定文章
+  DELETE /posts/{postId} - 删除特定文章
+  GET /posts/{postId}/comments - 获取特定文章的所有评论
+  GET /posts/{postId}/comments/{commentId} - 获取特定文章的特定评论
+  POST /posts/{postId}/comments - 创建一条评论
+  PUT /posts/{postId}/comments/{commentId} - 更新特定评论
+  DELETE /posts/{postId}/comments/{commentId} - 删除特定评论
+  ```
+
+  注意，虽然两个资源在URL上表现为嵌套关系，但是它们却对应不同的微服务。
+
+- **Establish a versioning scheme for URLs early**
+
+  有三种方法来进行版本控制：
+
+  1. URI版本控制
+
+     ~~~url
+     http://api.example.com/v1
+     ~~~
+
+  2. 自定义标头（Accept-version）
+
+  3. 使用Accept标头
+
+     ~~~http
+     Accept: application/vnd.example;version=1.0
+     ~~~
+
+     
+
+**对于性能要求高的系统，并不适合使用 http + json 的 Rest 设计，可能要使用rpc + protobuff 的方案。**
+
+此外，还有一些二进制传输格式可以代替json文本传输格式
+
+- Apache Thrift框架（[http://thrift.apache.org](http://thrift.apache.org/)）
+- Apache Avro协议（[http://avro.apache.org](http://avro.apache.org/)）
+
+
+
+
+
+## Richardson Maturity Model
+
+This best practice (http://martinfowler.com/articles/richardsonMaturityModel.html), described by Martin Fowler, is a guide to understanding the main principles of REST architectures and to evaluate our REST architecture
+
+
+
+这个模型将实现REST方法的主要元素分解为三个步骤，包括：资源（Resources）、HTTP 动词(HTTP Verbs，如 GET 、 POST 等)和超媒体控制（Hypermedia Controls）。![image-20240110124803658](assets/image-20240110124803658.png)
+
+- level0：使用 http 作为传输协议。但是level0 并没有规定如何使用http协议，这会有许多设计上的问题，例如
+
+  - 不同的接口访问同一个资源
+
+    ~~~url
+     http://example.com/createUser?name=foo
+     http://example.com/getOrder?id=bar
+    ~~~
+
+  - 对资源的处理方式与 http 的动作语义产生冲突
+
+    ~~~
+     GET http://example.com/createUser?name=foo  404
+     GET http://example.com/getOrder?id=bar      200
+    ~~~
+
+  ![image-20240110131405518](assets/image-20240110131405518.png)
+
+- level1：以资源为中心。在设计接口时，首先考虑的要对外暴露什么资源
+
+  ![image-20240110131525114](assets/image-20240110131525114.png)
+
+- At level 2, map the behavior of the service to standard HTTP verbs
+
+  ![image-20240110131554572](assets/image-20240110131554572.png)
+
+- The final level, level 3, introduces Hypertext as the Engine of Application State **(HATEOAS)**. By implementing HATEOAS, we can make our API respond with additional information about possible next steps
+
+  ![image-20240110131657667](assets/image-20240110131657667.png)
+
+
+
+## HATEOAS
+
+**HATEOAS** stands for **Hypermedia as the Engine of Application State**.  The HATEOAS principle states that an API should provide a guide to the client by returning information about possible next steps with each service response.
+
+~~~json
+
+"_links": {
+    "self" : {
+    	"href" : "http://localhost:8080/v1/organization/optimaGrowth/license/0235431845"
+    },
+    "createLicense" : {
+    	"href" : "http://localhost:8080/v1/organization/optimaGrowth/license"
+    },
+    "updateLicense" : {
+    	"href" : "http://localhost:8080/v1/organization/optimaGrowth/license"
+    },
+    "deleteLicense" : {
+    	"href" : "http://localhost:8080/v1/organization/optimaGrowth/license/0235431845"
+    }
+}
+~~~
+
+
+
+Spring HATEOAS is a small project that allows us to create APIs that follow the HATEOAS principle of displaying the related links for a given resource. 依赖如下：
+
+~~~xml
+<dependency>
+     <groupId>org.springframework.boot</groupId>
+     <artifactId>spring-boot-starter-hateoas</artifactId>
+</dependency>
+~~~
+
+
+
+在`Model`对象上继承`RepresentationModel`对象
+
+~~~java
+public class License  extends RepresentationModel<License> {
+    private int id;
+    private String licenseId;
+    private String description;
+    private String organizationId;
+    private String productName;
+    private String licenseType;
+}
+
+~~~
+
+
+
+然后使用即可
+
+~~~java
+@GetMapping(value="/{licenseId}")
+    public ResponseEntity<License> getLicense(
+        @PathVariable("organizationId") String organizationId,
+        @PathVariable("licenseId") String licenseId) {
+        License license = licenseService
+            .getLicense(licenseId,organizationId);
+
+        // 关键方法
+        license.add(
+            linkTo(methodOn(LicenseController.class)
+                .getLicense(organizationId, license.getLicenseId()))
+                .withSelfRel(),
+            linkTo(methodOn(LicenseController.class)
+                .createLicense(organizationId, license, null))
+                .withRel("createLicense"),
+            linkTo(methodOn(LicenseController.class)
+                .updateLicense(organizationId, license))
+                .withRel("updateLicense"),
+            linkTo(methodOn(LicenseController.class)
+                .deleteLicense(organizationId, license.getLicenseId()))
+                .withRel("deleteLicense")
+        );
+
+        return ResponseEntity.ok(license);
+    }
+~~~
+
+The method add() is a method of the RepresentationModel. The linkTo method inspects the License controller class and obtains the root mapping, and the methodOn method obtains the method mapping by doing a dummy invocation of the target method. Both methods are static methods of org.springframework.hateoas.server .mvc.WebMvcLinkBuilder. WebMvcLinkBuilder is a utility class for creating links on the controller classes. 
+
+## 架构师的职责
+
+在构建微服务应用时，有三个重要角色
+
+- 架构师
+- 软件开发人员
+- 运维人员
+
+
+
+同样重要的是，对于你的设计，不能持有教条主义的态度。你可能会遇到物理上的限制。例如，你可能需要构建一个聚合微服务，将数据合并在一起，因为两个单独的服务会产生过多的通信。**采取务实的方式并交付成果**，而不是浪费资源让设计变得更完美。
+
+
+
+架构师主要负责以下三个关键任务
+
+- **Decomposing the business problem** into chunks that represent discrete domains of activity，指导原则如下
+
+  - **Describe the business problem and notice the nouns you use to describe it**. Using the same nouns over and over in describing the problem is usually a good indication of a core business domain and an opportunity for a microservice.
+  - **Pay attention to the verbs**. 这些动词（操作）突出了每个服务应完成的任务，它们代表了问题领域各部分之间的交互
+  - **Look for data cohesion**（数据内聚性）. . Microservices must completely own their data.
+
+- **Establishing service granularity**，
+
+  指导原则如下：
+
+  - 从宏观的微服务开始，然后重构为更小的服务。
+  - 首先要关注微服务之间是如何交互的，This helps to establish the coarse-grained interfaces of your problem domain. It is easier to refactor from being too coarse-grained than from being too fine-grained.
+  - Service responsibilities change over time as our understanding of the problem domain grows
+
+  这种指导原则用一句话概括就是， **A microservices architecture should be developed with an evolutionary thought process**, 
+
+  
+
+  If a microservice is too coarse-grained, you’ll likely see the following:
+
+  - **A service with too many responsibilities**
+  - **A service that manages data across a large number of tables**. We like to use the guideline that a microservice should own no more than three to five tables（不包括那些处理一对多关系的表）
+  - **A service with too many test cases**
+
+  If a microservice is too fine-grained, you’ll likely see the following:
+
+  - **The microservices in one part of the problem domain breed like rabbits**（像兔子一样繁殖）If everything becomes a microservice, composing business logic out of the services becomes complex and difficult
+  - **Your microservices are heavily interdependent on one another**
+  - **Your microservices become a collection of simple CRUD (Create, Replace, Update, Delete) services**
+
+- **Defining the service interfaces**，指导原则如下：
+
+  - **Embrace the REST philosophy**，
+  - **Use URIs to communicate intent**
+  - **Use JSON for your requests and responses**, JSON is an extremely lightweight dataserialization protocol
+  - **Use HTTP status codes to communicate results**
+
+  All the basic guidelines point to one thing: making your service interfaces easy to understand and consumable（易于理解和使用）
+
+
+
+## 何时不应该使用微服务
+
+- **Complexity when building distributed systems**
+- **Virtual server or container sprawl**. . Even with the lower cost of running these services in the cloud, the operational complexity of managing and monitoring these services can be tremendous.
+- **Application type**
+- **Data transactions and consistency**.  If your application needs to do complex data aggregation or transformation across multiple data sources, the distributed nature of microservices will make this work difficult. Your microservices will invariably take on too much responsibility and can also become vulnerable to performance problems.
+
+
+
+## 运维人员的职责
+
+**Writing the code is often the easy part. Keeping it running is the hard part**
+
+We’ll start our microservice development effort with four principles
+
+- **A microservice should be self-contained**. It should also be independently deployable with multiple instances of the service being started up and torn down with a single software artifact.
+- **A microservice should be configurable. ** When a service instance starts up, it should read the data it needs to configure itself from a central location or have its configuration information passed on as environment variables. No human intervention should be required to configure the service.
+- **A microservice instance needs to be transparent to the client.**  The client should never know the exact location of a service. Instead, a microservice client should talk to a service discovery agent
+- **A microservice should communicate its health.**   Microservice instances will fail, and discovery agents need to route around bad service instances. 
+
+
+
+The four principles can be mapped to the following operational lifecycles：
+
+- **Service assembly**：The process of consistently building, packaging, and deploying is the service assembly
+
+  ![image-20240111142402143](assets/image-20240111142402143.png)
+
+- **Service bootstrapping**：Service bootstrapping (step 2 in figure 3.9) occurs when the microservice first starts and needs to load its application configuration information.
+
+  ![image-20240111143335130](assets/image-20240111143335130.png)
+
+- **Service registration/discovery**
+
+  ![image-20240111144006249](assets/image-20240111144006249.png)
+
+- **Service monitoring**
+
+  ![image-20240111144203172](assets/image-20240111144203172.png)
+
+
+
+
+
+![image-20240111142341774](assets/image-20240111142341774.png)

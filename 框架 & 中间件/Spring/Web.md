@@ -155,9 +155,9 @@ Spring Boot 的 `DispatcherServletAutoConfiguration` 提供了针对 `Dispatcher
 | :---------------- | :----------------------------------------------------------- |
 | `@Controller`     | 定义控制器类，与 `@Service` 和 `@Repository` 类似            |
 | `@RestController` | 定义 REST 服务的控制器类，这是个快捷方式注解，其实就是结合了 `@Controller` 和 `@ResponseBody` |
-| `@RequestMapping` | 定义请求的处理类和方法，其中的 `path` 属性是映射的 URL，`method` 是 `RequestMethod` 枚举中的 HTTP 方法，对于后者，还可以使用一些快捷注解，例如 `@GetMapping`、`@PostMapping`、`@PutMapping`、`@DeleteMapping` 和 `@PathMapping` |
-| `@RequestBody`    | 定义请求正文对象，将整个请求正文映射到对象上                 |
-| `@ResponseBody`   | 定义方法返回值即为整个请求的应答                             |
+| `@RequestMapping` | 定义URL请求的处理方法，其中的 `path` 属性是正是 URL，`method` 是 `RequestMethod` 枚举中的 HTTP 方法，对于后者，还可以使用一些快捷注解，例如 `@GetMapping`、`@PostMapping`、`@PutMapping`、`@DeleteMapping` 和 `@PathMapping` |
+| `@RequestBody`    |                                                              |
+| `@ResponseBody`   | `@ResponseBody`注解主要作用是将Controller的方法返回的对象，通过适当的`HttpMessageConverter`转换为指定的格式后，写入到 HTTP 响应（response）体中。 |
 | `@ResponseStatus` | 定义请求应答的 HTTP 响应码，具体的响应码可以用 `HttpStatus` 枚举 |
 
 
@@ -169,6 +169,19 @@ Spring Boot 的 `DispatcherServletAutoConfiguration` 提供了针对 `Dispatcher
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-web</artifactId>
 </dependency>
+~~~
+
+
+
+下面给出一些例子
+
+~~~java
+// POST请求的body中的JSON数据会被转换为User对象。
+@PostMapping("/user")
+public User updateUser(@RequestBody User user) {
+    // ...
+    return user;
+}
 ~~~
 
 
@@ -291,7 +304,7 @@ public class SimpleApplication {
 | `Map` 与 `Model`                       | 返回的数据会被加入模型中，用来最终呈现的视图由 `RequestToViewNameTranslator` 来决定 |
 | `View`                                 | 返回视图对象，结合模型呈现最终内容                           |
 | `String`                               | 返回一个视图名，`ViewResolver` 要从中解析出视图，再结合模型呈现最终内容 |
-| `HttpEntity<T>` 与 `ResponseEntity<T>` | 返回的对象就是完整的响应，包含了头和正文                     |
+| `HttpEntity<T>` 与 `ResponseEntity<T>` | 返回的对象就是完整的响应报文，可以设置响应码、响应头部和正文 |
 | `HttpHeaders`                          | 响应只有 HTTP 头，没有消息正文                               |
 
 
@@ -1394,3 +1407,38 @@ public class UserEntity {//省略其他属性、get/set/construct方法
 在代码层面上，就是一个将业务逻辑放到Service类中，一个将业务逻辑放到Domain领域模型中，这体现不出充血模型的优势。但是在开发流程上，两者的区别就体现出来了。我们平时的开发，大部分都是**SQL驱动（SQL-Driven）**的开发模式，业务逻辑基本上包裹在一个大的SQL语句中。当需求变化后，只能重新写个满足新需求的SQL语句，复用性很差！
 
 如果我们在项目中，应用基于充血模型的DDD的开发模式，我们就需要事先理清楚所有的业务，定义领域模型所包含的属性和方法，这样领域模型充当可复用的业务中间层。所以，基于充血模型的DDD开发模式，更适合开发对代码的复用性、易维护性要求更高的复杂业务系统。例如，包含各种利息计算模型、还款模型等复杂业务的金融系统。
+
+
+
+
+
+## 国际化
+
+首先注册bean对象
+
+~~~java
+    @Bean
+    public LocaleResolver localeResolver() {
+        SessionLocaleResolver localeResolver = new SessionLocaleResolver();
+        localeResolver.setDefaultLocale(Locale.US);
+        return localeResolver;
+    }
+
+    @Bean
+    public ResourceBundleMessageSource messageSource() {
+        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+
+        // Doesn’t throw an error if a message isn’t found, instead it returns the message code
+        messageSource.setUseCodeAsDefaultMessage(true);
+
+        //  sets messages as the base name of the message source file
+        messageSource.setBasename("messages");
+
+        // For example, if we were in Italy, we would use the
+        // Locale.IT, and we would have a file called messages_it.properties. In case we don’t
+        // find a message in a specific language, the message source will search on the default
+        // message file called messages.properties.
+        return  messageSource;
+    }
+~~~
+

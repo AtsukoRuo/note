@@ -54,7 +54,20 @@ Spring Boot 工程的目录结构如下：
 
   - `<dependencies/>` 依赖项定义；
 
-  - `<build/>` 构建（build）相关的配置定义。
+  - `<build/>` 构建（build）相关的配置定义（插件）。
+
+    ~~~xml
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    ~~~
+
+    
 
   
 
@@ -131,7 +144,7 @@ Spring Boot 按照功能划分了很多起步依赖，大家只需要知道自�
 
 - @`SpringBootConfiguration`：说明它是一个配置类
 - `@EnableAutoConfiguration`（下面会介绍）
-- `@ComponentScan`：扫描指定包（以及子包）中的`@Component`类，默认就是`@SpringBootAplication`类所在的包
+- `@ComponentScan`：扫描指定包（以及子包）中的Bean对象，默认就是`@SpringBootAplication`类所在的包
 
 ~~~java
 @SpringBootApplication
@@ -144,7 +157,41 @@ public class BinaryTeaApplication {
 
 `SpringApplication.run`方法会创建一个`ApplicationContext`容器实例，完成IoC容器构建工作。
 
-除了`@SpringBootApplication`类的`@ComponentScan`来加载Bean对象，还可以通过`@EnableAutoConfiguration`下的自动配置类（`@Configuration`）来加载`Bean`（**约定大于配置**）。如果不想启用自动配置功能，可以在配置文件中配置`spring.boot.enableautoconfiguration=false`。
+
+
+
+
+In a Spring Boot application, you can define Spring beans by 
+
+- Annotating a Java class with a @Component, @Service, or @Repository annotation tag 
+- Annotating a class with a @Configuration tag and then defining a factory method for each Spring bean you want to build with a @Bean tag
+
+上面的实现原理是通过`@SpringBootApplication`注解上的`@ComponentScan`来加载Bean对象。注意，@Configuration注解上有@Component
+
+~~~java
+//...
+@Component
+public @interface Configuration {
+	//...
+}
+
+~~~
+
+此外，还可以通过`@EnableAutoConfiguration`启用`spring-boot-autoconfigure`模块中的自动配置类来加载`Bean`（**约定大于配置**）。如果不想启用自动配置功能，可以在配置文件中配置`spring.boot.enableautoconfiguration=false`。
+
+自动配置类是如何被加载的呢？关键在于 `@EnableAutoConfiguration` 上的 `@Import(AutoConfigurationImportSelector.class)`。`AutoConfigurationImportSelector` 类是 `ImportSelector` 的实现，这个接口的作用就是根据特定条件决定可以导入哪些配置类。`AutoConfigurationImportSelector`会读取
+
+- `/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 文件（或者是`META-INF/spring.factories`）来加载我们自己定义的自动配置类。
+
+  > 有些读者可能困惑这与之前介绍的@ComponentScan来加载自动配置类有什么区别呢？ 这种方式一般在自定义spring-boot-starter时使用，相当于向其他模块暴露本项目的自动配置类。而通过@ComponentScan来加载自动配置类是本项目的私有自动配置类
+
+- `AutoConfigurationImportSelector`会扫描所有在`spring-boot-autoconfigure`模块中的自动配置类，这些配置类一般以`“xxxAutoConfiguration”`来命名。
+
+**这样容器都有根据配置类预先装配好的Bean对象了**。
+
+
+
+
 
 
 
@@ -167,8 +214,6 @@ public @interface Configuration {
 }
 
 ~~~
-
-注意到自动配置类是一个@Component，说明它也会被注册到Spring容器中，而且它的优先级比其他@Bean高。
 
 而它使用条件注解 `@Conditional` 来实现「根据特定条件来启用」的特性，也就是按需装配。注解中传入的 `Condition` 类就是不同条件的判断逻辑。Spring Boot 内置了很多条件注解（`@Conditional` + `Condition`类）
 
@@ -216,22 +261,16 @@ public class JdbcTemplateAutoConfiguration {
 }
 ~~~
 
-可以看到这个配置类的生效条件是存在 `DataSource` 和 `JdbcTemplate` 类，且在上下文中只能有一个 `DataSource`。此外，这个自动配置需要在 `DataSourceAutoConfiguration` 之后再配置（可以用 `@AutoConfigureBefore`、`@AutoConfigureAfter` 和 `@AutoConfigureOrder` 来控制自动配置的顺序）。这个配置类还会同时导入 `JdbcTemplateConfiguration` 和 `NamedParameterJdbcTemplateConfiguration` 里的配置。
+可以看到这个配置类的生效条件是
 
+1. 存在 `DataSource` 和 `JdbcTemplate` 类，
 
+2. 在上下文中只能有一个 `DataSource`。
 
-自动配置类是如何被加载的呢？
+此外，这个自动配置类满足
 
-- 关键在于 `@EnableAutoConfiguration` 上的 `@Import(AutoConfigurationImportSelector.class)`。`AutoConfigurationImportSelector` 类是 `ImportSelector` 的实现，这个接口的作用就是根据特定条件决定可以导入哪些配置类，
-
-  `AutoConfigurationImportSelector`读取
-
-  - `/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 文件（或者是`META-INF/spring.factories`）来加载我们自己定义的自动配置类。
-  - `AutoConfigurationImportSelector`会扫描所有在`spring-boot-autoconfigure`模块中以`“xxxAutoConfiguration”`命名（约定）的自动配置类。
-  
-  **这样容器都有根据配置类预先装配好的Bean对象了**。
-
-
+1. 需要在 `DataSourceAutoConfiguration` 之后再配置（可以用 `@AutoConfigureBefore`、`@AutoConfigureAfter` 和 `@AutoConfigureOrder` 来控制自动配置的顺序）。
+2. 同时导入 `JdbcTemplateConfiguration` 和 `NamedParameterJdbcTemplateConfiguration` 里的配置。
 
 
 
@@ -487,7 +526,7 @@ management.endpoints.web.exposure.include=*
 
 要是一个端点同时出现在 `management.endpoints.web.exposure.include` 和 `management.endpoints.web.exposure.exclude` 这两个属性里，那么后者的优先级会高于前者，也就是说该端点会被排除。
 
-如果我们希望了解 HTTP 方式可以访问哪些端点，可以直接访问 `/actuator` 地址，会得到类似下面的 JSON 信息，其中 `templated` 为 `true` 的 URL 可以用具体的值去代替 `{}` 里的内容：
+如果我们希望了解 HTTP 方式可以访问哪些端点，可以直接访问 `/actuator` 地址，会得到类似下面的 JSON 信息，其中 `templated` 为 `true` 的 URL ，表示可以用具体的值去代替 `{}` 里的内容：
 
 ~~~xml
 {

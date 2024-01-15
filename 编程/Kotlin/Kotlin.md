@@ -2335,7 +2335,7 @@ CoroutineScope 即 **协程作用域**，用于对协程进行追踪。如果我
               }
           }
           
-          // 此外，runBlocking 只会等待相同作用域的协程完成才会退出，而不会等待 GlobalScope 等其它作用域启动的协程
+          // 此外，runBlocking 只会等待相同作用域的协程完成才会退出，而不会等待子作用域启动的协程
           GlobalScope.launch {
               repeat(3) {
                   delay(120)
@@ -3009,7 +3009,7 @@ IO多路复用有一种用户层面的实现
    while(1) {
      for(fd <-- fdlist) {
        if(read(fd) != -1) {
-         doSomeThing();
+         doSomeThing();		// 一个回调函数
        }
      }
    }
@@ -3017,7 +3017,58 @@ IO多路复用有一种用户层面的实现
 
 ![图片](assets/640-1703978369023-6.gif)
 
-实际上，这种实现是很消耗资源的。要解决这种问题，还必须要求操作系统提供支持。select 是操作系统提供的系统调用函数，通过它，我们可以把一个文件描述符的数组发给操作系统， 让操作系统去遍历，确定哪个文件描述符可以读写， 然后告诉我们去处理：
+实际上，这种实现是很消耗资源的（不断地轮询调用系统函数）。要解决这种问题，还必须要求操作系统提供支持。select 是操作系统提供的系统调用函数，通过它，我们可以把一个文件描述符的数组发给操作系统， 让操作系统去遍历，确定哪个文件描述符可以读写， 然后告诉我们去处理。它的定义如下：
+
+~~~c
+int select(
+    int fd_max, 
+    fd_set *readfds, 
+    fd_set *writefds, 
+    fd_set *exceptfds, 
+    struct timeval *timeout);
+~~~
+
+- `readfds`：文件描述符集合，检查该组文件描述符的可读性。
+- `writefds`：文件描述符集合，检查该组文件描述符的可写性。
+- `exceptfds`：文件描述符集合，检查该组文件描述符的异常条件。
+- **timeout**
+  - 值为NULL，则将select()函数置为阻塞状态，当监视的文件描述符集合中的某一个描述符发生变化才会返回结果并向下执行。
+  - 值等于0，则将select()函数置为非阻塞状态，执行select()后立即返回，无论文件描述符是否发生变化。
+  - 值大于0，则将select()函数的超时时间设为这个值，在超时时间内阻塞，超时后返回结果。
+
+~~~c
+#include <sys/time.h>
+#include <stdio.h>
+#include <fcntl.h>
+
+int main()
+{
+    int fd_key, ret;
+    char value;
+    fd_set readfd;
+    struct timeval timeout;
+
+    fd_key = open("/dev/tty", O_RDONLY);
+    timeout.tv_sec=1;
+    timeout.tv_usec=0;
+
+    while(1){
+        FD_ZERO(&readfd);                       /* 清空文件描述符集合 */
+        FD_SET(fd_key, &readfd);                /* 添加文件描述符到集合 */
+
+        ret = select(fd_key + 1, &readfd, NULL, NULL, &timeout);
+        if(FD_ISSET(fd_key, &readfd)){          /* 测试fd_key是否在描述符集合中 */
+            read(fd_key, &value, 1);  
+			if('\n' == value){
+				continue;
+			}
+			printf("ret = %d, fd_key = %d, value = %c\n", ret, fd_key, value);
+        }
+    }
+}
+~~~
+
+
 
 ![图片](assets/640-1703978555843-12.gif)
 
