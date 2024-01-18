@@ -1,4 +1,6 @@
-# Redis
+# Redis基础
+
+[TOC]
 
 ## 概述
 
@@ -107,7 +109,7 @@ $ redis-server --port 6380
 $ redis-server /opt/redis/redis.conf
 ~~~
 
-注意redis-server会忽略掉SIGHUP信号，也就是说即使退出终端，Redis也会在后台运行。
+注意，redis-server会忽略掉SIGHUP信号，也就是说即使退出终端，Redis也会在后台运行。
 
 
 
@@ -1842,17 +1844,13 @@ store key以及storedist key所对应的键类型是有序集合（zset）
 
 
 
-
-
 Redis使用geohash [3]将二维经纬度转换为一维字符串
 
 ~~~shell
 $ geohash key member [member ...]
 ~~~
 
-GEO的数据类型为zset，Redis将所有地理位置信息的geohash存放在zset 中
-
-
+GEO的数据类型为zset，Redis将所有地理位置信息的geohash存放在zset中
 
 
 
