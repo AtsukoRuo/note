@@ -191,9 +191,7 @@ public @interface Configuration {
 
 
 
-
-
-
+### 配置
 
 自动配置类其实就是一个 `@Configuration` 类（基于 Java 类的配置）。
 

@@ -2268,7 +2268,7 @@ fun log(msg: Any?) = println("[${Thread.currentThread().name}] $msg")
 - `suspend` 用于暂停执行当前协程，并保存所有局部变量
 - `resume` 用于让已暂停的协程从暂停处继续执行
 
-一个挂起函数必须由在协程里，或者由其它挂起函数来调用。
+一个Suspend函数只能出现在协程或者其它Suspend函数中。
 
 `launch` ，`async` 或者其他函数所创建的协程，在执行到某一个 `suspend` 函数的时候，这个协程会被「suspend」，也就是被挂起。当`suspend`函数执行完成后，调度器再恢复协程继续执行。
 
@@ -2276,15 +2276,13 @@ fun log(msg: Any?) = println("[${Thread.currentThread().name}] $msg")
 
 ### CoroutineScope
 
-CoroutineScope 即 **协程作用域**，用于对协程进行追踪。如果我们启动了多个协程但是没有一个可以对其进行统一管理的途径的话，就会导致我们的代码臃肿杂乱，甚至发生**内存泄露**或者**任务泄露**。
-
-为了确保所有通过`launch` 或 `async` 创建的所有协程都会被追踪，Kotlin 要求 所有协程必须在CoroutineScope中创建 ，而`CoroutineScope` 本身并不运行协程。
+如果我们启动了多个协程但是没有一个可以对其进行统一管理的途径的话，就会导致我们的代码臃肿杂乱，甚至发生**内存泄露**或者**任务泄露**。为了确保所有通过`launch` 或 `async` 创建的所有协程都会被追踪，Kotlin 要求 所有协程必须在CoroutineScope中创建 ，而`CoroutineScope` 本身并不运行协程。
 
 
 
 `CoroutineScope` 大体上可以分为以下几种：
 
-- `GlobalScope`，即全局协程作用域。`GlobalScope` 本身不会阻塞当前线程，即只要整个应用程序还在运行且协程的任务还未结束，协程就可以一直运行。
+- `GlobalScope`，即全局协程作用域。`GlobalScope` 本身不会阻塞当前线程。
 
   ~~~kotlin
   fun main() {
@@ -2316,7 +2314,7 @@ CoroutineScope 即 **协程作用域**，用于对协程进行追踪。如果我
   */
   ~~~
 
-- `runBlocking`，一个顶层函数，它会阻塞当前线程直到其内部所有相同作用域的协程执行结束。这里阻塞有着更深层的含义：只有当内部**相同作用域**的所有协程都运行结束后，声明在 runBlocking 之后的代码才能执行
+- `runBlocking`，一个顶层函数，它会阻塞当前线程，直到其内部所有相同作用域的协程执行结束。
 
   ~~~kotlin
   fun main() {
@@ -2983,123 +2981,16 @@ class MyViewModel : ViewModel() {
 
 
 
-### IO多路复用
-
-阻塞的含义
-
-![图片](assets/640.png)
-
-非阻塞的含义
-
-![图片](assets/640-1703978248003-3.png)
 
 
 
-IO多路复用有一种用户层面的实现
-
-1. 我们可以每 accept 一个客户端连接后，将这个文件描述符（connfd）放到一个数组里。
-
-   ~~~c++
-   fdlist.add(connfd);
-   ~~~
-
-2. 然后弄一个新的线程去不断遍历这个数组，调用每一个元素的非阻塞 read 方法。
-
-   ~~~c++
-   while(1) {
-     for(fd <-- fdlist) {
-       if(read(fd) != -1) {
-         doSomeThing();		// 一个回调函数
-       }
-     }
-   }
-   ~~~
-
-![图片](assets/640-1703978369023-6.gif)
-
-实际上，这种实现是很消耗资源的（不断地轮询调用系统函数）。要解决这种问题，还必须要求操作系统提供支持。select 是操作系统提供的系统调用函数，通过它，我们可以把一个文件描述符的数组发给操作系统， 让操作系统去遍历，确定哪个文件描述符可以读写， 然后告诉我们去处理。它的定义如下：
-
-~~~c
-int select(
-    int fd_max, 
-    fd_set *readfds, 
-    fd_set *writefds, 
-    fd_set *exceptfds, 
-    struct timeval *timeout);
-~~~
-
-- `readfds`：文件描述符集合，检查该组文件描述符的可读性。
-- `writefds`：文件描述符集合，检查该组文件描述符的可写性。
-- `exceptfds`：文件描述符集合，检查该组文件描述符的异常条件。
-- **timeout**
-  - 值为NULL，则将select()函数置为阻塞状态，当监视的文件描述符集合中的某一个描述符发生变化才会返回结果并向下执行。
-  - 值等于0，则将select()函数置为非阻塞状态，执行select()后立即返回，无论文件描述符是否发生变化。
-  - 值大于0，则将select()函数的超时时间设为这个值，在超时时间内阻塞，超时后返回结果。
-
-~~~c
-#include <sys/time.h>
-#include <stdio.h>
-#include <fcntl.h>
-
-int main()
-{
-    int fd_key, ret;
-    char value;
-    fd_set readfd;
-    struct timeval timeout;
-
-    fd_key = open("/dev/tty", O_RDONLY);
-    timeout.tv_sec=1;
-    timeout.tv_usec=0;
-
-    while(1){
-        FD_ZERO(&readfd);                       /* 清空文件描述符集合 */
-        FD_SET(fd_key, &readfd);                /* 添加文件描述符到集合 */
-
-        ret = select(fd_key + 1, &readfd, NULL, NULL, &timeout);
-        if(FD_ISSET(fd_key, &readfd)){          /* 测试fd_key是否在描述符集合中 */
-            read(fd_key, &value, 1);  
-			if('\n' == value){
-				continue;
-			}
-			printf("ret = %d, fd_key = %d, value = %c\n", ret, fd_key, value);
-        }
-    }
-}
-~~~
-
-
-
-![图片](assets/640-1703978555843-12.gif)
-
-可以看出几个细节：
-
-1. select 在内核层仍然是通过遍历的方式检查文件描述符的就绪状态
-2. select 仅仅返回可读文件描述符的个数，具体哪个可读还是要用户自己遍历
-3. select 调用需要传入 fd 数组，需要拷贝一份到内核，高并发场景下这样的拷贝消耗的资源是惊人的
-
-也就是说，操作系统提供了IO多路复用，使得原来的 while 循环里多次系统调用，变成了一次系统调用 + 内核层遍历这些文件描述符。
-
-![图片](assets/640-1703978599241-15.png)
-
-
-
-epoll系统调用针对上述提及的三个细节做了改进
-
-- 内核中保存一份文件描述符集合，无需用户每次都重新传入，只需告诉内核修改的部分即可。
-- 内核不再通过轮询的方式找到就绪的文件描述符，而是通过异步 IO 事件唤醒。
-- 内核仅会将有 IO 事件的文件描述符返回给用户，用户也无需遍历整个文件描述符集合。
-
-![图片](assets/640-1703978770396-18.gif)
-
-
-
-协程就是利用epoll来实现非阻塞IO的。当协程中调用非阻塞IO时，协程调度器将该协程挂起，并监听相应的异步IO事件。当IO事件到达后，再将相应的协程恢复。
 
 协程并没有解决IO密集问题，协程只是优化了异步回调模型增强了代码的可读性。真正解决io密集问题的是：
 
-- 以IO多路复用函数
-- 以非阻塞套接字为基础，构建出的基于事件的响应式编程模式
+- IO多路复用函数
+- 响应式编程模式——Reactor
+
+
 
 ## DSL
 

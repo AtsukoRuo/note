@@ -691,7 +691,7 @@ Java NIO（New IO）是从 Java 1.4 版本开始引入的一个新的 IO API。N
 
 ![img](assets/v2-82766de5d99af36aac845107baa62c17_720w.webp)
 
-面向流：传输单位为字符或者字节；面向缓冲区：传输单位为缓冲区。此外，旧IO的传输是单向的，而NIO的传输时双向的。
+面向流：传输单位为字符或者字节；面向缓冲区：传输单位为缓冲区。此外，旧IO的传输是单向的，而NIO的传输是双向的。
 
 
 
@@ -968,7 +968,7 @@ public class Endians {
 
 
 
-![img](C:\Users\AtsukoRuo\Desktop\note\On Java 8\assets\01.jpg)
+![img](assets\01.jpg)
 
 注意到：`ByteBuffer`（原生字节的缓冲区）是唯一直接和`FileChannel`打交道的对象。
 

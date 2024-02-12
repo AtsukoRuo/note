@@ -570,309 +570,234 @@ public class JdbcTemplateAutoConfiguration {
 
 为了消除代码对不同事务对的依赖，Spring Framework 对事务管理做了一层抽象。这个抽象的核心是事务管理器，即 `TransactionManager`，它是一个标记接口。而`PlatformTransactionManager`接口继承了 `TransactionManager`接口，定义了获取事务、提交事务和回滚事务的方法：
 
-~~~java
+```java
 public interface PlatformTransactionManager extends TransactionManager {
-    TransactionStatus getTransaction(@Nullable TransactionDefinition definition)throws TransactionException;
-    void commit(TransactionStatus status) throws TransactionException;
-    void rollback(TransactionStatus status) throws TransactionException;
+    //获得事务
+    TransactionStatus getTransaction(@Nullable TransactionDefinition var1) throws TransactionException;
+    //提交事务
+    void commit(TransactionStatus var1) throws TransactionException;
+    //回滚事务
+    void rollback(TransactionStatus var1) throws TransactionException;
 }
-~~~
+```
 
 `DataSourceTransactionManager`、`JtaTransactionManager` 和 `HibernateTransactionManager` 这些底层事务管理器都实现了上述接口。
+
+
 
 在Spring中，事务有两种实现方式：
 
 - **编程式事务管理**： 编程式事务管理使用`TransactionTemplate`，或者直接使用底层的`PlatformTransactionManager`。
-- **声明式事务管理**： 建立在AOP之上的。其本质是对方法前后进行拦截，然后在目标方法开始之前创建或者加入一个事务，在执行完目标方法之后根据执行情况提交或者回滚事务。 通过`@Transactional`就可以进行事务操作
 
-
-
-如何开启对于声明式事务的支持
-
-- 在配置类上添加 `@EnableTransactionManagement` 注解就能开启事务支持
-
-- 或者在XML配置文件中通过`<tx:annotation-driven/>`来启用注解支持
-
-  ~~~xml
-  <?xml version="1.0" encoding="UTF-8"?>
-  <beans xmlns="http://www.springframework.org/schema/beans"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xmlns:tx="http://www.springframework.org/schema/tx"
-      xsi:schemaLocation="
-          http://www.springframework.org/schema/beans
-          https://www.springframework.org/schema/beans/spring-beans.xsd
-          http://www.springframework.org/schema/tx
-          https://www.springframework.org/schema/tx/spring-tx.xsd">
+  ~~~java
+  @Autowired
+  private TransactionTemplate transactionTemplate;
   
-      <!-- 开启事务注解支持，可以明确设置一个TransactionManager -->
-      <tx:annotation-driven transaction-manager="txManager"/>
-  </beans>
+  public void testTransaction() {
+      transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+          @Override
+          protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+              try {
+                  // ....  业务代码
+              } catch (Exception e){
+                  //回滚
+                  transactionStatus.setRollbackOnly();
+              }
+          }
+      });
+  }
+  ~~~
+
+  ~~~java
+  @Autowired
+  private PlatformTransactionManager transactionManager;
+  
+  public void testTransaction() {
+    TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+    try {
+         // ....  业务代码
+        transactionManager.commit(status);
+    } catch (Exception e) {
+        transactionManager.rollback(status);
+    }
+  }
   ~~~
 
   
 
+- **声明式事务管理**： 建立在AOP之上的。其本质是对方法前后进行拦截，然后在目标方法开始之前创建或者加入一个事务，在执行完目标方法之后根据执行情况提交或者回滚事务。 通过`@Transactional`就可以进行事务操作。
+
+  ~~~java
+  @Transactional(propagation = Propagation.REQUIRED)
+  public void aMethod {
+      //do something
+      B b = new B();
+      C c = new C();
+      b.bMethod();
+      c.cMethod();
+  }
+  ~~~
+
+  默认情况下，声明式事务在遇到 `RuntimeException` 和 `Error` 时才会回滚，对于`checked exception`并不会执行回滚操作。
+
+  
+
+Spring 框架中，事务管理相关最重要的 3 个接口如下：
+
+- **PlatformTransactionManager**：（平台）事务管理器。
+
+- **TransactionDefinition**：事务的属性
+
+  ~~~java
+  public interface TransactionDefinition {
+      int PROPAGATION_REQUIRED = 0;
+      int PROPAGATION_SUPPORTS = 1;
+      int PROPAGATION_MANDATORY = 2;
+      int PROPAGATION_REQUIRES_NEW = 3;
+      int PROPAGATION_NOT_SUPPORTED = 4;
+      int PROPAGATION_NEVER = 5;
+      int PROPAGATION_NESTED = 6;
+      int ISOLATION_DEFAULT = -1;
+      int ISOLATION_READ_UNCOMMITTED = 1;
+      int ISOLATION_READ_COMMITTED = 2;
+      int ISOLATION_REPEATABLE_READ = 4;
+      int ISOLATION_SERIALIZABLE = 8;
+      int TIMEOUT_DEFAULT = -1;
+      // 返回事务的传播行为，默认值为 REQUIRED。
+      int getPropagationBehavior();
+      //返回事务的隔离级别，默认值是 DEFAULT
+      int getIsolationLevel();
+      // 返回事务的超时时间，默认值为-1。如果超过该时间限制但事务还没有完成，则自动回滚事务。
+      int getTimeout();
+      // 返回是否为只读事务，默认值为 false
+      boolean isReadOnly();
+  
+      @Nullable
+      String getName();
+  }
+  ~~~
+
+  - 传播性：事务传播性分为 7 个级别：
+
+    | 传播性                         | 值   | 描述                                             |
+    | ------------------------------ | ---- | ------------------------------------------------ |
+    | `PROPAGATION_REQUIRED`（默认） | `0`  | 当前有事务就用当前事务，没有事务就新启动一个事务 |
+    | `PROPAGATION_SUPPORTS`         | `1`  | 事务不是必需的，可以有事务，也可以没有           |
+    | `PROPAGATION_MANDATORY`        | `2`  | 一定要存在一个事务，不然就报错                   |
+    | `PROPAGATION_REQUIRES_NEW`     | `3`  | 新启动一个事务，如果当前存在一个事务则将其挂起   |
+    | `PROPAGATION_NOT_SUPPORTED`    | `4`  | 不支持事务，以非事务的方式运行                   |
+    | `PROPAGATION_NEVER`            | `5`  | 不支持事务，如果当前存在一个事务则抛异常         |
+    | `PROPAGATION_NESTED`           | `6`  | 如果当前存在一个事务，则在该事务内再启动一个事务 |
+
+  - 隔离级别：数据库的事务有 4 种隔离级别
+
+    | 隔离性                       | 值   | 脏读   | 不可重复读 | 幻读   |
+    | ---------------------------- | ---- | ------ | ---------- | ------ |
+    | `ISOLATION_READ_UNCOMMITTED` | `1`  | 存在   | 存在       | 存在   |
+    | `ISOLATION_READ_COMMITTED`   | `2`  | 不存在 | 存在       | 存在   |
+    | `ISOLATION_REPEATABLE_READ`  | `3`  | 不存在 | 不存在     | 存在   |
+    | `ISOLATION_SERIALIZABLE`     | `4`  | 不存在 | 不存在     | 不存在 |
+
+    `TransactionDefinition` 中的默认隔离级别设置为 `-1`，使用底层数据源的配置，比如，MySQL 默认的隔离级别是 `REPEATABLE_READ`，Oracle 默认的隔离级别则是 `READ_COMMITTED`。
+
+    - **脏读**：事务 A 修改了记录 1 的值但未提交事务，这时事务 B 读取了记录 1 尚未提交的值，但后来事务 A 回滚了，事务 B 读到的值并不会存在于数据库中，这就是脏读。
+    - **不可重复读**：事务 A 会读取记录 1 两次，在两次读取之间，事务 B 修改了记录 1 的值并提交了，这时事务 A 第一次与第二次读取到的记录 1 的内容就不一样了，这就是不可重复读。
+    - **幻读**：事务 A 以某种条件操作了数据表中的一批数据，这时事务 B 往表中插入并提交了 1 条记录，正好也符合事务 A 的操作条件，当事务 A 再次以同样的条件操作这批数据时，就会发现操作的数据集变了，这就是幻读。以 `SELECT count(*)` 为例，发生幻读时，如果两次以同样的条件来执行，结果值就会不同。
+
+  - 超时时间：所谓事务超时，就是指一个事务所允许执行的最长时间，如果超过该时间限制但事务还没有完成，则自动回滚事务。在 `TransactionDefinition` 中以 int 的值来表示超时时间，其单位是秒，默认值为-1
+
+  - 是否只读
+
+- **TransactionStatus**：事务运行状态。
+
+  ~~~java
+  public interface TransactionStatus{
+      boolean isNewTransaction(); // 是否是新的事务
+      boolean hasSavepoint(); // 是否有恢复点
+      void setRollbackOnly();  // 设置为只回滚
+      boolean isRollbackOnly(); // 是否为只回滚
+      boolean isCompleted; // 是否已完成
+  }
+  ~~~
 
 
-`@EnableTransactionManagement` 和 `<tx:annotation-driven/>` 拥有一些共同的配置：
-
-| 配置项                                           | 默认值                      | 含义                                                         |
-| :----------------------------------------------- | :-------------------------- | :----------------------------------------------------------- |
-| `mode`                                           | `proxy`                     | 声明式事务 AOP 的拦截方式，默认 `proxy` 是代理方式，也可以改为 `aspectj` |
-| `order`                                          | `Ordered.LOWEST_PRECEDENCE` | 声明式事务 AOP 拦截的顺序，值越小，优先级越高                |
-| `proxyTargetClass` / `proxy-target-class`（XML） | `false`                     | 是否使用 CGLIB 的方式拦截类 **14**                           |
 
 
 
-事务的属性用`TransactionDefinition` 接口来描述：
-
-- 传播性：事务传播性分为 7 个级别：
-
-  | 传播性                         | 值   | 描述                                             |
-  | :----------------------------- | :--- | :----------------------------------------------- |
-  | `PROPAGATION_REQUIRED`（默认） | `0`  | 当前有事务就用当前事务，没有事务就新启动一个事务 |
-  | `PROPAGATION_SUPPORTS`         | `1`  | 事务不是必需的，可以有事务，也可以没有           |
-  | `PROPAGATION_MANDATORY`        | `2`  | 一定要存在一个事务，不然就报错                   |
-  | `PROPAGATION_REQUIRES_NEW`     | `3`  | 新启动一个事务，如果当前存在一个事务则将其挂起   |
-  | `PROPAGATION_NOT_SUPPORTED`    | `4`  | 不支持事务，以非事务的方式运行                   |
-  | `PROPAGATION_NEVER`            | `5`  | 不支持事务，如果当前存在一个事务则抛异常         |
-  | `PROPAGATION_NESTED`           | `6`  | 如果当前存在一个事务，则在该事务内再启动一个事务 |
-
-- 隔离级别：数据库的事务有 4 种隔离级别
-
-  | 隔离性                       | 值   | 脏读   | 不可重复读 | 幻读   |
-  | :--------------------------- | :--- | :----- | :--------- | :----- |
-  | `ISOLATION_READ_UNCOMMITTED` | `1`  | 存在   | 存在       | 存在   |
-  | `ISOLATION_READ_COMMITTED`   | `2`  | 不存在 | 存在       | 存在   |
-  | `ISOLATION_REPEATABLE_READ`  | `3`  | 不存在 | 不存在     | 存在   |
-  | `ISOLATION_SERIALIZABLE`     | `4`  | 不存在 | 不存在     | 不存在 |
-
-  `TransactionDefinition` 中的默认隔离级别设置为 `-1`，使用底层数据源的配置，比如，MySQL 默认的隔离级别是 `REPEATABLE_READ`，Oracle 默认的隔离级别则是 `READ_COMMITTED`。
-
-  - **脏读**：事务 A 修改了记录 1 的值但未提交事务，这时事务 B 读取了记录 1 尚未提交的值，但后来事务 A 回滚了，事务 B 读到的值并不会存在于数据库中，这就是脏读。
-  - **不可重复读**：事务 A 会读取记录 1 两次，在两次读取之间，事务 B 修改了记录 1 的值并提交了，这时事务 A 第一次与第二次读取到的记录 1 的内容就不一样了，这就是不可重复读。
-  - **幻读**：事务 A 以某种条件操作了数据表中的一批数据，这时事务 B 往表中插入并提交了 1 条记录，正好也符合事务 A 的操作条件，当事务 A 再次以同样的条件操作这批数据时，就会发现操作的数据集变了，这就是幻读。以 `SELECT count(*)` 为例，发生幻读时，如果两次以同样的条件来执行，结果值就会不同。
-
-- 超时时间
-
-- 是否只读
-
-
-
-Spring Boot 为我们提供了事务的自动配置类，其中主要的是`DataSourceTransactionManagerAutoConfiguration` 和 `TransactionAutoConfiguration`。
+`@Transactional`注解源码如下：
 
 ~~~java
-@Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({ 
-    JdbcTemplate.class, 
-    TransactionManager.class })
-@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-@EnableConfigurationProperties(DataSourceProperties.class)
-public class DataSourceTransactionManagerAutoConfiguration {
-    @Configuration(proxyBeanMethods = false)
-    @ConditionalOnSingleCandidate(DataSource.class)
-    static class DataSourceTransactionManagerConfiguration {
-        @Bean
-        @ConditionalOnMissingBean(TransactionManager.class)
-        DataSourceTransactionManager transactionManager(Environment environment, DataSource dataSource,
-            ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
-            // 省略具体代码
-        }
-        // 省略部分代码
-    }
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Documented
+public @interface Transactional {
+
+  @AliasFor("transactionManager")
+  String value() default "";
+
+  @AliasFor("value")
+  String transactionManager() default "";
+
+  Propagation propagation() default Propagation.REQUIRED;
+
+  Isolation isolation() default Isolation.DEFAULT;
+
+  int timeout() default TransactionDefinition.TIMEOUT_DEFAULT;
+
+  boolean readOnly() default false;
+
+  Class<? extends Throwable>[] rollbackFor() default {};
+
+  String[] rollbackForClassName() default {};
+
+  Class<? extends Throwable>[] noRollbackFor() default {};
+
+  String[] noRollbackForClassName() default {};
 }
 ~~~
 
-这里需要特别说明一下 `TransactionManagerCustomizers`，它是为 `DataSourceTransactionManager`自动配置类留下的扩展点
+**`@Transactional` 的常用配置参数总结**：
+
+| 属性名      | 说明                                                         |
+| :---------- | :----------------------------------------------------------- |
+| propagation | 事务的传播行为，默认值为 REQUIRED，可选的值在上面介绍过      |
+| isolation   | 事务的隔离级别，默认值采用 DEFAULT，可选的值在上面介绍过     |
+| timeout     | 事务的超时时间，默认值为-1（不会超时）。如果超过该时间限制但事务还没有完成，则自动回滚事务。 |
+| readOnly    | 指定事务是否为只读事务，默认值为 false。                     |
+| rollbackFor | 用于指定能够触发事务回滚的异常类型，并且可以指定多个异常类型。 |
 
 
 
-`TransactionAutoConfiguration` 会为事务再提供进一步的配置，它主要做了两件事：
+ `@Transactional` 的作用范围
 
-1. 创建了「编程式事务」需要用到的 `TransactionTemplate`；
-
-2. 开启了基于注解的事务支持，这部分是由内部类 `EnableTransactionManagementConfiguration` 来定义的，具体代码如下：
-
-   ~~~java
-   @Configuration(proxyBeanMethods = false)
-   @ConditionalOnBean(TransactionManager.class)
-   @ConditionalOnMissingBean(AbstractTransactionManagementConfiguration.class)
-   public static class EnableTransactionManagementConfiguration {
-       @Configuration(proxyBeanMethods = false)
-       @EnableTransactionManagement(proxyTargetClass = false)
-       @ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "false",
-           matchIfMissing = false)
-       public static class JdkDynamicAutoProxyConfiguration {}
-   
-       @Configuration(proxyBeanMethods = false)
-       @EnableTransactionManagement(proxyTargetClass = true)
-       @ConditionalOnProperty(prefix = "spring.aop", name = "proxy-target-class", havingValue = "true",
-           matchIfMissing = true)
-       public static class CglibAutoProxyConfiguration {}
-   }
-   ~~~
+1. **方法**：推荐将注解使用于方法上，不过需要注意的是：**该注解只能应用到 public 方法上，否则不生效。**
+2. **类**：如果这个注解使用在类上的话，表明该注解对该类中所有的 public 方法都生效。
+3. **接口**：不推荐在接口上使用。
 
 
 
-`TransactionProperties` 是事务的属性配置，其中只有两个配置：`spring.transaction.default-timeout` 用于配置默认超时时间，默认单位为秒；`spring.transaction.rollback-on-commit-failure` 配置在提交失败时是否回滚。
+如果一个类或者一个类中的 public 方法上被标注`@Transactional` 注解的话，Spring 容器就会在启动的时候为其创建一个代理类，在调用被`@Transactional` 注解的 public 方法的时候，实际调用的是，`TransactionInterceptor` 类中的 `invoke()`方法。这个方法的作用就是在目标方法之前开启事务，方法执行过程中如果遇到异常的时候回滚事务，方法调用完成之后提交事务。
 
-
-
-### 声明式事务
-
-通常在没有特殊需求的情况下，建议使用 Spring Framework 的声明式事务来管理事务
-
-`@Transactional` 注解可以设置的事务属性：
-
-| 属性                                       | 默认值                                         | 描述                       |
-| :----------------------------------------- | :--------------------------------------------- | :------------------------- |
-| `transactionManager`                       | 默认会找名为 `transactionManager` 的事务管理器 | 指定事务管理器             |
-| `propagation`                              | `Propagation.REQUIRED`                         | 指定事务的传播性           |
-| `isolation`                                | `Isolation.DEFAULT`                            | 指定事务的隔离性           |
-| `timeout`                                  | `-1`，即由具体的底层实现来设置                 | 指定事务超时时间           |
-| `readOnly`                                 | `false`                                        | 是否为只读事务             |
-| `rollbackFor` / `rollbackForClassName`     | 空                                             | 指定需要回滚事务的异常类型 |
-| `noRollbackFor` / `noRollbackForClassName` | 空                                             | 指定无须回滚事务的异常类型 |
-
-默认情况下，事务只会在遇到 `RuntimeException` 和 `Error` 时才会回滚，对于`checked exception`并不会执行回滚操作。
-
-下面我们通过一个例子，来进一步认识这个声明式事务：
+当一个方法被标记了`@Transactional` 注解的时候，Spring 事务管理器只会在被其他类方法调用的时候生效，而不会在一个类中方法调用生效。这是因为 Spring AOP 工作原理决定的。我们代理对象就无法拦截到这个内部调用，因此事务也就失效了。
 
 ~~~java
 @Service
-public class DemoService {
-    public static final String SQL =
-        "insert into t_demo (name, create_time, update_time) values(?, now(), now())";
-    
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Transactional(readOnly = true)
-    public String showNames() {
-        return jdbcTemplate.queryForList("select name from t_demo;", String.class)
-            .stream().collect(Collectors.joining(","));
+public class MyService {
+    private void method1() {
+        // 先获取该类的代理对象，然后通过代理对象调用method2。
+        ((MyService)AopContext.currentProxy()).method2();
     }
-
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void insertRecordRequired() {
-        jdbcTemplate.update(SQL, "one");
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void insertRecordRequiresNew() {
-        jdbcTemplate.update(SQL, "two");
-    }
-
-    @Transactional(propagation = Propagation.NESTED)
-    public void insertRecordNested() {
-        jdbcTemplate.update(SQL, "three");
-        throw new RuntimeException(); // 让事务回滚
+    @Transactional
+    public void method2() {
+     	//......
     }
 }
 ~~~
 
-事务一般放在内部的领域服务上，也就是 Service 层上会是比较常见的一个做法，其中的一个方法，也就对应了一个业务操作。
 
-下面我们来看如何基于XML来配置事务。Spring Framework 提供了一系列 `<tx/>` 的 XML 来配置与事务相关的 AOP 通知。其中，`<tx:advice/>` 用来配置事务通知，具体的事务属性则通过 `<tx:attributes/>` 和 `<tx:method/>` 来设置。
 
-~~~xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:aop="http://www.springframework.org/schema/aop"
-        xmlns:tx="http://www.springframework.org/schema/tx"
-        xsi:schemaLocation="
-        http://www.springframework.org/schema/beans
-        https://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/tx
-        https://www.springframework.org/schema/tx/spring-tx.xsd
-        http://www.springframework.org/schema/aop
-        https://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <tx:advice id="demoTxAdvice">
-        <tx:attributes>
-            <tx:method name="showNames" read-only="true"/>
-            <tx:method name="insertRecordRequired" propagation="REQUIRED"/>
-            <tx:method name="insertRecordRequiresNew" propagation="REQUIRES_NEW"/>
-            <tx:method name="insertRecordNested" propagation="NESTED"/>
-        </tx:attributes>
-    </tx:advice>
-
-    <tx:advice id="mixTxAdvice">
-        <tx:attributes>
-            <tx:method name="*" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
-        <aop:pointcut id="demoServiceMethods"
-            expression="execution(* learning.spring.transaction.DemoService.*(..))"/>
-        
-        <aop:pointcut id="mixServiceMethods"
-            expression="execution(* learning.spring.transaction.MixService.*(..))"/>
-        
-        <aop:advisor advice-ref="demoTxAdvice" pointcut-ref="demoServiceMethods"/>
-        
-        <aop:advisor advice-ref="mixTxAdvice" pointcut-ref="mixServiceMethods"/>
-    </aop:config>
-</beans>
-~~~
-
-`<tx:method/>` 的属性如下：
-
-| 属性              | 默认值     | 含义                                                         |
-| :---------------- | :--------- | :----------------------------------------------------------- |
-| `name`            | 无         | 要拦截的方法名称，可以带通配符，是唯一的必选项               |
-| `propagation`     | `REQUIRED` | 事务传播性                                                   |
-| `isolation`       | `DEFAULT`  | 事务隔离性                                                   |
-| `timeout`         | `-1`       | 事务超时时间，单位为秒                                       |
-| `read-only`       | `false`    | 是否是只读事务                                               |
-| `rollback-for`    | 无         | 会触发回滚的异常清单，以逗号分隔，可以是全限定类名，也可以是简单类名 |
-| `no-rollback-for` | 无         | 不触发回滚的异常清单，以逗号分隔，可以是全限定类名，也可以是简单类名 |
-
-### 编程式事务
-
-在上面我们提到过`TransactionAutoConfiguration`会创建`TransactionTemplate`，这是通过它的内部类`TransactionTemplateConfiguration`来实现的：
-
-~~~java
-@Configuration
-public class TxConfiguration {
-    @Bean
-    public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
-        return new TransactionTemplate(transactionManager);
-    }
-}
-~~~
-
-我们主要使用TransactionTemplate对象的`execute()` 和 `executeWithoutResult()` 方法：
-
-~~~java
-public <T> T execute(TransactionCallback<T> action) throws TransactionException;
-public void executeWithoutResult(Consumer<TransactionStatus> action) throws TransactionException;
-~~~
-
-使用示例：
-
-~~~java
-// Lambda形式
-public String showNamesProgrammatically() {
-    return transactionTemplate.execute(
-            status -> jdbcTemplate.queryForList("select name from t_demo;", String.class)
-                    .stream().collect(Collectors.joining(",")));
-}
-
-// 匿名类形式
-public String showNamesProgrammatically() {
-    return transactionTemplate.execute(new TransactionCallback<String>() {
-        @Override
-        public String doInTransaction(TransactionStatus status) {
-            return jdbcTemplate.queryForList("select name from t_demo;", String.class)
-                    .stream().collect(Collectors.joining(","));
-        }
-    });
-}
-~~~
-
-如果希望修改事务的属性，可以直接调用 `TransactionTemplate` 的对应方法，例如使用 `setPropagationBehavior()` 和 `setIsolationLevel()` 方法来设置传播性与隔离性
 
 ## 异常处理
 

@@ -6,9 +6,9 @@
 
 ![image-20240104182836831](C:\Users\AtsukoRuo\AppData\Roaming\Typora\typora-user-images\image-20240104182836831.png)
 
-Microservice is  a distributed, loosely coupled software service that carries out a small number of well-defined tasks. 
+Microservice is  a **distributed, loosely coupled** software service that carries out a small number of well-defined tasks. 
 
-Let’s start by considering the differences between microservices and some other common architectures. 
+微服务架构和其他常见架构：
 
 - **N-tier architecture**：With this design, an applications is divided into multiple layers, each with their own responsibilities and functions, such as UI, services, data, testing, and so forth. As you create your application, you make a specific project or solution for the UI, then another one for the services, another for the data layer, and so on. In the end, you will have several projects that, combined, create an entire application. n-tier applications have many advantages, including these:
 
@@ -188,7 +188,7 @@ The core microservice development pattern addresses the basics of building a mic
 - **「Communication protocols」**通信协议：How will developers communicate with your service? The first step is to define whether you want a synchronous or asynchronous protocol. 
   - **For synchronous,** the most common communication is HTTP-based REST using **XML (Extensible Markup Language)**, **JSON (JavaScript Object Notation)**, or a binary protocol such as **Thrift** to send data back and forth to your microservices. 
   - **For asynchronous,** the most popular protocol is AMQP (Advanced Message Queuing Protocol) using a one-to-one (queue) or a one-to-many (topic) with message brokers such as **RabbitMQ**, **Apache Kafka**, and **Amazon Simple Queue Service (SQS).** 
-- **「Interface design」**接口设计：What’s the best way to design the actual service interfaces that developers are going to use to call your service?
+- xxxxxxxxxx $ docker-compose up -dshell
 - **「Configuration management of service」**服务的配置管理：How do you manage the configuration of your microservice so that it moves between different environments in the cloud?
 - **「Event processing between services」**服务之间的事件处理：How do you decouple your microservice using events so that you minimize hardcoded dependencies between your services and increase the resiliency of your application?
 
@@ -460,24 +460,6 @@ CI/CD流程一般如下
 
 ## REST API
 
-REST API遵循**REST（Representational State Transfer，表现层状态转换**）设计风格：
-
-- **以资源为基础**
-- **统一接口**：对资源的操作包括获取、创建、修改和删除，这正好对应HTTP中的GET等谓词：
-  - GET（SELECT）：获取资源（一项或多项）。
-  - POST（CREATE）：新建一个资源。
-  - PUT（UPDATE）：更新全部资源，幂等的
-  - PATCH（UPDATE）：更新部分资源，非幂等的
-  - DELETE（DELETE）：删除资源。
-- **URI指向资源**，**在REST API中，用URI表示名词，用HTTP方法表示动词。**
-- **无状态**：服务器不能保存客户端的信息， 每一次从客户端发送的请求中，要包含所有必须的状态信息，会话信息由客户端保存， 服务器端根据这些状态信息来处理请求。
-
-
-
-
-
-
-
 We’ve found the following guidelines useful for naming service endpoints:
 
 - **Use clear URL names that establish what resource the service represents**
@@ -537,8 +519,6 @@ We’ve found the following guidelines useful for naming service endpoints:
 
 
 ## Richardson Maturity Model
-
-This best practice (http://martinfowler.com/articles/richardsonMaturityModel.html), described by Martin Fowler, is a guide to understanding the main principles of REST architectures and to evaluate our REST architecture
 
 
 
@@ -667,8 +647,6 @@ The method add() is a method of the RepresentationModel. The linkTo method inspe
 - 软件开发人员
 - 运维人员
 
-
-
 同样重要的是，对于你的设计，不能持有教条主义的态度。你可能会遇到物理上的限制。例如，你可能需要构建一个聚合微服务，将数据合并在一起，因为两个单独的服务会产生过多的通信。**采取务实的方式并交付成果**，而不是浪费资源让设计变得更完美。
 
 
@@ -744,7 +722,7 @@ The four principles can be mapped to the following operational lifecycles：
 
   ![image-20240111142402143](assets/image-20240111142402143.png)
 
-- **Service bootstrapping**：Service bootstrapping (step 2 in figure 3.9) occurs when the microservice first starts and needs to load its application configuration information.
+- **Service bootstrapping**：Service bootstrapping occurs when the microservice first starts and needs to load its application configuration information.
 
   ![image-20240111143335130](assets/image-20240111143335130.png)
 

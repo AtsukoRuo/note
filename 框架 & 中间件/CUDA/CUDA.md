@@ -6,10 +6,7 @@
 
 ## 并行
 
-通常将整个计算任务划分为多个子任务，然后在多个计算资源上并行执行这些子任务。并行计算通常包括两个不同领域的计算任务：
-
-- **Computer architecture (hardware aspect)**
-- **Parallel programming (software aspect)**
+通常将整个计算任务划分为多个子任务，然后在多个计算资源上并行执行这些子任务。
 
 
 
@@ -23,7 +20,7 @@
 
 
 
-当编写串行程序时，我们无需考虑底层架构的实现。但是编写并行程序时，我们必须认识到计算机体系结构的特性
+当编写串行程序时，我们无需考虑底层架构的实现。但是编写并行程序时，我们必须认识到计算机体系结构的特性。
 
 
 
@@ -31,14 +28,18 @@
 
 ![image-20240110144943282](assets/image-20240110144943282.png)
 
+
+
+并行化程序的示意图
+
+![image-20240110145130929](assets/image-20240110145130929.png)
+
 There are two ways to classify the relationship between two pieces of computation
 
 - Some are related by a precedence restraint（优先级约束） and therefore must be calculated sequentially; 例如一个任务的输出是另一个任务的输入（数据依赖）
 - others have no such restraints and can be calculated concurrently
 
-并行化程序的示意图
 
-![image-20240110145130929](assets/image-20240110145130929.png)
 
 分析数据依赖性是实现并行算法的一项基础技能，因为这种依赖性是阻碍并行性的主要因素之一。
 
@@ -49,7 +50,7 @@ There are two fundamental types of parallelism in applications:
 
 CUDA programming is especially well-suited to address problems that can be expressed as dataparallel computations.
 
-The fi rst step in designing a data parallel program is to partition data across threads, with each thread working on a portion of the data. In general, there are two approaches to partitioning data: 
+The first step in designing a data parallel program is to partition data across threads, with each thread working on a portion of the data. In general, there are two approaches to partitioning data: 
 
 - **block partitioning** ：Each thread takes one portion of the data, usually an equal portion of the data.
 - **cyclic partitioning**：Each thread takes more than one portion of the data.
