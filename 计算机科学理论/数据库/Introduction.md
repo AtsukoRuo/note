@@ -54,8 +54,8 @@ Broadly speaking, there are two modes in which databases are used：
 
 - Relational Model
 - NoSQL：例如，Key/Value、Graph、Documnet/XML/JSON、Wide-Column
-- Array/Matrix/Vector：用于MachineLearning
-- Network、Hierarchical等是已经废用了
+- Array/Matrix/Vector：广泛应用于MachineLearning
+- Network、Hierarchical：已废用
 
 
 
@@ -64,8 +64,6 @@ Broadly speaking, there are two modes in which databases are used：
 
 
 在确定数据模型后，我们还要考虑数据抽象，**它将复杂的数据模型实现细节或者数据模型本身的细节隐藏起来**，向用户提供简单和合适的接口（更具体来说，是提供一个更高级的概念模型）。
-
-
 
 数据抽象有三个层次：
 
@@ -87,7 +85,7 @@ The collection of information stored in the database at a particular moment is c
 
 > instance与schema的关系就如同编程语言中type与variable的关系
 
-data model侧重概念，data abstraction侧重封装，data schema侧重实现。
+
 
 ## Database Languages
 
@@ -108,13 +106,11 @@ data model侧重概念，data abstraction侧重封装，data schema侧重实现�
   - Deletion
   - Modifification
 
-  
-
   There are basically two types of data-manipulation language:
 
   - **Procedural** **DML**： require a user to specify *what* data are needed and *how* to get those data
   - **Declarative** **DML**： require a user to specify *what* data are needed *without* specifying how to get those data.
-
+  
   > DML that involves information retrieval is called a **query language**. since the most commonly used language in DML is query language , it is common practice to use the terms query language and data-manipulation language synonymously. 
 
 

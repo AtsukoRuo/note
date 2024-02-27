@@ -2,7 +2,7 @@
 
 ## 概述
 
-Kubernetes 这个词是希腊语，意为"领航员"或"掌舵者"。它的主要作用如下
+Kubernetes[kubə’netis] 这个词是希腊语，意为"领航员"或"掌舵者"。它的主要作用如下
 
 - **云原生**
 
@@ -30,13 +30,11 @@ Kubernetes 这个词是希腊语，意为"领航员"或"掌舵者"。它的主�
 
 
 
-Kubernetes uses a **declarative model** to define an application. Instead of telling Kubernetes what to do, you simply set a new desired state of the system and let Kubernetes achieve it. To do this, it examines the current state, compares it with the desired state, identifies the differences and determines what it must do to reconcile them.
+Kubernetes uses a **declarative model** to define an application. 只需要告诉k8s做什么，至于怎么做无需关心。
 
 ![img](assets/1.2.png)
 
-Whenever you change the description, Kubernetes will take the necessary steps to reconfigure the running application to match the new description
-
- ![img](assets/1.3.png)
+![img](assets/1.3.png)
 
 ![img](assets/1.4.png)
 
@@ -52,7 +50,7 @@ Whenever you change the description, Kubernetes will take the necessary steps to
 
 
 
-a **Kubernetes cluster** are divided into the **Control Plane** and the **Workload Plane**（**Data Plane**）
+k8s集群被分为两个部分：the **Control Plane** and the **Workload Plane**（**Data Plane**）
 
 ![img](assets/1.9.png)
 
@@ -64,7 +62,7 @@ a **Kubernetes cluster** are divided into the **Control Plane** and the **Worklo
 
   ![img](assets/1.12.png)
 
-  - **The Kubernetes API Server** exposes the RESTful Kubernetes API.  **Everything in Kubernetes is represented by an object** and can be retrieved and manipulated via the RESTful API
+  - **The Kubernetes API Server** exposes the RESTful Kubernetes API.  **Everything in Kubernetes is represented by an object** and can be retrieved and manipulated via the RESTful API. These objects are usually defined in one or more manifest files in either YAML or JSON format.
   - **The etcd distributed datastore** persists the objects you create through the API, since the API Server itself is stateless. The Server is the only component that talks to etcd.
   - **The Scheduler** decides on which worker node each application instance should run.
   - **Controllers** bring to life the objects you create through the API. Most of them simply create other objects, but some also communicate with external systems
@@ -78,17 +76,6 @@ a **Kubernetes cluster** are divided into the **Control Plane** and the **Worklo
   - **The Kubernetes Service Proxy (Kube Proxy)** load-balances network traffic between applications. 
 
 > Most Kubernetes clusters also contain several other components. This includes a DNS server, network plugins, logging agents and many others. They typically run on the worker nodes but can also be configured to run on the master.
-
-Everything in Kubernetes is represented by an **object**. You create and retrieve these objects via the Kubernetes API. Your application consists of several types of these objects
-
-- one type represents the application deployment as a whole
-- another represents a running instance of your application
-- another represents the service provided by a set of these instances and allows reaching them at a single IP address
-- and so on
-
-These objects are usually defined in one or more manifest files in either YAML or JSON format.
-
-
 
 
 
@@ -140,6 +127,8 @@ Docker is a platform for packaging, distributing and running applications. It si
 
 一个部署Docer的基本流程：
 
+根据配置文件，构建出一个镜像
+
 ![img](assets/2.5.png)
 
 ![img](assets/2.6.png)
@@ -148,7 +137,7 @@ Docker is a platform for packaging, distributing and running applications. It si
 
 When you run an application in a container, it sees exactly the file system content you bundled into the container image, as well as any additional file systems you mount into the container.
 
-container images consist of layers. These layers can be shared and reused across multiple images.  Layers make image distribution very efficient but also help to reduce the storage footprint of images. Docker stores each layer only once. 
+**container images consist of layers**. These layers can be shared  across multiple images.  Layers make image distribution very efficient but also help to reduce the storage footprint of images. Docker stores each layer only once. 
 
 ![img](assets/2.8.png)
 
@@ -158,17 +147,13 @@ When an application running in container A changes a file (delete, change permis
 
 when you delete a file, it is only marked as deleted in the new layer and is not removed from the layers below.
 
-containers don’t have their own kernel. If a containerized application requires a particular kernel version, it may not work on every computer.
+containers don’t have their own kernel. If a containerized application requires a particular kernel version, it may not work on every computer.（可移植性差）. It should also be clear that a containerized app built for a specific hardware architecture can only run on computers with the same architecture. For this you would need a VM to emulate the  specific architecture.
 
 ![img](assets/2.9.png)
 
-And it’s not just about the kernel and its modules. It should also be clear that a containerized app built for a specific hardware architecture can only run on computers with the same architecture.
-
-For this you would need a VM to emulate the  specific architecture.
-
 The actual isolation of containers takes place at the Linux kernel level using the mechanisms it provides. Docker just makes it easy to use these mechanisms
 
-After the success of Docker, the Open Container Initiative (OCI) was born to create open industry standards around container formats and runtime
+After the success of Docker, the **Open Container Initiative (OCI)** was born to create open industry standards around container formats and runtime
 
 Kubernetes now supports many other container runtimes through the Container Runtime Interface (CRI). One implementation of CRI is CRI-O, a lightweight alternative to Docker that allows you to leverage（使用） any OCI-compliant container runtime with Kubernetes. Examples of OCI-compliant runtimes include rkt (pronounced Rocket), runC, and Kata Containers.
 
@@ -179,8 +164,6 @@ $ docker run busybox echo "Hello World"
 ~~~
 
 ![img](assets/2.10.png)
-
-
 
 If you want to run an image from a different registry, you must specify the registry along with the image name
 
@@ -394,7 +377,7 @@ $ docker run --memory="100m" ...
 
 
 
-## Strengthening isolation between containers
+## Strengthening isolation between containers *
 
 the processes in these containers use the same system kernel.  A rogue container could make malicious system calls that would affect other containers
 
@@ -503,9 +486,7 @@ kind delete cluster --name ${name}
 
 
 
-Kind runs a single-node cluster by default. 
-
-If you want to run a cluster with multiple worker nodes, you must first create a configuration file named `kind-multi-node.yaml`
+Kind runs a single-node cluster by default.  If you want to run a cluster with multiple worker nodes, you must first create a configuration file named `kind-multi-node.yaml`
 
 ~~~yml
 kind: Cluster
@@ -530,7 +511,7 @@ $ kind get nodes
 
 
 
-Unlike Minikube, where you use `minikube ssh` to log into the node. with kind you should use `docker exec`
+Unlike Minikube, where you use `minikube ssh` to log into the node. with kind you should run this command
 
 ~~~shell
 $ docker exec -it kind-control-plane bash
@@ -608,6 +589,10 @@ kubectl proxy
 
 ## Running application on Kubernetes
 
+Strictly speaking, a Deployment results in nothing more than the creation of a certain number of Pod objects. If one or more pods disappear or their status is unknown, Kubernetes replaces them to bring the actual number of pods back to the desired number of replicas based on deplotment. 
+
+Pod是承载应用的容器组，Service提供了访问这些Pod的统一入口
+
 ### Deployment
 
 创建一个Deploymeny对象：
@@ -657,8 +642,6 @@ kubia-9d785b578-58vhc  ...  10.244.1.5  worker1
 kubia-9d785b578-jmnj8  ...  10.244.2.4  worker2
 kubia-9d785b578-p449x  ...  10.244.2.3  worker2
 ~~~
-
-If one or more pods disappear (deleted) or their status is unknown, Kubernetes replaces them to bring the actual number of pods back to the desired number of replicas.
 
 
 
