@@ -581,6 +581,8 @@ the type of a scalar subquery result is still a relation. However, when a scalar
 
 ### Modification
 
+#### delete
+
 ~~~mysql
 delete from r
 where P
@@ -597,6 +599,8 @@ where dept_name in (
 Performing all the tests before performing any deletion is important. if some tuples are deleted before other tuples have been tested the final result of the **delete** would depend on the order in which the tuples were processed!
 
 
+
+#### insert
 
 To insert data into a relation, we either specify a tuple to be inserted 
 
@@ -625,7 +629,7 @@ insert into instructor
 
 It is important that the system evaluate the **select** statement fully before it performs any insertions. 
 
-
+#### update
 
 ~~~sql
 update instructor
@@ -661,10 +665,6 @@ case
     else result0
 end
 ~~~
-
-
-
-
 
 ## Intermediate SQL
 
@@ -735,15 +735,11 @@ a query using a join expression with an on condition can be replaced by an equiv
 
 
 
-
-
 **The outer-join operation** preserves those tuples that would be lost in a join by creating tuples in the result containing null values. There are three forms of outer join:
 
 - **The left outer join** preserves tuples only in the relation named before (to the left of) the left outer join operation.
 - **The right outer join** preserves tuples only in the relation named after (to the right of) the right outer join operation.
 - **The full outer join** preserves tuples in both relations.
-
-
 
 In contrast the join operations we studied earlier that do not preserve nonmatched tuples are called **inner-join operations**
 
@@ -751,8 +747,6 @@ We can compute the left outer-join operation as follows: First, compute the resu
 
 1. The attributes of tuple r that are derived from the left-hand-side relation are filled in with the values from tuple t.
 2. The remaining attributes of r are filled with null values.
-
-
 
 ~~~sql
 select *
@@ -769,8 +763,6 @@ on and where behave differently for outer join.
 4. where
 
 可见被on过滤掉的元组，会在outer join中添加回来，但是被where过滤掉的，却无能为力了
-
-
 
 natural join is equivalent to natural inner join.
 
@@ -841,91 +833,83 @@ insert into runoob_transaction_test value(5);
 Commit;		-- mysql不支持end语句
 ~~~
 
+
+
+Transactions may consist of several steps, and integrity constraints may be violated temporarily after one step, but a later step may remove the violation. To handle such situations, the SQL standard allows a clause `initially deferred` to be added to a constraint specification; the constraint would then be checked at the end of a transaction and not at intermediate steps. **MySQL does not support deferred constraints**
+
+此外，如果在事务中违反了约束，那么整个事务就会进行回滚操作。
+
 ### Integrity Constraints
 
 **Integrity constraints** ensure that changes made to the database do not result in a loss of data consistency
 
 In general, an integrity constraint can be an arbitrary predicate pertaining to the database. However, arbitrary predicates may be costly to test. Thus, most database systems allow one to specify only those integrity constraints that can be tested with minimal overhead.
 
+管理Integrity constraints 
 
+1.  Integrity constraints  are usually declared as part of the create table command. it can also be added to an existing relation by using the command `alter table table-name add constraint`. 
 
-Integrity constraints are usually declared as part of the create table command
+2. To name a constraint, we precede the constraint with the keyword constraint and the name we wish to assign it
 
-integrity constraints can also be added to an existing relation by using the command `alter table table-name add constraint`. When such a command is executed, the system first ensures that the relation satisfies the specified constraint. If it does, the constraint is added to the relation; if not, the command is rejected.
+   ~~~sql
+   salary numeric(8,2), constraint minsalary check (salary > 29000),
+   ~~~
 
+3. if we decide we no longer want this constraint, we can write:
 
-
-In particular, SQL prohibits null values in the primary key of a relation schema
-
-The `not null` constraint prohibits the insertion of a null value for the attribute
-
-SQL also supports an integrity constraint: `unique (A1 , A2 , …, Am )` . The unique specification says that attributes A1 , A2 , …, Am form a superkey; However, attributes declared as unique are permitted to be null. Recall that a null value does not equal any other value
-
-the clause `check(P)` specifies a predicate P that must be satisfied by every tuple in a relation. A check clause is satisfied if it is not false, so clauses that evaluate to unknown are not violations.
-
-
-
-referential integrity constraint
-
-~~~sql
-foreign key (dept name) references department(dept name)
-~~~
-
-The specified list of attributes must, however, be declared as a superkey of the referenced relation, using either a primary key constraint or a unique constraint
-
-When a referential-integrity constraint is violated, the normal procedure is to reject the action that caused the violation.  但是还有其他策略：
-
-- on delete cascade
-- on update cascade
-- set default
-- set null
-
-~~~sql
-create table course( 
-    …
-    foreign key (dept name) references department
-    on delete cascade
-    on update cascade,
-);
-~~~
-
-If there is a chain of foreign-key dependencies across multiple relations, a deletion or update at one end of the chain can propagate across the entire chain
-
-If any of the foreign-key columns is null, the tuple is defined automatically to satisfy the constraint. This definition may not always be the right choice, so SQL also provides constructs that allow you to change the behavior with null values
-
-To name a constraint, we precede the constraint with the keyword constraint and the name we wish to assign it
-
-~~~sql
-salary numeric(8,2), constraint minsalary check (salary > 29000),
-~~~
-
-if we decide we no longer want this constraint, we can write:
-
-~~~sql
-alter table instructor drop constraint minsalary;
-~~~
+    ~~~sql
+    alter table instructor drop constraint minsalary;
+    ~~~
 
 
 
-Transactions may consist of several steps, and integrity constraints may be violated temporarily after one step, but a later step may remove the violation. To handle such situations, the SQL standard allows a clause `initially deferred` to be added to a constraint specification; the constraint would then be checked at the end of a transaction and not at intermediate steps
+- In particular, SQL prohibits null values in the primary key of a relation schema. The `not null` constraint prohibits the insertion of a null value for the attribute.
 
-**MySQL does not support deferred constraints**
+- SQL also supports an integrity constraint: `unique (A1 , A2 , …, Am )` . The unique specification says that attributes A1 , A2 , …, Am form a superkey; However, attributes declared as unique are permitted to be null. Recall that a null value does not equal any other value
 
-此外，如果在事务中违反了约束，那么整个事务就会进行回滚操作。
+- the clause `check(P)` specifies a predicate P that must be satisfied by every tuple in a relation. A check clause is satisfied if it is not false, so clauses that evaluate to unknown are not violations.
 
+- An assertion is a predicate expressing a condition that we wish the database always to satisfy
 
+  ~~~sql
+  create assertion <assertion-name> check <predicate>;
+  ~~~
 
+  Currently, none of the widely used database systems supports either subqueries in the check clause predicate or the create assertion construct
 
+- **referential integrity constraint**
 
-An assertion is a predicate expressing a condition that we wish the database always to satisfy
+  ~~~sql
+  foreign key (dept name) references department(dept name)
+  ~~~
 
-~~~sql
-create assertion <assertion-name> check <predicate>;
-~~~
+  The specified list of attributes must, however, be declared as a superkey of the referenced relation, using either a primary key constraint or a unique constraint
 
-Currently, none of the widely used database systems supports either subqueries in the check clause predicate or the create assertion construct
+  When a referential-integrity constraint is violated, the normal procedure is to reject the action that caused the violation.  但是还有其他策略：
 
-### SQL Data Types
+  - on delete cascade
+  - on update cascade
+  - set default
+  - set null
+
+  ~~~sql
+  create table course( 
+      …
+      foreign key (dept name) references department
+      on delete cascade
+      on update cascade,
+  );
+  ~~~
+
+  If there is a chain of foreign-key dependencies across multiple relations, a deletion or update at one end of the chain can propagate across the entire chain
+
+  If any of the foreign-key columns is null, the tuple is defined automatically to satisfy the constraint. This definition may not always be the right choice, so SQL also provides constructs that allow you to change the behavior with null values
+
+  
+
+### SQL  Types
+
+#### date
 
 SQL standard supports several data types relating to dates and times:
 
@@ -933,8 +917,6 @@ SQL standard supports several data types relating to dates and times:
 - time: The time of day, in hours, minutes, and seconds. A variant, time(p), can be used to specify the number of fractional digits for seconds (the default being 0). 
 - timestamp: A combination of date and time. A variant, timestamp(p), can be used to specify the number of fractional digits for seconds (the default here being 6). 
 - datetime 
-
-
 
 datetime与timestamp之间的区别:
 
@@ -956,6 +938,8 @@ SQL defines several functions to get the current date and time.
 
 
 
+#### Default
+
 SQL allows a default value to be specified
 
 ~~~sql
@@ -964,7 +948,7 @@ create table student(
 );
 ~~~
 
-
+#### Blob
 
 SQL provides large-object data types for character data (clob) and binary data (blob)
 
@@ -994,39 +978,125 @@ drop index <index-name>;
 
 ### Authorization
 
-The SQL standard includes the privileges select, insert, update, and delete
-
-~~~sql
-grant <privilege list>
-on <relation name or view name>
-to <user/role list>;
-~~~
-
-The update privilege can specify a list of attributes. If the list of attributes is omitted, the update privilege will be granted on all attributes of the relation.
-
-~~~sql
-grant update (budget) on department to Amit, Satoshi;
-~~~
-
-The insert privilege may also specify a list of attributes; any inserts to the relation at most specify only these attributes, and the system either gives each of the remaining attributes default values (if a default is defined for the attribute) or sets them to null.
-
-The user name `public` refers to all current and future users of the system.
-
-By default, a user/role that is granted a privilege is not authorized to grant that privilege to another user/role
-
-It is worth noting that the SQL authorization mechanism grants privileges on an entire relation, or on specified attributes of a relation. However, it does not permit authorizations on specific tuples of a relation.
-
-To revoke an authorization, we use the revoke statement. It takes a form almost identical to that of grant:
-
-~~~sql
-revoke <privilege list>
-on <relation name or view name>
-from <user/role list>;
-~~~
-
 ## Advanced SQL
 
 ### Functions and Procedures
 
+通过在例程中实现数据库的业务逻辑，可以在多个编程语言中复用这段逻辑，而无需在每个编程语言中重新实现该逻辑。
+
+使用示例1：
+
+~~~sql
+create function dept_count(dept_name varchar(20)) returns integer
+begin
+	declare d_count integer;
+		select count(*) into d_count
+		from instructor
+	return d_count;
+end
+~~~
+
+使用示例2：
+
+~~~sql
+create function instrcutor_of(dept_name varchar(20)) returns table(
+	ID varchar(5),
+    name varchar(20),
+)
+return table(
+	select ID, name
+    from instructor
+);
+
+
+-- 例程在SQL语句中的使用
+select *
+from table(instructor_of("Myokuu");
+~~~
+
+
+
+函数的参数可以分为`in`、`out`类型
+
+~~~sql
+create procedure dept_count_proc(int dept_name varchar(20), out d_count integer)
+begin
+	select count(*) into d_count
+	from instrcutor;
+end
+~~~
+
+可以通过call语句，从一个例程中调用另一个例程：
+
+~~~sql
+declare d_count integer;
+call dept_count_proc("Physics", d_count);
+~~~
+
+变量通过declare语句声明，通过set语句进行赋值
+
+复合语句有`begin ... end`形式。而`begin atomic ... end`的复合语句作为单一事务来执行
+
+
+
+循环逻辑：
+
+~~~sql
+while 布尔表达式 do
+	语句序列;
+end while
+
+repeat
+	语句序列;
+until 布尔表达式
+end repeat
+~~~
+
+for语句，允许对查询结果进行遍历：
+
+~~~sql
+declare n integer default 0;
+for r as
+	select budget from department
+do
+	set n = n - r.budget
+end for
+~~~
+
+此外，leave语句可以退出循环，而iterate可以跳过本次循环，进入下一个元组
+
+
+
+分支逻辑：
+
+~~~sql
+if 布尔表达式 then
+     复合语句
+elseif 布尔表达式 then
+     复合语句
+else 
+    复合语句
+endif
+~~~
+
+
+
+![image-20240301212706671](assets/image-20240301212706671.png)
+
 ### Triggers
 
+触发器可以实现复杂的CHECK逻辑，以及审计跟踪。一个触发器有三个部分：
+
+- 事件
+- 条件
+- 动作
+
+![image-20240301210651617](assets/image-20240301210651617.png)
+
+
+
+![image-20240301214556405](assets/image-20240301214556405.png)
+
+这里`referencing new row as nrow`，声明了一个过渡变量，用来存储刚刚修改（插入、删除、更新）的值。与之对应的是`referencing old row`
+
+![image-20240301214855429](assets/image-20240301214855429.png)

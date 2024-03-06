@@ -407,8 +407,6 @@ class _AsyncButtonState extends State<AsyncButton> {
      }
    ~~~
 
-
-
 基于以上两点，我们可以自定义下拉刷新的操作
 
 
@@ -724,6 +722,4 @@ while (!scanner.isDone) {
     scanner.position++;
 }
 ~~~
-
-## 
 

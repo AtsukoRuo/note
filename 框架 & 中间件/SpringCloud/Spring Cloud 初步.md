@@ -8,26 +8,15 @@
 
 Microservice is  a **distributed, loosely coupled** software service that carries out a small number of well-defined tasks. 
 
-微服务架构和其他常见架构：
+常见的架构
 
-- **N-tier architecture**：With this design, an applications is divided into multiple layers, each with their own responsibilities and functions, such as UI, services, data, testing, and so forth. As you create your application, you make a specific project or solution for the UI, then another one for the services, another for the data layer, and so on. In the end, you will have several projects that, combined, create an entire application. n-tier applications have many advantages, including these:
-
-  - N-tier applications offer good separation of concerns. making it possible to consider areas like UI (user interface), data, and business logic separately.
-
-  N-tier applications also have drawbacks:
-
-  - You must stop and restart the entire application when you want to make a change.
-  - Messages tend to pass up and down through the layers, which can be inefficient.
-
-- **monolithic architectural**：All of the UI, business, and database access logic are packaged together into a unique application and deployed to an application server.   Monolithic architectures have all processes tightly coupled, and these run as a single servic
-
-  Each development team is responsible for their own discrete piece of the application that usually targets specific customers. 
+- **monolithic architectural**
 
   ![image-20240105102106596](assets/image-20240105102106596.png)
 
-  Monoliths are easier to build and deploy than more complex architectures like n-tier or microservices.  When an application begins to increase in size and complexity, however, monoliths can become difficult to manage. Each change to a monolith can have a cascading effect on other parts of the application, which may make it time consuming and expensive, especially in a production system. 
+  
 
-- **microservice**：The key concepts you need to embrace as you think about microservices are **decomposing** and **unbundling**. 
+- **microservice**
 
   ![image-20240105103751066](assets/image-20240105103751066.png)
 
@@ -40,19 +29,15 @@ Figure 1.3 compares a monolithic design with a microservices approach for a typi
 
 ![image-20240105104328055](assets/image-20240105104328055.png)
 
-***Small, Simple, and Decoupled Services = Scalable, Resilient, and Flexible Applications***
 
-- **Flexible**（灵活性）—Decoupled services can be composed and rearranged to quickly deliver new functionality. 
-- **Resilient**（健壮性）— Failures can be localized to a small part of the application. This also enables the application to degrade gracefully in case of an unrecoverable error.
-- **Scalable**（可扩展）—Decoupled services can easily be distributed horizontally across multiple servers, making it possible to scale the features/services appropriately. 
+
+***Small, Simple, and Decoupled Services = Scalable, Resilient, and Flexible Applications***
 
  Conway’s law states that
 
 > “Organizations which design systems . . . are constrained to produce designs which are copies of the communication structures of these organizations.” 
 
 Basically, what that indicates is that the way teams communicate within the team and with other teams is directly reflected in the code they produce. we can apply **Conway’s law** in reverse by using microservice. 
-
-
 
 
 
@@ -140,7 +125,7 @@ One of the core concepts of a microservice architecture is that each service is 
 
 
 
-云基础微服务的优势主要围绕**「弹性（elasticity）」**这一概念来展开的。-
+云基础微服务的优势主要围绕**「弹性（elasticity）」**这一概念来展开的。
 
 - Server elasticity means that your applications can be more resilient. 如果微服务由于Bug导致下线，那么我们可以迅速再次启动该微服务来保证服务的可用性，同时争取到足够长的时间来修复Bug
 
@@ -168,7 +153,7 @@ Microservices are more than writing the business code. Writing a robust service 
 
 - **Core development pattern**
 - **Client resiliency patterns**
-- **Logging and tracing patterns**
+- xxxxxxxxxx spring.datasource.username = postgresspring.datasource.password = {cipher} 559ac661a1c93d52b9e093d3833a238a142de7772961d94751883b17c41746a6xml
 - **Build and deployment pattern**
 - **Routing patterns**
 - **Security patterns**
@@ -177,8 +162,6 @@ Microservices are more than writing the business code. Writing a robust service 
 
 
 ### Core microservice development pattern
-
-
 
 ![image-20240105155817162](assets/image-20240105155817162.png)
 
@@ -334,13 +317,7 @@ Our goal with these patterns and topics is to ruthlessly expose and stamp out（
 
   Spring Cloud Security also supports JSON Web Tokens (JWT). JWT (https://jwt.io) standardizes the format for creating an OAuth2 token and normalizes digital signatures for a generated token.
 
-
-
-
-
 ## 云原生微服务
-
-
 
 **Cloud** is a technology resource management system that lets you replace local machines and private data centers by using a **virtual infrastructure**. There are several levels or types of cloud applications：
 
@@ -351,8 +328,6 @@ Our goal with these patterns and topics is to ruthlessly expose and stamp out（
   ![image-20240106144655742](assets/image-20240106144655742.png)
 
 - ......
-
-
 
 
 

@@ -6,15 +6,11 @@
 
 Spring Boot 围绕着「运维」和「配置」提供了大量的功能，其中核心功能是：
 
-- **起步依赖**：它主要解决依赖管理的难题：针对一个功能，需要引入哪些依赖、它们的版本又是什么、互相之间是否存在冲突、它们的间接依赖项之间是否存在冲突？
-
-  起步依赖是以功能为单位来组织依赖的
+- **起步依赖**：它主要解决依赖管理的难题：针对一个功能，需要引入哪些依赖、它们的版本又是什么、互相之间是否存在冲突、它们的间接依赖项之间是否存在冲突？起步依赖是以功能为单位来组织依赖的
 
 - **自动配置**：它能根据 CLASSPATH 中存在的类判断出引入了哪些依赖，并为这些依赖提供常规的默认配置，以此来消除模板化的配置过程。与此同时，Spring Boot 仍然给我们留下了很大的自由度，可以对配置进行各种定制
 
 - **Spring Boot Actuator**：提供一系列在生产环境运行时所需的特性，帮助我们监控并管理应用程序。通过 HTTP 端点或者 JMX，Spring Boot Actuator 可以实现健康检查、度量收集、审计、配置管理等功能。
-
-
 
 Spring Boot 工程的目录结构如下：
 
@@ -33,7 +29,7 @@ Spring Boot 工程的目录结构如下：
 
   - 工程自身的 GroupId、ArtifactId 与 Version 等内容定义；
 
-  - 工程所继承的 `org.springframework.boot:spring-boot-starter-parent` 父项目文件；
+  - 继承的 `org.springframework.boot:spring-boot-starter-parent` 父项目文件；
 
     ~~~xml
     <parent>
@@ -43,14 +39,6 @@ Spring Boot 工程的目录结构如下：
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     ~~~
-
-    `org.springframework.boot:spring-boot-starter-parent` 又继承了 `org.springframework.boot:spring-boot-dependencies`。
-
-    `spring-boot-dependencies.pom`在`<properties>` 内定义了很多版本号
-
-    <img src="assets/16dc39cfebc2bea1tplv-t2oaga2asx-jj-mark3024000q75.webp" alt="img" style="zoom: 25%;" />
-
-    在`dependencyManagement`中定义了各种`dependency`，这些依赖引用了`properties`中的版本号。其中`dependencyManagement`表示声明依赖，但不加载。只有在子项目中配置了一个没有版本号的依赖时，才会进行加载。这样我们就无需在我们自己的pom文件中说明依赖的版本号，springboot已经帮我们配置好了。
 
   - `<dependencies/>` 依赖项定义；
 
@@ -66,11 +54,7 @@ Spring Boot 工程的目录结构如下：
         </plugins>
     </build>
     ~~~
-
-    
-
   
-
 - **`src/main`** 中是生产的 Java 代码和相关资源文件；
 
   - java：Java代码
@@ -87,11 +71,7 @@ Spring Boot 工程的目录结构如下：
 - 同一个依赖项因为版本升级替换了 GroupId 或 ArtifactId 的情况。这更糟糕，Maven 会认为这是两个不同的依赖，它们都会被保留下来
 
 
-Spring Boot 的起步依赖之后，此类问题就能得到缓解，同一版本的 Spring Boot 中的各个起步依赖所引入的依赖不会产生冲突，因为官方对这些依赖进行了严格的测试。
-
-Spring Boot 按照功能划分了很多起步依赖，大家只需要知道自己要什么功能，比如要实现 Web 功能、需要 JPA 支持等。具体引入什么依赖、分别是什么版本，都可以交给起步依赖来完成。
-
-一些常用的 Spring Boot 起步依赖：
+Spring Boot 的起步依赖之后，此类问题就能得到缓解，同一版本的 Spring Boot 中的各个起步依赖所引入的依赖不会产生冲突，因为官方对这些依赖进行了严格的测试。Spring Boot 按照功能划分了很多起步依赖，大家只需要知道自己要什么功能，比如要实现 Web 功能、需要 JPA 支持等。具体引入什么依赖、分别是什么版本，都可以交给起步依赖来完成。一些常用的 Spring Boot 起步依赖：
 
 | 名称                             | 描述                                                         |
 | :------------------------------- | :----------------------------------------------------------- |
@@ -106,7 +86,7 @@ Spring Boot 按照功能划分了很多起步依赖，大家只需要知道自�
 | `spring-boot-starter-test`       | 在 Spring 项目中进行测试所需的相关库                         |
 | `spring-boot-starter-web`        | 构建 Web 项目所需的各种依赖，默认使用 Tomcat 作为内嵌容器    |
 
-如果我们出于修复安全漏洞或使用新功能的目的，想要升级某些依赖，但 Spring Boot 的依赖并未升级。我们可以在 Maven 的 `<properties/>` 中指定对应依赖的版本
+如果我们出于修复安全漏洞或使用新功能的目的，想要升级某些依赖，但 Spring Boot 的依赖并未升级。我们可以在 Maven 的 `<properties/>` 中指定对应依赖的版本。
 
 ~~~xml
 <properties>
@@ -136,46 +116,33 @@ Spring Boot 按照功能划分了很多起步依赖，大家只需要知道自�
 </dependencies>
 ~~~
 
-起步依赖背后使用的其实就是 **Maven 的传递依赖机制**。
+
+
+起步依赖背后使用的其实就是 **Maven 的传递依赖机制**。我们前面提及过pom.xml会继承`org.springframework.boot:spring-boot-starter-parent` 父项目文件，而`org.springframework.boot:spring-boot-starter-parent` 又继承了 `org.springframework.boot:spring-boot-dependencies`。`spring-boot-dependencies.pom`在`<properties>` 内定义了很多版本号
+
+<img src="assets/16dc39cfebc2bea1tplv-t2oaga2asx-jj-mark3024000q75.webp" alt="img" style="zoom: 25%;" />
+
+在`<dependencyManagement>`标签中定义了各种`<dependency>`，这些依赖引用了`properties`中的版本号。其中`<dependencyManagement>`表示声明依赖，但不加载它们。只有在子项目中配置了一个没有版本号的依赖时，才会进行加载。这样我们就无需在我们自己的pom文件中说明依赖的版本号，springboot已经帮我们配置好了。
 
 ## 自动配置
 
 `@SpringBootApplication`主要是这三个注解
 
-- @`SpringBootConfiguration`：说明它是一个配置类
-- `@EnableAutoConfiguration`（下面会介绍）
-- `@ComponentScan`：扫描指定包（以及子包）中的Bean对象，默认就是`@SpringBootAplication`类所在的包
+- `@SpringBootConfiguration`：说明它是一个配置类
+- `@EnableAutoConfiguration`
+- `@ComponentScan`：扫描`@SpringBootAplication`类所在的包
 
 ~~~java
 @SpringBootApplication
 public class BinaryTeaApplication {
 	public static void main(String[] args) {
+        // `SpringApplication.run`方法会创建一个`ApplicationContext`容器实例，完成IoC容器构建工作。
 		ConfigurableApplicationContext context = SpringApplication.run(BinaryTeaApplication.class, args);
 	}
 }
 ~~~
 
-`SpringApplication.run`方法会创建一个`ApplicationContext`容器实例，完成IoC容器构建工作。
 
-
-
-
-
-In a Spring Boot application, you can define Spring beans by 
-
-- Annotating a Java class with a @Component, @Service, or @Repository annotation tag 
-- Annotating a class with a @Configuration tag and then defining a factory method for each Spring bean you want to build with a @Bean tag
-
-上面的实现原理是通过`@SpringBootApplication`注解上的`@ComponentScan`来加载Bean对象。注意，@Configuration注解上有@Component
-
-~~~java
-//...
-@Component
-public @interface Configuration {
-	//...
-}
-
-~~~
 
 此外，还可以通过`@EnableAutoConfiguration`启用`spring-boot-autoconfigure`模块中的自动配置类来加载`Bean`（**约定大于配置**）。如果不想启用自动配置功能，可以在配置文件中配置`spring.boot.enableautoconfiguration=false`。
 

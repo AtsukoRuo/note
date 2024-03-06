@@ -10,25 +10,21 @@ Spring Security 主要提供了如下一些特性：
 
 `Spring Security`通过`Servlet`的过滤器`Filter`来做一些拦截操作，在这些拦截中来实现安全功能。
 
-
-
 ![{%}](assets/032-1703747875905-25.jpg)
 
- `DelegatingFilterProxy` 在处理时会把请求转给在 `Spring` 上下文中的 `FilterChainProxy`，后者再将请求转给 `SecurityFilterChain`。
+ `DelegatingFilterProxy` 在处理时，会把请求转给在 `Spring` 上下文中的 `FilterChainProxy`，后者再将请求转给 `SecurityFilterChain`。
 
-针对当前请求该对应哪些过滤器，都由 `SecurityFilterChain`（默认实现是 `DefaultSecurityFilterChain`，正是`http.build()`的返回值） 来决定。`Spring Security` 针对不同安全需求提供了大量过滤器，具体可见表 10-2。
+针对当前请求该对应哪些过滤器，都由 `SecurityFilterChain`（默认实现是 `DefaultSecurityFilterChain`） 来决定。`Spring Security` 针对不同安全需求提供了大量过滤器：
 
-**表 10-2　Spring Security 提供的部分 `Filter` 实现**
-
-| `Filter`                               | 作用                                                         |
-| :------------------------------------- | :----------------------------------------------------------- |
-| `CorsFilter`                           | 处理 CORS（Cross-Origin Resource Sharing，跨域资源共享）的 `Filter` 实现 |
-| `CsrfFilter`                           | 处理 CSRF（Cross-Site Request Forgery，跨站请求伪造）的 `Filter` 实现 |
-| `UsernamePasswordAuthenticationFilter` | 处理用户名与密码认证的 `Filter` 实现                         |
-| `AnonymousAuthenticationFilter`        | 处理匿名请求的 `Filter` 实现                                 |
-| `RememberMeAuthenticationFilter`       | 实现“记住我”功能的 `Filter` 实现                             |
-| `BasicAuthenticationFilter`            | 处理 HTTP Basic 认证的 `Filter` 实现                         |
-| `ExceptionTranslationFilter`           | 翻译异常信息的 `Filter` 实现                                 |
+| `Filter`                               | 作用                                                     |
+| :------------------------------------- | :------------------------------------------------------- |
+| `CorsFilter`                           | 处理 CORS（Cross-Origin Resource Sharing，跨域资源共享） |
+| `CsrfFilter`                           | 处理 CSRF（Cross-Site Request Forgery，跨站请求伪造）    |
+| `UsernamePasswordAuthenticationFilter` | 处理用户名与密码认证                                     |
+| `AnonymousAuthenticationFilter`        | 处理匿名请求                                             |
+| `RememberMeAuthenticationFilter`       | 实现“记住我”功能                                         |
+| `BasicAuthenticationFilter`            | 处理 HTTP Basic 认证                                     |
+| `ExceptionTranslationFilter`           | 翻译异常信息                                             |
 
 
 

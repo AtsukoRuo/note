@@ -2,7 +2,11 @@
 
 ![image-20240222003502992](assets/image-20240222003502992.png)
 
+
+
 ![image-20240222103841934](assets/image-20240222103841934.png)
+
+
 
 The participation of an entity set *E* in a relationship set *R* is said to be **total** if every entity in *E* must participate in at least one relationship in *R*. We indicate total participation of an entity in a relationship set using double lines.
 
@@ -92,9 +96,9 @@ There are two different methods of designing relation schemas for an E-R diagram
 
 Consider a many-to-one relationship set AB from entity set A to entity set B. Suppose further that the participation of A in the relationship is total;  Then we can combine the schemas A and AB to form a single schema consisting of the union of attributes of both schemas. 
 
-In the case of one-to-one relationships, the relation schema for the relationship set can be combined with the schemas for either of the entity sets.
-
 We can combine schemas even if the participation is partial by using null values.
 
-在合并时，外键和主键一并合并。
+In the case of one-to-one relationships, the relation schema for the relationship set can be combined with the schemas for either of the entity sets.
+
+
 

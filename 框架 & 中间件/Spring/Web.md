@@ -192,7 +192,6 @@ public User updateUser(@RequestBody User user) {
 @Controller			// 表明是MVC控制器
 @ResponseBody		// @ResponseBody 可以写在类上，也可以写在方法上，表示将方法的返回值作为响应的正文。
 @RequestMapping("/menu")		// 类上的 @RequestMapping 注解设置了整个类里的公共属性，在这里是设置了 URL 映射的基础路径 /menu
-
 public class MenuController {
     @Autowired
     private MenuService menuService;
