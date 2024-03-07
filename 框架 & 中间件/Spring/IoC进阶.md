@@ -6,17 +6,6 @@
 
 [TOC]
 
-自动注入（几乎用不到）：
-
-~~~xml
-<bean id="cat" class="com.linkedbear.spring.basic_di.a_quickstart_set.bean.Cat" autowire="byName">
-    <property name="name" value="test-cat"/>
-    <!-- <property name="master" ref="person"/> 可以不写 -->
-</bean>
-~~~
-
-自动注入的模式有 5 种选择：`AUTOWIRE_NO`（不自动注入）、`AUTOWIRE_BY_NAME`（根据 bean 的名称注入）、`AUTOWIRE_BY_TYPE`（根据 bean 的类型注入）、`AUTOWIRE_CONSTRUCTOR`（根据 bean 的构造器注入）
-
 
 
 ## BeanFactory的继承体系
@@ -705,9 +694,7 @@ BeanDefinition的结构：
 
   
 
-使用 xml 配置文件的方式，每定义一个 `<bean>` 标签，就相当于构建了一个 BeanDefinition。
-
-测试代码如下：
+使用 xml 配置文件的方式，每定义一个 `<bean>` 标签，就相当于构建了一个 BeanDefinition。测试代码如下：
 
   ~~~java
 ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("definition/definition-beans.xml");
@@ -1074,7 +1061,7 @@ public interface MergedBeanDefinitionPostProcessor extends BeanPostProcessor {
 
 ## BeanFactoryPostProcessor
 
-`BeanFactoryPostProcessor`是 `BeanDefinition`的后置处理器，它可以在 bean 实例化之前（包括`InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation`），修改定义信息。它的定义如下：
+`BeanFactoryPostProcessor`是 `BeanDefinition`的后置处理器，它可以在 Bean 实例化之前（包括`InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation`），修改定义信息。它的定义如下：
 
 ~~~java
 @FunctionalInterface
@@ -1143,7 +1130,7 @@ public class DogRegisterPostProcessor implements BeanDefinitionRegistryPostProce
 
 
 
-此外，`BeanFactoryPostProcessor`还可以动态注册`BeanFactoryPostProcessor`：
+此外，`BeanDefinitionRegistryPostProcessor`还可以通过构造`BeanDefiniton`来动态注册`BeanFactoryPostProcessor`
 
 ~~~java
 @Component

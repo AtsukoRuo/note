@@ -116,7 +116,7 @@ public void refresh() throws BeansException, IllegalStateException {
 
 1. **加载 xml 配置文件** 在基于 xml 配置文件的 `ApplicationContext` 中 `refresh` 方法的 **`BeanFactory` 初始化阶段**，此时 `BeanFactory` 刚刚构建完成，它会借助 `XmlBeanDefinitionReader` 来加载 xml 配置文件，并使用 `DefaultBeanDefinitionDocumentReader` 解析 xml 配置文件，将 `<bean>` 标签内容转换为 `BeanDefinition` 。
 2. **解析注解配置类** 发生在 `ApplicationContext` 中 `refresh` 方法的 `BeanDefinitionRegistryPostProcessor` 执行阶段，该阶段首先会执行 `ConfigurationClassPostProcessor` 的 `postProcessBeanDefinitionRegistry` 方法。`ConfigurationClassPostProcessor` 中会找出所有的配置类，排序后依次解析，并借助 `ClassPathBeanDefinitionScanner` 实现包扫描的 `BeanDefinition` 封装，借助 `ConfigurationClassBeanDefinitionReader` 实现 `@Bean` 注解方法的 `BeanDefinition` 解析和封装。
-3. **编程式构造 `BeanDefinition`** 也是发生在 `ApplicationContext` 中 `refresh` 方法的 `BeanDefinitionRegistryPostProcessor` 执行阶段，由于 `BeanDefinitionRegistryPostProcessor` 中包含 `ConfigurationClassPostProcessor` ，而 `ConfigurationClassPostProcessor` 会执行 `ImportBeanDefinitionRegistrar` 的逻辑，从而达到编程式构造 `BeanDefinition` 并注入到 `BeanDefinitionRegistry` 的目的。
+3. **编程式构造 `BeanDefinition`** 也是发生在 `ApplicationContext` 中 `refresh` 方法的 `BeanDefinitionRegistryPostProcessor` 执行阶段，其中`ConfigurationClassPostProcessor` 会执行 `ImportBeanDefinitionRegistrar` 的逻辑，从而达到编程式构造 `BeanDefinition` 并注入到 `BeanDefinitionRegistry` 的目的。
 
 
 
@@ -288,10 +288,6 @@ public static void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFacto
 
    
 
-![](assets/9b370e8939e145a49f39bba93525977atplv-k3u1fbpfcp-jj-mark_1512_0_0_0_q75.png)
-
-
-
 其中，会先最先执行由Spring提前注册好的`ConfigurationClassPostProcessor`的`postProcessBeanDefinitionRegistry`方法。负责处理带有`@Configuration`，`@Component`，`@ComponentScan`，`@Import`，`@ImportResource`等注解的类。
 
 ~~~java
@@ -450,8 +446,6 @@ public void refresh() throws BeansException, IllegalStateException {
 
 
 
-![img](assets/1d6cafe27f6441c793a82dbfa5d32308tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
-
 ### RegisterBeanPostProcessors
 
 ~~~java
@@ -486,35 +480,6 @@ public static void registerBeanPostProcessors(
 4. 最后又注册了一个`ApplicationListenerDetector`
 
 
-
-`BeanPostProcessorChecker`是一个 `BeanPostProcessor` ，当在 `BeanPostProcessor` 实例化期间创建 Bean 时，它会记录一条信息。
-
-~~~java
-// PostProcessorRegistrationDelegate#registerBeanPostProcessors
-public static void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
-    
-    int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;
-    
-	beanFactory.addBeanPostProcessor(new BeanPostProcessorChecker(beanFactory, beanProcessorTargetCount));
-    // ...
-}
-~~~
-
-~~~java
-// BeanPostProcessorChecker
-public Object postProcessAfterInitialization(Object bean, String beanName) {
-    // 此处判断是否有普通bean被提前创建
-    // isInfrastructureBean，这个方法主要检查当前处理的bean是否是一个Spring自身创建的bean，而不是程序员所创建的bean(通过@Component,@Configuration等注解或者XML配置等)。
-    if (!(bean instanceof BeanPostProcessor) 
-        && !isInfrastructureBean(beanName) 
-        && this.beanFactory.getBeanPostProcessorCount() < this.beanPostProcessorTargetCount) {
-        if (logger.isInfoEnabled()) {
-            // ...
-        }
-    }
-    return bean;
-}
-~~~
 
 ### finishBeanFactoryInitialization
 
@@ -1055,7 +1020,7 @@ protected void finishRefresh() {
 
 ## 切入点
 
-![未命名绘图.drawio](assets/未命名绘图.drawio-1709745142672-4.png)
+![未命名绘图.drawio](assets/未命名绘图.drawio-1709797078325-3.png)
 
 ## 循环依赖
 
@@ -1063,7 +1028,7 @@ protected void finishRefresh() {
 
 ## 缓存
 
-## @Bean的实现
+## @Bean方法的代理
 
 
 

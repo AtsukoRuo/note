@@ -1168,7 +1168,7 @@ public class DataSourceConfiguration {
 
 ##### Properties
 
-**PropertySource**对不同来源（系统属性、JVM属性、命令行参数、属性文件）的属性值做了抽象，以及**外部化配置**。我们可以通过以下两种方式获取属性值：
+`PropertySource`对不同来源（系统属性、JVM属性、命令行参数、属性文件）的属性值做了抽象，以及**外部化配置**。我们可以通过以下两种方式获取属性值：
 
 - `Environment`对象
 

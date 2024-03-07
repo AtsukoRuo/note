@@ -365,44 +365,6 @@ class MailModuleProperties {
 
 
 
-### 自定义
-
-官方的命名空间
-
-- 模式：spring-boot-starter-模块名
-- 举例：spring-boot-starter-web、spring-boot-starter-jdbc
-
-自定义的命名空间
-
-- 模式：模块名-spring-boot-starter
-- 举例：mybatis-spring-boot-starter
-
-
-
-步骤
-
-1. 新建两个模块，注意不需要父pom文件
-
-   1. xxx-spring-boot-autoconfigure：自动配置核心代码
-   2. xxx-spring-boot-starter：管理依赖
-
-2. 在 xxx-spring-boot-autoconfigure 项目中
-
-   1. 引入 spring-boot-autoconfigure 的 maven 依赖
-   2. 创建自定义的 XXXProperties 类，以及相关的业务逻辑类
-   3. 创建自定义的 XXXAutoConfiguration 类：这个类用于做自动配置时的一些逻辑。
-   4. 创建自定义的 spring.factories 文件：在 resources/META-INF 创建一个 spring.factories 文件和 spring-configuration-metadata.json
-      1. spring-configuration-metadata.json 文件是用于在填写配置文件时的智能提示
-      2. spring.factories用于导入自动配置类。
-   
-3. 在 xxx-spring-boot-starter 项目中引入 xxx-spring-boot-autoconfigure 依赖，其他项目使用该 starter 时只需要依赖 xxx-spring-boot-starter 即可
-
-   
-
-## SpringBootTest
-
-@SpringBootTest 在默认情况下开始在测试类的当前包中搜索，寻找用 @SpringBootConfiguration 注解的类，然后从中读取配置以创建应用程序上下文。
-
 ## Spring Boot Actuator 
 
 通过Spring Boot Actuator所提供的各种**端点（endpoint）**来了解系统的运行情况，以及使用 `Micrometer` 为各种监控系统提供度量指标数据
@@ -517,16 +479,6 @@ management.endpoints.web.exposure.include=*
 ~~~
 
 需要特别说明一点，要发布 HTTP 端点，必须要有 Web 支持，因此项目需要引入 `spring-boot-starter-web` 起步依赖。
-
-### 通过JMX访问端点
-
-与 HTTP 方式类似，JMX 也有两个属性，即 `management.endpoints.jmx.exposure.include` 和 `management.endpoints.jmx.exposure.exclude`。前者的默认值为 `*`，后者的默认值为空。
-
-
-
-有不少工具可以用来访问 JMX 端点，比如 JVisualVM 和 JConsole，它们都是 JDK 自带的工具。
-
-![image-20231205133149073](assets/image-20231205133149073.png)
 
 
 
