@@ -4,7 +4,7 @@
 
 [TOC]
 
-ZooKeeper是一个针对大型分布式系统的可靠协调系统，提供的功能包括配置维护、名字服 务、分布式同步、组服务等。
+ZooKeeper是一个针对大型分布式系统的可靠协调系统，提供的功能包括配置维护、名字服务、分布式同步等。
 
 ## 搭建集群
 
@@ -14,16 +14,24 @@ ZooKeeper集群节点数必须是奇数，否则可能会出现「可用节点�
 
 这里我们创建3个zookeeper节点的伪集群：
 
-1. 首先为节点创建日志目录`log/`。
+1. 将安装包解压到指定目录
 
-2. 然后创建一个数据目录，分别为`data/`。
+   ~~~shell
+   $ tar -zxvf apache-zookeeper-3.5.7-bin.tar.gz
+   ~~~
 
-3. 在数据目录下，创建一个名为myid文件（无扩展名），里面的内容为ID。ZooKeeper对ID有两点要求：
+   注意，解压包名中要带有bin，而`apache-zookeeper-3.5.7.tar.gz`一般是源代码文件
+
+2. 为节点创建日志目录`${zookeeper}/log/`。
+
+3. 然后创建一个数据目录`${zookeeper}/data/`。
+
+4. 在数据目录下，创建一个名为myid文件（无扩展名），里面的内容为ID。ZooKeeper对ID有两点要求：
 
    1. id只能是一个数字
    2. id的范围是1~255，表示集群最多的节点个数为255个。
 
-4. 为节点创建一个配置文件，可以在`${zookeeper}/conf/zoo_sample.cfg`配置文件的基础上进行修改，注意重命名为`zoo.cfg`
+5. 为节点创建一个配置文件，可以在`${zookeeper}/conf/zoo_sample.cfg`配置文件的基础上进行修改，注意重命名为`zoo.cfg`
 
    ~~~config
    tickTime=2000
@@ -40,19 +48,24 @@ ZooKeeper集群节点数必须是奇数，否则可能会出现「可用节点�
    server.3=127.0.0.1:2890:3890
    ~~~
 
-   - `server.id`
+   - 这里server.A=B:C:D
 
-     在ZooKeeper集群中，每个节点都需要感知到整个集群是由哪些节点组成的，所以每个配置文件都需要配置全部节点。在“.cfg”配置文件中，可以使用`server.id`格式来进行配置。每一行`server.id=host:port:port`中需要配置两个端口。 前一个端口用于节点之间的通信，为通信端口；后一个端口用于选举Leader主节点，为选主端口。
+     - A 是一个数字，代表服务器的编号，就是myid文件里面的值。集群中每台服务器的编号都必须唯一
+     - B代表服务器的IP地址
+     - C表示服务器与集群中的 leader 服务器交换信息的端口
+     - D表示选举时，服务器相互通信的端口
 
    - `tickTime`：单元时间。
    - `initLimit`：节点的初始化时间
    - `syncLimit`：心跳最大延迟周期。
 
-5. 运行`${zookeeper}/bin/zkServer.sh`
+6. 运行`${zookeeper}/bin/zkServer.sh`
 
 每个节点都要执行一遍上述流程，而且在复制的zookeeper文件夹中
 
 ![image-20240227202227608](assets/image-20240227202227608.png)
+
+
 
 ## 分布式存储
 
@@ -216,7 +229,6 @@ public void createNode() {
     CuratorFramework client = ClientFactory.createSimple(ZK_ADDRESS);
     try {
         client.start();
-
         String data = "hello";
         byte[] payload = data.getBytes("UTF-8");
         String zkPath = "/test/CRUD/node-1";
@@ -340,36 +352,6 @@ public void deleteNode() {
 
 
 
-在Curator的API中，事件监听有两种模式
-
-- Watcher监听器
-- 本地缓存视图Cache机制
-
-~~~java
-// 定义一个监听器
-Watcher w = new Watcher() {
-    @Override
-    public void process(WatchedEvent watchedEvent) {
-    	log.info("监听器watchedEvent：" + watchedEvent);
-    }
-};
-
-// 注册监听器
-byte[] content = client.getData().usingWatcher(w).forPath(workerPath);
-~~~
-
-
-
-`WatchedEvent`包含了三个基本属性：
-
-- 通知状态（KeeperState）
-- 事件类型（EventType）
-- 节点路径（path）
-
-![image-20240227225942187](assets/image-20240227225942187.png)
-
-
-
 ## 命名服务
 
 维护全局的服务接口。大致的思路为：
@@ -428,58 +410,7 @@ public class IDMaker {
 
 
 
- ## 节点命名
 
-~~~java
-public class SnowflakeIdWorker {
-    private CuratorFramework zkClient = null;
-
-    private String pathPrefix = "/test/IDMaker/worker-";
-    private String pathRegistered = null;
-    private Long nodeId = null;
-
-
-    public static SnowflakeIdWorker instance = new SnowflakeIdWorker();
-
-    private SnowflakeIdWorker()
-    {
-        this.zkClient = ZKclient.instance.getClient();
-        this.init();
-    }
-
-    public void init() {
-        try {
-            byte[] payload = pathPrefix.getBytes();
-            pathRegistered = zkClient.create()
-                .creatingParentsIfNeeded()
-                .withMode(CreateMode.EPHEMERAL_SEQUENTIAL)
-                .forPath(pathPrefix, payload);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public long getNodeId() {
-        if (nodeId != null)
-            return nodeId;
-
-        String sid = null;
-        if (pathRegistered == null) {
-            throw new RuntimeException("节点注册失败");
-        }
-        int index = pathRegistered.lastIndexOf(pathPrefix);
-        if (index >= 0) {
-            index += pathPrefix.length();
-            sid = index <= pathRegistered.length() ? pathRegistered.substring(index) : null;
-        }
-        if (sid == null) {
-            throw new RuntimeException("节点ID生成失败");
-        }
-        nodeId = Long.parseLong(sid);
-        return nodeId;
-    }
-}
-~~~
 
 ## SnowFlake ID算法
 
@@ -502,7 +433,7 @@ SnowFlake算法在同一毫秒内最多可以生成的ID数量为$1024×4096=419
 
 ## Watcher
 
-在ZooKeeper中，接口类Watcher用于表示一个标准的事件处理器，包含KeeperState和EventType两个枚举类，分别代表了通知状态和事件类型，同时定义了事件的回调方法：process（WatchedEvent event）。
+在ZooKeeper中，接口类Watcher用于表示一个标准的事件处理器，包含`KeeperState`和`EventType`两个枚举类，分别代表了通知状态和事件类型，同时定义了事件的回调方法：`process(WatchedEvent event)`。
 
 ~~~java
 public interface Watcher {
@@ -597,8 +528,6 @@ nodeCache.start();
 
   - `dataIsCompressed`：是否对数据进行压缩
 
-    
-
 - ~~~java
   void start()				//Start the cache.
   void start(boolean buildInitial)
@@ -673,6 +602,8 @@ TreeCacheListener l = new TreeCacheListener() {
 treeCache.getListenable().addListener(l);
 treeCache.start();
 ~~~
+
+
 
 
 

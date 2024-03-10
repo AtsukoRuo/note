@@ -794,21 +794,7 @@ public class MyBean implements ApplicationContextAware, BeanNameAware {
 
 `ApplicationContext` 提供了一套事件机制，容器在特定条件时，会向实现 `ApplicationListener` 接口的类通知相应的ApplicationEvent事件。例如，`ApplicationContext` 在启动、停止、关闭和刷新时，分别会通知`ContextStartedEvent`、`ContextStoppedEvent`、`ContextClosedEvent` 和 `ContextRefreshedEvent` 事件。
 
-`ApplicationContextEvent`的源码：
 
-~~~java
-public abstract class ApplicationContextEvent extends ApplicationEvent {
-	public ApplicationContextEvent(ApplicationContext source) {
-		super(source);
-	}
-    
-	public final ApplicationContext getApplicationContext() {
-        // 通过监听器直接取到 ApplicationContext
-		return (ApplicationContext) getSource();
-	}
-}
-
-~~~
 
 SpringFramework 中内置的监听器接口是 `ApplicationListener`
 
@@ -837,6 +823,7 @@ public class ContextClosedEventListener implements ApplicationListener<ContextCl
 @Component
 public class ContextClosedEventAnnotationListener {
     @EventListener
+    // 通过参数类型指定要监听的数据
     public void onEvent(ContextClosedEvent event) {
         System.out.println("[@EventListener]ApplicationContext closed.");
     }

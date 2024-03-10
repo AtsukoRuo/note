@@ -302,21 +302,7 @@ public Object postProcessAfterInitialization(@Nullable Object bean, String beanN
 
 protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
     // 判断是否要增强
-    if (StringUtils.hasLength(beanName) 
-        && this.targetSourcedBeans.contains(beanName)) {
-        return bean;
-    }
-    
-    if (Boolean.FALSE.equals(this.advisedBeans.get(cacheKey))) {
-        return bean;
-    }
-    
-    if (isInfrastructureClass(bean.getClass()) 
-        || shouldSkip(bean.getClass(), beanName)) {
-        this.advisedBeans.put(cacheKey, Boolean.FALSE);
-        return bean;
-    }
-
+    // ...
     // Create proxy if we have advice.
     Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
     if (specificInterceptors != DO_NOT_PROXY) {
@@ -497,8 +483,6 @@ protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) 
 
 ~~~
 
-### 
-
 `AbstractAdvisorAutoProxyCreator#getAdvicesAndAdvisorsForBean`根据当前正在初始化的Bean，获取能匹配到的增强器。 
 
 ~~~java
@@ -517,7 +501,7 @@ protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName
     // 获取所有增强器
     List<Advisor> candidateAdvisors = findCandidateAdvisors();
     
-    // 筛选出可以切入当前bean的增强器
+    // 筛选出可以切入当前bean的增强器，这里先匹配引介增强器，再匹配普通方法增强器
     List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
     
     // 添加额外的增强器
@@ -529,69 +513,20 @@ protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName
     
     return eligibleAdvisors;
 }
+
+// AnnotationAwareAspectJAutoProxyCreator覆写了AbstractAdvisorAutoProxyCreator中的该方法
+// 获取所有增强器
+protected List<Advisor> findCandidateAdvisors() {
+    // 调用AbstractAdvisorAutoProxyCreator的findCandidateAdvisors()
+    // 把 SpringFramework 原生的 AOP 增强器，以及 AspectJ 形式封装的增强器都拿出来。
+    List<Advisor> advisors = super.findCandidateAdvisors();
+    if (this.aspectJAdvisorsBuilder != null) {
+        advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
+    }
+
+    return advisors;
+}
 ~~~
-
-- 获取所有增强器
-
-  ~~~java
-  // AnnotationAwareAspectJAutoProxyCreator覆写了AbstractAdvisorAutoProxyCreator中的该方法
-  protected List<Advisor> findCandidateAdvisors() {
-      // 调用AbstractAdvisorAutoProxyCreator的findCandidateAdvisors()
-      // 把 SpringFramework 原生的 AOP 增强器，以及 AspectJ 形式封装的增强器都拿出来。
-      List<Advisor> advisors = super.findCandidateAdvisors();
-      if (this.aspectJAdvisorsBuilder != null) {
-          advisors.addAll(this.aspectJAdvisorsBuilder.buildAspectJAdvisors());
-      }
-  
-      return advisors;
-  }
-  ~~~
-
-- 筛选出可以切入当前Bean的增强器
-
-  ~~~java
-  // AbstractAdvisorAutoProxyCreator
-  protected List<Advisor> findAdvisorsThatCanApply(
-      List<Advisor> candidateAdvisors, 
-      Class<?> beanClass, 
-      String beanName) {
-      ProxyCreationContext.setCurrentProxiedBeanName(beanName);
-      try {
-          return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
-      } finally {
-          ProxyCreationContext.setCurrentProxiedBeanName(null);
-      }
-  }
-  
-  // AopUtils
-  public static List<Advisor> findAdvisorsThatCanApply(
-      List<Advisor> candidateAdvisors,
-      Class<?> clazz) {
-      
-      if (candidateAdvisors.isEmpty()) {
-          return candidateAdvisors;
-      }
-      List<Advisor> eligibleAdvisors = new ArrayList<>();
-      // 先匹配引介增强器
-      for (Advisor candidate : candidateAdvisors) {
-          if (candidate instanceof IntroductionAdvisor && canApply(candidate, clazz)) {
-              eligibleAdvisors.add(candidate);
-          }
-      }
-      boolean hasIntroductions = !eligibleAdvisors.isEmpty();
-      // 再匹配普通方法增强器
-      for (Advisor candidate : candidateAdvisors) {
-          if (candidate instanceof IntroductionAdvisor) {
-              // already processed
-              continue;
-          }
-          if (canApply(candidate, clazz, hasIntroductions)) {
-              eligibleAdvisors.add(candidate);
-          }
-      }
-      return eligibleAdvisors;
-  }
-  ~~~
 
 
 
@@ -599,52 +534,121 @@ protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName
 
 ## 代理对象的底层执行逻辑
 
-我们来看一下 jdk 动态代理的执行。当调用代理方法时，会进入`JdkDynamicAopProxy`中：
+我们来看一下 jdk 动态代理的执行。当调用代理方法时，会进入`JdkDynamicAopProxy#invoke()`中：
 
 ~~~java
 public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    Object oldProxy = null;
-    boolean setProxyContext = false;
+    // ...
+    // equals方法不代理
+    // hashCode方法不代理
+    // 方法来自于DecoratingProxy接口的，也不代理
+    // 目标对象本身就是实现了Advised接口，也不代理
+    // ...
 
-    TargetSource targetSource = this.advised.targetSource;
-    Object target = null;
+ 
+    // 根据当前执行的方法，获取要执行的增强器
+    // 然后将 AspectJ 类型的增强器，转换为 MethodInterceptor，并返回
+    List<Object> chain = this.advised
+        .getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 
-    try {
-        // equals方法不代理
-        // hashCode方法不代理
-        // 方法来自于DecoratingProxy接口的，也不代理
-        // 目标对象本身就是实现了Advised接口，也不代理
-		// ...
+    if (chain.isEmpty()) {
+        // 如果拦截器链为空，则执行目标方法
+        Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
+        retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
+    }
+    else {
+        MethodInvocation invocation = new ReflectiveMethodInvocation(
+            proxy, target, 
+            method, args, 
+            targetClass, chain);
 
-        Object retVal;
-        if (this.advised.exposeProxy) {
-            oldProxy = AopContext.setCurrentProxy(proxy);
-            setProxyContext = true;
-        }
+        // 构造增强器链，执行增强器的逻辑
+        retVal = invocation.proceed();
+    }
+    // 返回值的处理 ......
+    return retVal;
+    
+}
+~~~
 
-        target = targetSource.getTarget();
-        Class<?> targetClass = (target != null ? target.getClass() : null);
 
-        // 根据当前执行的方法，获取要执行的增强器，并以列表返回(链的思想)
-        List<Object> chain = this.advised
-            .getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
-        
-        if (chain.isEmpty()) {
-            Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
-            retVal = AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse);
-        }
-        else {
-            MethodInvocation invocation = new ReflectiveMethodInvocation(
-                proxy, target, 
-                method, args, 
-                targetClass, chain);
-            
-            // 构造增强器链，执行增强器的逻辑
-            retVal = invocation.proceed();
-        }
-        // 返回值的处理 ......
-        return retVal;
-    } // finally ......
+
+
+
+我们来看一下`MethodInterceptor`链中的执行：
+
+~~~java
+@Override//拦截器执行入口
+public Object proceed() throws Throwable {
+    // 如果自增系数和拦截器链中拦截器数量相同（则代表，拦截器依次执行完毕）
+    if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
+        //拦截器执行完毕，执行目标方法;
+        return invokeJoinpoint();
+    }
+
+    //根据起始基数，依次获对应的拦截器。（每次获取拦截器，起始基数都自增一次）
+    Object interceptorOrInterceptionAdvice = this.interceptorsAndDynamicMethodMatchers.get(++this.currentInterceptorIndex);
+    
+    //这里获取的具体拦截器只会是两种类型（InterceptorAndDynamicMethodMathcher或者MethodInterceptor）
+    if (interceptorOrInterceptionAdvice instanceof InterceptorAndDynamicMethodMatcher) {
+        //...
+    }
+    else {
+        // 具体的拦截器执行执行自己的invoke方法，将拦截器链传到里面去了。类似一个链，做递归调用，最有一个拦截器执行完毕（自增系数会和拦截器数量相同，执行目标方法），最后每一个拦截器依次返回，拦截器链执行完毕
+        return ((MethodInterceptor)interceptorOrInterceptionAdvice).invoke(this);
+    }
+}
+~~~
+
+我们来看一个 MethodInterceptor 的具体实现 ： TransactionInterceptor（事务通知）
+
+~~~java
+public class TransactionInterceptor extends TransactionAspectSupport implements MethodInterceptor, Serializable {
+
+    @Override
+    public Object invoke(final MethodInvocation invocation) throws Throwable {
+        Class<?> targetClass = (invocation.getThis() != null ? AopUtils.getTargetClass(invocation.getThis()) : null);
+        return invokeWithinTransaction(invocation.getMethod(), targetClass, new InvocationCallback() {
+            @Override
+            public Object proceedWithInvocation() throws Throwable {
+                return invocation.proceed();
+            }
+        });
+    }
+}
+~~~
+
+@Before的实现：
+
+~~~java
+public class MethodBeforeAdviceInterceptor implements MethodInterceptor, Serializable {
+	private MethodBeforeAdvice advice;
+
+	@Override
+	public Object invoke(MethodInvocation mi) throws Throwable {
+		this.advice.before(mi.getMethod(), mi.getArguments(), mi.getThis() );
+        // 调用下一个Interceptor
+		return mi.proceed();
+	}
+}
+~~~
+
+@After的实现：
+
+~~~java
+public class AspectJAfterAdvice extends AbstractAspectJAdvice
+		implements MethodInterceptor, AfterAdvice, Serializable {
+
+	@Override
+	public Object invoke(MethodInvocation mi) throws Throwable {
+		try {
+			return mi.proceed();
+		}
+		finally {
+            // 如果抛出异常，那么调用链终止
+			invokeAdviceMethod(getJoinPointMatch(), null, null);
+		}
+	}
 }
 ~~~
 

@@ -10,7 +10,19 @@ Spring MVC 能帮助我们方便地开发符合 MVC 模式的 Web 应用，MVC �
 - **视图层**则是暴露给用户的界面，
 - **控制器层**则在两者之间充当黏合剂，很单薄
 
-![在这里插入图片描述](assets/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L1RyYW5uZQ==,size_16,color_FFFFFF,t_70#pic_center.png)
+![img](assets/15628a80d7794c60b9620cfe58f5cd63tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
+
+
+
+在前后端分离的设计中，后端负责暴露接口给前端调用。也就是将MVC中的View层分离到前端去，原本的`Model`层细分为`Service`层以及`Repository`层。这种情况下，我们一般就将后端项目分为：
+
+- `Repository`层：负责数据访问
+
+- `Service`层：负责业务逻辑
+
+- `Controller`层：负责暴露接口
+
+
 
 Spring MVC 的设计是围绕 `DispatcherServlet` 展开的，它是整个 Spring MVC 的核心，跟它配合的组件主要有下面这些：
 
@@ -19,8 +31,6 @@ Spring MVC 的设计是围绕 `DispatcherServlet` 展开的，它是整个 Sprin
 - 各类**解析器**，例如，视图解析器 `ViewResolver`、异常解析器 `HandlerExceptionResolver` 和 Multipart 解析器 `MultipartResolver`；
 - **处理器映射**，`HandlerMapping` 定义了请求该如何找到对应的处理器，例如，根据 Bean 名称的 `BeanNameUrlHandlerMapping`，以及根据 `@RequestMapping` 注解的 `RequestMappingHandlerMapping`；
 - **处理器适配器**，`DispatcherServlet` 在收到请求时，通过 `HandlerAdapter` 来调用所映射的处理器。
-
-
 
 >什么是Servlet？
 >
@@ -40,110 +50,7 @@ Spring MVC 的设计是围绕 `DispatcherServlet` 展开的，它是整个 Sprin
 
 
 
-## 配置Spring MVC
 
-### 传统配置
-
-首先介绍一下如何在没有 Spring Boot 的情况下配置 Spring MVC。
-
-在传统的 Web 工程里，基本都会有一个 web.xml，我们可以把 `DispatcherServlet` 配置在这个文件里，例如：
-
-~~~xml
-<web-app>
-    <!-- 配置应用上下文 -->
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>/WEB-INF/applicationContext.xml</param-value>
-    </context-param>
-    <!-- 配置Servlet -->
-    <servlet>
-        <servlet-name>dispatcher</servlet-name>
-        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-        <init-param>
-            <param-name>contextConfigLocation</param-name>
-            <param-value>classpath:dispatcher-servlet.xml</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>dispatcher</servlet-name>
-        <url-pattern>/</url-pattern>
-    </servlet-mapping>
-
-</web-app>
-~~~
-
-在 Servlet 3.0 以上的容器里，只要实现 `WebApplicationInitializer` 接口来注册并初始化 `DispatcherServlet`，容器会自动找到它。例如：
-
-~~~java
-public class WebInitializer implements WebApplicationInitializer {
-    @Override
-    public void onStartup(ServletContext container) {
-        XmlWebApplicationContext appContext = new XmlWebApplicationContext();
-        appContext.setConfigLocation("classpath:dispatcher-servlet.xml");
-
-        ServletRegistration.Dynamic registration = container.addServlet("dispatcher",
-            new DispatcherServlet(appContext));
-        registration.setLoadOnStartup(1);
-        registration.addMapping("/");
-    }
-}
-~~~
-
-在上面的代码中，我们还需要自己配置 Spring 的上下文，Spring MVC 提供了一个实现了 `WebApplicationInitializer` 的抽象类 `AbstractDispatcherServletInitializer`，通过它的子类 `AbstractAnnotationConfigDispatcherServletInitializer` 和 `AbstractDispatcherServletInitializer` 可以轻松地配置基于 Java 配置类的 `DispatcherServlet` 和基于 XML 文件的 `DispatcherServlet`。
-
-在配置完 Servlet 后，就该配置 Spring MVC 了，同样有 XML 和 Java 类两种配置方式。在 XML文件 （在`web.xml`中配置的标签`<context-param>`）中，使用 `<mvc:annotation-driven/>` 来开启 Spring MVC，就像下面这样：
-
-~~~xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-        xmlns:mvc="http://www.springframework.org/schema/mvc"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans
-                              https://www.springframework.org/schema/beans/spring-beans.xsd
-                              http://www.springframework.org/schema/mvc
-                              https://www.springframework.org/schema/mvc/spring-mvc.xsd">
-
-     <!--开启自动包扫描-->
-    <context:component-scan base-package="com.xxxx" annotation-config="true"/>
-	<!--自动注册最合适的处理器映射器，处理器适配器(调用handler方法)-->
-    <mvc:annotation-driven>
-        <!--<mvc:message-converters>-->
-        
-    </mvc:annotation-driven>
-
-</beans>
-~~~
-
-基于 Java 类的配置大概是下面这样的：
-
-~~~java
-@Configuration
-@EnableWebMvc
-// 还可以让配置类实现 WebMvcConfigurer 接口，实现更精准的配置
-public class WebConfig implements WebMvcConfigurer {
-    
-    @Controller
-    ...
-}
-~~~
-
-
-
-### 基于SpringBoot的配置
-
-Spring Boot 的 `DispatcherServletAutoConfiguration` 提供了针对 `DispatcherServlet` 的自动配置，而 `WebMvcAutoConfiguration` 则提供了 Spring MVC 的自动配置。
-
-如果希望在保留自动配置的基础上再做一些 Spring MVC 的定制，可以添加一个实现了 `WebMvcConfigurer` 的配置类，但**一定不要加 `@EnableWebMvc` 注解**，因为这样会破坏 Spring Boot 对 Spring MVC 的自动配置。
-
-如果希望定制 `RequestMappingHandlerMapping`、`RequestMappingHandlerAdapter` 和 `ExceptionHandlerExceptionResolver`，可以声明一个 `WebMvcRegistrations` 类型的 Bean。
-
-在 Spring Boot 项目中，要注册 `Servlet`、`Filter` 或者 `Listener`，最简单的办法就是把它们配置为 Bean。如果需要做更多定制，就注册对应的 `ServletRegistrationBean`、`FilterRegistrationBean` 和 `ServletListenerRegistrationBean`。
 
 ## Controller
 
@@ -173,25 +80,15 @@ Spring Boot 的 `DispatcherServletAutoConfiguration` 提供了针对 `Dispatcher
 
 
 
-下面给出一些例子
+### 简单的示例
 
 ~~~java
-// POST请求的body中的JSON数据会被转换为User对象。
-@PostMapping("/user")
-public User updateUser(@RequestBody User user) {
-    // ...
-    return user;
-}
-~~~
-
-
-
-### 一个简单的控制器
-
-~~~java
-@Controller			// 表明是MVC控制器
-@ResponseBody		// @ResponseBody 可以写在类上，也可以写在方法上，表示将方法的返回值作为响应的正文。
-@RequestMapping("/menu")		// 类上的 @RequestMapping 注解设置了整个类里的公共属性，在这里是设置了 URL 映射的基础路径 /menu
+// 表明是MVC控制器
+@Controller			
+// @ResponseBody 可以写在类上，也可以写在方法上，表示将方法的返回值作为响应的正文。
+@ResponseBody		
+// 类上的 @RequestMapping 注解设置了整个类里的公共属性，在这里是设置了 URL 映射的基础路径 /menu
+@RequestMapping("/menu")		
 public class MenuController {
     @Autowired
     private MenuService menuService;
@@ -218,11 +115,11 @@ public class MenuController {
 
 ### @RequestMapping
 
-在 Spring MVC 中，`@RequestMapping` 是一个非常重要的注解，下面列出它的属性：
+被@RequestMapping注解的方法称为**「请求处理方法」**
 
 | 属性       | 类型              | 说明                                                         |
 | :--------- | :---------------- | :----------------------------------------------------------- |
-| `name`     | `String`          | 为映射定义一个名称，当类上和方法上的注解里都定义了名称，会用 `#` 将它们连接起来 |
+| `name`     | `String`          | 为映射定义一个名称。当类上和方法上的@RequestMapping注解里都定义了名称，会用 `#` 将它们连接起来 |
 | `path`     | `String[]`        | 指定映射的 URL，也是本注解的默认属性，类上的 `path` 会作为方法上的 `path` 的前缀，如果路径中用了占位符 `{}`，可以用 `@PathVariable` 注解来取得对应占位符的值 |
 | `method`   | `RequestMethod[]` | 用来缩小映射的范围，指定可以接受的 HTTP 方法，`RequestMethod` 定义了支持的 HTTP 方法 |
 | `params`   | `String[]`        | 用来缩小映射的范围，当请求参数匹配规则时才做映射，可以用 `param1=value1`、`param2!=value2`、`param3` 和 `!param4` 分别表示参数等于某个值，参数不等于某个值，必须包含某个参数和不能包含某个参数 |
@@ -230,9 +127,26 @@ public class MenuController {
 | `consumes` | `String[]`        | 只能处理特定媒体类型的请求，也就是匹配请求头里的 `Content-Type`，可以用 `!` 表示否定 |
 | `produces` | `String[]`        | 只能处理接受特定「返回媒体类型」的请求，本方法的结果会被限制在指定的媒体类型里 |
 
+Spring默认将每个`@Controller`注释的类作为单例（Singleton）进行管理。`@Scope`注解可以用来指定Spring bean的生命周期范围：
+
+1. singleton（默认）：对每个Spring IoC容器只存在一个Bean实例。
+2. prototype：每次请求创建一个新的Bean实例。
+3. request：每次Http请求都会创建一个新的Bean，这只在web应用中有效。
+4. session：同一个Http Session内共享一个Bean，不同的Http Session使用不同的Bean。
+
+~~~java
+@Controller
+@Scope("request")
+public class FileHandlerController {
+    
+}
+~~~
 
 
-被@RequestMapping注解的方法称为请求处理方法，这些方法可以携带特定类型的参数，在被调用处理请求时，MVC框架会自动注入这些参数。
+
+### 参数
+
+这些方法可以携带特定类型的参数，在被调用处理请求时，MVC框架会自动注入这些参数。
 
 | 参数类型                              | 说明                                                         |
 | ------------------------------------- | ------------------------------------------------------------ |
@@ -249,23 +163,21 @@ public class MenuController {
 
 除了上述类型，还可以在参数上增加一些注解，获取特定的信息，常用的注解如表 9-7 所示。
 
-
-
 **表 9-7　Spring MVC 请求处理方法的常用参数注解**
 
-| 注解                | 说明                                                         |
-| ------------------- | ------------------------------------------------------------ |
-| `@PathVariable`     | 获得 `@RequestMapping` 的 `path` 里配置的占位符对应的值      |
-| `@RequestParam`     | 获得请求的参数                                               |
-| `@RequestHeader`    | 获得请求的 HTTP 头                                           |
-| `@RequestBody`      | 获得请求的消息体                                             |
-| `@RequestPart`      | 针对 Multipart 请求，获取其中指定的一段内容                  |
-| `@CookieValue`      | 获得 Cookie 内容                                             |
-| `@ModelAttribute`   | 获得模型中的属性，如果不存在则初始化一个，请求数据会绑定到对象上并做校验。 |
-| `@SessionAttribute` | 获得 Session 中已有的属性                                    |
-| `@RequestAttribute` | 获得请求中已有的属性                                         |
+| 注解                | 说明                                                    |
+| ------------------- | ------------------------------------------------------- |
+| `@PathVariable`     | 获得 `@RequestMapping` 的 `path` 里配置的占位符对应的值 |
+| `@RequestParam`     | 获得请求的参数。                                        |
+| `@RequestHeader`    | 获得请求的 HTTP 头                                      |
+| `@RequestBody`      | 获得请求的消息体                                        |
+| `@RequestPart`      | 针对 Multipart 请求，获取其中指定的一段内容             |
+| `@CookieValue`      | 获得 Cookie 内容                                        |
+| `@ModelAttribute`   | 获得模型中的属性，如果不存在则初始化一个。              |
+| `@SessionAttribute` | 获得 Session 中已有的属性                               |
+| `@RequestAttribute` | 获得请求中已有的属性                                    |
 
-例子：
+简单的例子：
 
 ~~~java
 @SpringBootApplication
@@ -285,7 +197,7 @@ public class SimpleApplication {
     }
 
     @PostMapping
-    public String helloPOST( @RequestBody HelloRequest request) {
+    public String helloPOST( @RequestBody Hello hello) {
         return String.format("{\"message\":\"Hello %s %s\"}",request.getFirstName(), request.getLastName());
     }
 }
@@ -293,6 +205,69 @@ public class SimpleApplication {
 ~~~
 
 
+
+
+
+在`@RequestMapping`方法中，Spring会将简单类型和某些特殊类型默认处理为`@RequestParam`。然而，对于POJO类型，Spring会尝试将请求参数注入到到这些对象。如果一个请求参数被`@RequestParam`显式指定了，那么该参数不会自动注入到POJO对象中。
+
+
+
+在`@Requestmapping`方法中，简单类型和某些特殊类型会默认标记为`@RequestParam`，而POJO类型会默认标记为@RequestBody
+
+`@RequestParam`注解：
+
+- `value`：获取由`value`指定的参数，解决请求中的参数名和方法中的参数名不一致的情况
+- `required`：它表示请求参数中是否必须携带指定的参数，默认值为`true`，此时如果并未携带，那么返回400错误码。
+- `defaultValue`：当未携带此参数时（`required = false`），返回一个默认值
+
+
+
+`@RequestPart`注解：
+
+- `name`/`value`: 这两个属性意义相同，用于指定请求 part 的名字
+- `required`: 这个属性是一个布尔值，用于确定是否这个请求 part 是必需的。如果设为 true（也是默认值），而 part 缺失，那么Spring 会抛出一个异常。如果设为 false，相应的方法参数会被设为 null。
+
+使用示例：
+
+~~~http
+POST /upload HTTP/1.1
+Host: www.example.com
+Content-Type: multipart/form-data; boundary=abc123
+
+--abc123
+Content-Disposition: form-data; name="username"
+
+John Doe
+--abc123
+Content-Disposition: form-data; name="email"
+
+john.doe@example.com
+--abc123
+Content-Disposition: form-data; name="profile_picture"; filename="profile.jpg"
+Content-Type: image/jpeg
+
+(BINARY DATA)
+--abc123--
+~~~
+
+~~~java
+@PostMapping("/fileupload")
+public String handleFileUpload(@RequestPart("file") MultipartFile file) {
+    // 获取文件名
+    String name = file.getOriginalFilename();
+
+    // 获取文件内容，注意处理可能抛出的异常
+    try {
+        byte[] bytes = file.getBytes();
+    }
+}
+~~~
+
+
+
+
+
+### 返回值
 
 **表 9-8　Spring MVC 请求处理方法的常见返回值类型**
 
@@ -306,36 +281,21 @@ public class SimpleApplication {
 | `HttpEntity<T>` 与 `ResponseEntity<T>` | 返回的对象就是完整的响应报文，可以设置响应码、响应头部和正文 |
 | `HttpHeaders`                          | 响应只有 HTTP 头，没有消息正文                               |
 
-
-
-如果方法（不是`@ResponseBody`）的返回值类型是 `void`，那么下面几种情况意味着请求已经被处理（不会返回视图）：
+如果方法（不被`@RequestBody`标注）的返回值类型是 `void`，Spring MVC 会默认去找与请求处理方法名同名的视图，但是下面几种情况意味着请求已经被处理（不会返回视图）
 
 - 设置了 `ServletResponse` 的 `OutputStream` 参数；
 - 有 `@ResponseStatus` 注解设置了返回的 HTTP 响应码；
 - 做过 HTTP 缓存处理，例如检查过 `E-TAG` 没变化。
 
-其他情况下，返回与方法名同名的视图。
-
-
-
-Session对应着用户的多次请求，Session 的信息是存储在服务器端的，用户的请求里带有名为 `JSESSIONID` 的 Cookie 值，通过这个值就能在服务器上找到对应的 Session 信息。
-
-Session仅在本地服务器中保存，如果想要在有状态集群式服务器中共享，那么推荐放进集群Redis中。这就是分布式 Session。
-
-**表 9-9　Web 应用程序上下文中所特有的作用范围**
-
-| 范围          | 说明                                                         |
-| :------------ | :----------------------------------------------------------- |
-| `request`     | 仅存活在单次 HTTP 请求里                                     |
-| `session`     | 仅存活在单个 Session 范围里，会话失效（也就是 Session 失效后），Bean 也就被销毁了 |
-| `application` | 在整个 `ServletContext` 的生命周期里有效                     |
-| `websocket`   | 在单个 `WebSocket` 的生命周期里有效                          |
-
-
+如果被`@RequestBody`标注的方法返回类型为`void`，那么消息正文就为空。
 
 ### 消息转换
 
-`@RequestBody` 和 `@RequestPart` 也会对请求的内容进行转换，将它们转换为各种不同的类型传到参数中，这里的转换其实就是由 `HttpMessageConverter` 来实现的。在 Spring MVC 中，框架为我们内置了大量的转换器，例如之前已经用到过的 Jackson JSON 的转换，其他默认的常用 `HttpMessageConverter` 如表 9-10 所示。
+`Formatter`作用于路径中的参数转换，而`HttpMessageConverter`作用于HTTP消息正文
+
+#### HttpMessageConverter
+
+`@RequestBody` 和 `@RequestPart` 也会对请求正文进行转换，将它们转换为各种不同的类型传到参数中，这里的转换其实就是由 `HttpMessageConverter` 来实现的。在 Spring MVC 中，框架为我们内置了大量的转换器，例如之前已经用到过的 Jackson JSON 的转换。
 
 **表 9-10　Spring MVC 内置的常用`HttpMessageConverter` 列表**
 
@@ -349,7 +309,11 @@ Session仅在本地服务器中保存，如果想要在有状态集群式服务�
 | `Jaxb2RootElementHttpMessageConverter`    | 存在 `javax.xml.bind.Binder` | XML                                  |
 | `MappingJackson2HttpMessageConverter`     | 存在 Jackson 的 JSON 依赖    | JSON                                 |
 
-我们可以实现 `WebMvcConfigurer` 接口，覆盖 `configureMessageConverters()` 方法来配置自己的 `HttpMessageConverter`。但在 Spring Boot 里，还有更简单的方法，有一个 `HttpMessageConvertersAutoConfiguration` 自动配置类，大致代码如下：
+
+
+我们可以实现 `WebMvcConfigurer` 接口，覆盖 `configureMessageConverters()` 方法来配置自己的 `HttpMessageConverter`。
+
+但在 Spring Boot 里还有更简单的方法，`HttpMessageConvertersAutoConfiguration` 自动配置类从上下文里获取 `HttpMessageConverter` Bean对象，并设置到 `HttpMessageConverters` 对象中。大致代码如下：
 
 ```java
 @Configuration(proxyBeanMethods = false)
@@ -360,7 +324,6 @@ public class HttpMessageConvertersAutoConfiguration {
     @ConditionalOnMissingBean
     public HttpMessageConverters messageConverters(
         ObjectProvider<HttpMessageConverter<?>> converters) {
-        
         return new HttpMessageConverters(
             converters.orderedStream().collect(Collectors.toList()));
     }
@@ -368,19 +331,21 @@ public class HttpMessageConvertersAutoConfiguration {
 }
 ```
 
-它从上下文里获取 `HttpMessageConverter` Bean对象，并设置到 `HttpMessageConverters` 对象中。
 
-### 绑定与校验
 
-当`handler`方法上的参数类型为`Date`，而从`request`中获取到的参数类型是字符串，`SpringMVC`在默认情况下无法实现字符串转`Date`。此时可以在由@`InitBinder`注解修饰的方法中为`WebDataBinder`对象注册`CustomDateEditor`，从而使得`WebDataBinder`能将从`request`中获取到的字符串再转换为`Date`对象。
+#### Formatter
+
+当`handler`方法上的参数类型为`Date`，而从`request`中获取到的参数类型是字符串，`SpringMVC`在默认情况下无法实现字符串转`Date`。此时，可以在由@`InitBinder`注解修饰的方法中，为`WebDataBinder`对象注册一个转换器，从而使得`WebDataBinder`能将从`request`中获取到的字符串再转换为`Date`对象。
 
 ~~~java
 @Controller
 public class FormController {
+    
     @InitBinder
     protected void initBinder(WebDataBinder binder) {
         binder.addCustomFormatter(new DateFormatter("yyyy-MM-dd"));
     }
+    
     // ...
 }
 ~~~
@@ -395,13 +360,9 @@ public interface Formatter<T> extends Printer<T>, Parser<T> {}
 
 
 
-在 Spring Boot 中，我们无须去手动初始化 `WebDataBinder`。Spring Boot 的 MVC 自动配置会收集上下文中的 `Converter` 和 `Formatter`，自动完成注册。我们只需通过 将它们声明为 Bean 就可以了。
+Spring Boot  会收集上下文中的 `Converter` 和 `Formatter` Bean，自动完成注册，我们无须去手动初始化 `WebDataBinder`。
 
-
-
-
-
-
+### 校验
 
 在将请求内容绑定到参数上之后，一般还会做一些内容的校验，Spring Framework 中就支持 Jakarta Bean Validation API，Hibernate Validator 就是它的一种实现。
 
@@ -461,6 +422,36 @@ public class MenuController {
     // 省略其他内容
 }
 ~~~
+
+
+
+分组校验的例子：
+
+1. 首先创建标记接口，作为分组的标识：
+
+   ~~~java
+   public interface UserInfoGroup { }
+   public interface UserPasswordGroup { }
+   ~~~
+
+2. 通过groups属性，表明所属的分组
+
+   ~~~java
+   @NotBlank(message = "用户名不能为空", groups = {UserInfoGroup.class, UserPasswordGroup.class})
+   @Length(min = 6, max = 20, message = "用户名的长度必须为6-20位", groups = {UserInfoGroup.class, UserPasswordGroup.class})
+   private String username;
+   
+   @NotBlank(message = "用户姓名不能为空", groups = UserInfoGroup.class)
+   private String name;
+   ~~~
+
+3. 通过`@Validated`指定要使用的分组：
+
+   ~~~java
+   public String save(@Validated(UserPasswordGroup.class) User user, BindingResult bindingResult) { ... }
+   ~~~
+
+   这样，save请求方法只会对name属性做校验。
 
 
 
@@ -556,7 +547,69 @@ public void download(
 }
 ~~~
 
+### 跨域
 
+只要触发以下三种情况之一，都会引起跨域问题：
+
+- http 访问 https ，或者 https 访问 http
+- 不同域名 / 服务器主机之间的访问
+- 不同端口之间的访问
+
+目前来讲，浏览器的同源策略，在处理跨域问题时的态度如下：
+
+- 非同源的 cookie 、localstorage 、indexedDB 无法访问
+- 非同源的 iframe 无法访问（防止加载其他网站的页面元素）
+- 非同源的 ajax 请求可以访问，但浏览器拒绝接收响应
+
+
+
+`@CrossOrigin` 注解不止可以标注在类上，也可以标注在方法上。默认情况下 `@CrossOrigin` 的允许跨域范围是 * ，也就是任意，我们可以自行声明可以跨域的域名与端口
+
+~~~java
+@Controller
+@RequestMapping("/user")
+// 从 localhost:8080 的请求才允许跨域访问
+@CrossOrigin(origins = "http://localhost:8080")
+public class UserController76 { ... }
+~~~
+
+`@CrossOrigin` 干的事，其实就相当于我们用 `HttpServletResponse` 执行了这么一句代码：
+
+~~~java
+response.addHeader("Access-Control-Allow-Origin", "*");
+~~~
+
+
+
+## 异常处理
+
+通过`@ExceptionHandler` 注解，声明式地捕获指定的异常，下面给出一个例子：
+
+~~~java
+@ControllerAdvice
+public class RuntimeExceptionHandler {
+    
+    // 当抛出RuntimeException异常时，就会调用该方法
+    @ExceptionHandler(RuntimeException.class)
+    public String handleRuntimeException(
+        HttpServletRequest request, 
+        HttpServletResponse response, 
+        RuntimeException e) {
+        return "error";
+    }
+}
+~~~
+
+可以通过声明 `@ControllerAdvice` 的 `value` / `basePackages` 来指定增强的包，也可以声明 `assignableTypes` 来单独点名指定要增强的 `@Controller` ：
+
+~~~java
+@ControllerAdvice(basePackages = "com.linkedbear.spring.withdao.controller")
+@ControllerAdvice(assignableTypes = UserController.class)
+~~~
+
+
+
+ `@ControllerAdvice`除了配合 `@ExceptionHandler` 来完成的统一异常处理，它还可以配合`@InitBinder` 、`@ModelAttribute` 注解
 
 ## Jackson
 
@@ -568,7 +621,7 @@ Jackson提供了三种JSON的处理方式，分别是：
 
 - 流式API
 
-其中前两项功能都是基于ObjectMapper来实现的，而流式API功能则需要基于更底层的JsonGenerator和JsonParser来实现。
+其中前两项功能都是基于`ObjectMapper`来实现的，而流式API功能则需要基于更底层的`JsonGenerator`和`JsonParser`来实现。
 
 使用Maven构建项目，需要添加依赖：
 
@@ -593,9 +646,7 @@ Jackson提供了三种JSON的处理方式，分别是：
 
 ~~~
 
-
-
-### 对象绑定
+这里，我们先介绍对象绑定的方式
 
 - JSON字符串转换为Car类对象：
 
@@ -662,67 +713,11 @@ Jackson提供了三种JSON的处理方式，分别是：
   ~~~
 
   
+  
+  
+  
 
 默认情况下，Jackson通过将JSON字段的名称与Java对象中的getter和setter方法进行匹配
-
-
-
-### datatype
-
-spring jpa的底层默认使用的是hibernate。通过hibernate查询出来的实体对象实际上都是代理对象，在序列化的时候，我们可能会遇到懒加载导致jackson无法正确解析对象的问题，这个可以通过导入maven包
-
-~~~java
-<dependency>
-    <groupId>com.fasterxml.jackson.datatype</groupId>
-    <artifactId>jackson-datatype-hibernate5</artifactId>
-</dependency>
-~~~
-
-然后加载进objectMapper上下文
-
-~~~java
-@Bean
-public Jackson2ObjectMapperBuilderCustomizer builderCustomizer() {
-    return builder -> {
-        //jackson序列化 和 hibernate懒加载
-        builder.modulesToInstall(hibernate5Module());
-    };
-}
-
-private static Hibernate5Module hibernate5Module() {
-    Hibernate5Module hibernate5Module = new Hibernate5Module();
-    hibernate5Module.configure(REPLACE_PERSISTENT_COLLECTIONS, true);
-    //hibernate5Module.configure(FORCE_LAZY_LOADING, true);
-    return hibernate5Module;
-}
-~~~
-
-
-
-或者注册一个Bean对象（推荐）：
-
-~~~java
-@SpringBootApplication
-@EnableCaching
-public class BinaryTeaApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(BinaryTeaApplication.class, args);
-    }
-
-    @Bean
-    public JodaMoneyModule jodaMoneyModule() {
-        return new JodaMoneyModule();
-    }
-
-    @Bean
-    public Hibernate5Module hibernate5Module() {
-        return new Hibernate5Module();
-    }
-}
-~~~
-
-
 
 ## 测试
 
@@ -817,6 +812,7 @@ class MenuControllerTest {
    class OrderRunnerTest {
        private static MockWebServer webServer;
    	private OrderRunner runner; 	// 被测试的对象
+       
        @BeforeAll
        static void setUp() throws IOException {
            webServer = new MockWebServer();
@@ -874,7 +870,14 @@ class MenuControllerTest {
 
 ## 拦截器
 
-拦截器 Interceptor 在 Spring MVC 中的定义：
+拦截器是 SpringWebMvc（框架） 的概念，而过滤器是 Servlet（Web容器） 的概念。
+
+- 任何来自于 Servlet 容器的请求都会走这些过滤器
+- 拦截器只能拦截到被 `DispatcherServlet` 接收处理的请求。
+
+
+
+拦截器 `Interceptor` 在 Spring MVC 中的定义：
 
 ~~~java
 public interface HandlerInterceptor {
@@ -904,13 +907,15 @@ public interface HandlerInterceptor {
 
 三个方法具体的执行流程如下：
 
-- `preHandle`：处理器执行之前执行，如果返回 false 将跳过处理器，并直接执行拦截器 afterCompletion 方法。
-- `postHandle`：如果处理器抛出异常，将跳过该方法直接执行拦截器 afterCompletion 方法。
-- `afterCompletion`：不管处理器是否抛出异常，该方法都将执行。
+- `preHandle` ：在执行 Controller 的方法之前触发，可用于编码、权限校验拦截等
+- `postHandle` ：在执行完 Controller 方法后，跳转页面 / 返回 json 数据之前触发
+- `afterCompletion` ：在完全执行完 Controller 方法后触发，可用于异常处理、性能监控等
+
+
 
 ![在这里插入图片描述](assets/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5aSn6bmPY29vbA==,size_20,color_FFFFFF,t_70,g_se,x_16.png)
 
-当多个拦截器同时工作时，它们的preHandle()方法会按照配置文件中拦截器的配置顺序执行，而它们的postHandle()方法和afterCompletion()方法则会按照配置顺序的反序执行。
+当多个拦截器同时工作时，它们的`preHandle()`方法会按照配置文件中拦截器的配置顺序执行，而它们的`postHandle()`方法和`afterCompletion()`方法则会逆序执行。
 
 ![在这里插入图片描述](assets/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBA5aSn6bmPY29vbA==,size_20,color_FFFFFF,t_70,g_se,x_16-1703604740681-5.png)
 
@@ -957,6 +962,51 @@ public class MvcConfig implements WebMvcConfigurer {
 
 
 
+## 异步请求
+
+如果请求方法返回一个Callable对象，那么就异步执行。
+
+~~~java
+@RestController
+public class AsyncController {
+    
+    @GetMapping("/async")
+    public Callable<String> async() {
+        return () -> {
+            TimeUnit.SECONDS.sleep(5);
+            return "AsyncController async ......";
+        };
+    }
+}
+~~~
+
+
+
+
+
+~~~~java
+private DeferredResult<String> deferredResult = null;
+
+@GetMapping("/deferred")
+public DeferredResult<String> deferred() {
+    // 设置超时时间
+    DeferredResult<String> deferredResult = new DeferredResult<>(5000L);
+    this.deferredResult = deferredResult;
+    return deferredResult;
+}
+
+@GetMapping("/addData")
+public void addData() {
+    if (this.deferredResult != null) {
+        // deferredResult返回请求
+        this.deferredResult.setResult("AsyncController deferredResult setResult");
+        this.deferredResult = null;
+    }
+}
+~~~~
+
+
+
 ## 请求处理的逻辑
 
 现代 Java Web 项目在处理 HTTP 请求时基本都遵循一样的规范，即 Java Servlet 规范（JSR 340）。
@@ -985,22 +1035,18 @@ public class MvcConfig implements WebMvcConfigurer {
 
    ![{%}](assets/025.jpg)
 
-   `DispatcherServlet` 会尝试根据请求来找到合适的处理器，再通过 `HandlerAdapter` 来执行处理器的逻辑。
-
    而且需要特别说明的是，在后置处理中，会调用`HandlerMethodReturnValueHandler`对返回值进行处理。例如，
-   
+
    -  `@ResponseBody` 的方法，返回值就直接被 `RequestResponseBodyMethodProcessor` 处理掉了。即选择合适的 `HttpMessageConverter` 将对象直接序列化为相应的内容；
    - 而未加`@ResponseBody`而且返回String类型的值，则是由 `ViewNameMethodReturnValueHandler` 来处理的。
 
 
 
+![img](assets/1f00dfac2d364b288c94b5c6e0f35007tplv-k3u1fbpfcp-jj-mark1512000q75.webp)
 
-
-
-
-## 视图机制
-
-略
+- 一个标注了 `@RequestMapping` 注解的方法，就是一个 `Handler`
+- `DispatcherServlet` 委托 `HandlerMapping` 来负责找 `Handler`。`HandlerMapping`将`Handler`、涉及到的拦截器以及请求封装成`HandlerExecutionChain`返回给`DispatcherServlet` 
+- `DispatcherServlet` 委托`HandlerAdapter` 去执行`Handler`
 
 ## 访问Web资源
 
@@ -1081,8 +1127,6 @@ void cachedContent(ResposeEntity resposeEntity) {
     reposeEntity.ok().cacheControl(cc).body(...);
 }
 ~~~
-
-
 
 
 
@@ -1286,158 +1330,7 @@ builder.setKeepAliveStrategy((response, context) ->
 
    如果是希望加载一个证书用于校验，可以在使用 `loadTrustMaterial()` 时，传入对应的证书与密码。
 
-## 项目分层
-
-**POJO（Plain Old Java Object）**对象一般作为数据的载体，不涉及数据处理的逻辑，它要满足
-
-- 没有继承任何类、也没有实现任何接口
-- 属性都是私有的，并且为每一个属性提供`getter`、`setter`方法
-
-实际上VO/PO/BO，都是属于POJO对象
 
 
 
-分层领域模型规约：
-
-- **PO（Persistent Object）**：持久化层对象。它满足
-  - 属性与数据库表的字段是一一对应的
-  - 实现序列化接口
-- **DAO（Data Access Object）**：数据访问对象。负责持久层的业务逻辑的实现，一般与PO对象建立依赖关系。
-- **DTO（Data Transfer Object）**：数据传输对象
-- **VO（View Object）**：视图层对象
-- **BO（Business Object）**：业务对象
-- **Entity**：`Service`层与`DAO`层之间传输的对象
-
-
-
-
-
-
-
-在前后端分离的设计中，后端负责暴露接口给前端调用。也就是将MVC中的View层分离到前端去，原本的`Model`层细分为`Service`层以及`Repository`层。这种情况下，我们一般就将后端项目分为：
-
-- `Repository`层：负责数据访问
-
-- `Service`层：负责业务逻辑
-
-- `Controller`层：负责暴露接口
-
-
-
-## 贫血模型 vs 充血模型
-
-一个典型基于贫血模型的代码结构如下：
-
-~~~java
-////////// Controller + VO(View Object) //////////
-public class UserController {
-  private UserService userService; //通过构造函数或者IOC框架注入一个Service层对象
-  
-  public UserVo getUserById(Long userId) {
-    UserBo userBo = userService.getUserById(userId);
-    UserVo userVo = [...convert userBo to userVo...];
-    //向前端返回数据
-    return userVo;
-  }
-}
-
-public class UserVo {
-  private Long id;
-  private String name;
-  private String cellphone;
-}
-
-////////// Service + BO(Business Object) //////////
-public class UserService {
-  private UserRepository userRepository; //通过构造函数或者IOC框架注入一个Repository层对象
-  
-  public UserBo getUserById(Long userId) {
-    UserEntity userEntity = userRepository.getUserById(userId);
-    UserBo userBo = [...convert userEntity to userBo...];
-    return userBo;
-  }
-}
-
-public class UserBo {//省略其他属性、get/set/construct方法
-  private Long id;
-  private String name;
-  private String cellphone;
-}
-
-////////// Repository + Entity //////////
-public class UserRepository {
-  public UserEntity getUserById(Long userId) { //... }
-}
-
-public class UserEntity {//省略其他属性、get/set/construct方法
-  private Long id;
-  private String name;
-  private String cellphone;
-}
-~~~
-
-像UserBo、UserEntity、UserVo这样，只包含数据，不包含业务逻辑的类（POJO类），就叫作**贫血模型（Anemic Domain Model）**。这种贫血模型将数据与操作分离，破坏了面向对象的封装特性，是一种典型的面向过程的编程风格。
-
-基于贫血模型的MVC三层架构开发模式已经成为标准的Web项目的开发模式。一般我们开发的系统业务都比较简单，就是基于SQL的CRUD操作，贫血模型就足够应付。充血模型在设计上要比贫血模型更加有难度，因为充血模型是一种面向对象的编程风格，即我们从一开始就要设计好针对数据要暴露哪些操作，定义哪些业务逻辑。而贫血模型不需要事先做太多设计，只需定义数据对象，之后有新的开发需求，就直接在Service层实现业务逻辑。在**领域驱动设计（Domain Driven Design，简称DDD）**盛行之后，面向对象编程风格的充血模型正好切合了DDD的设计需求，被人们越来越提倡。
-
-> 领域驱动设计，即DDD，主要是用来指导如何解耦业务系统，划分业务模块，定义业务领域模型及其交互。做好领域驱动设计的关键是，看你对自己所做业务的熟悉程度，而并不是对领域驱动设计这个概念本身的掌握程度。不过，DDD也并非银弹。对于业务不复杂的系统开发来说，基于贫血模型的传统开发模式简单够用。
->
-> 微服务除了监控、调用链追踪、API网关等服务治理系统的开发之外，还有针对公司的业务，合理地做微服务拆分。而领域驱动设计恰好就是用来指导如何划分服务的。所以，微服务加速了领域驱动设计的盛行。
-
-
-
-在贫血模型中，数据和业务逻辑被分割到不同的类中。**充血模型（Rich Domain Model）**正好相反，数据和对应的业务逻辑被封装到同一个类中。因此，这种充血模型满足面向对象的封装特性，是典型的面向对象编程风格。
-
-实际上，基于充血模型的DDD开发模式实现的代码，也是按照MVC三层架构分层的，它跟基于贫血模型的传统开发模式的区别主要在Service层。其中，它的Service层包含Service类和Domain类两部分，其中将Service层中的业务逻辑转移到Domain类中的来实现。Service层主要负责：
-
-- Service类负责与Repository交流，避免Domain类与Repository层过度耦合，即将流程性的代码逻辑（比如从DB中取数据、映射数据）与领域模型的业务逻辑解耦，让领域模型更加可复用。
-
-- Service类负责跨领域模型的业务聚合功能。
-- Service类负责一些非功能性及与三方系统交互的工作。比如幂等、事务、发邮件、发消息、记录日志、调用其他系统的RPC接口等，都可以放到Service类中。
-
-
-
-为什么不将Controller层和Repository层进行充血领域建模呢？
-
-- Controller层与Repository层的业务逻辑简单，直接对其贫血建模即可。即使违反面向对象设计原则——数据与操作分离，也无关紧要。因为对象在其整个生命周期中是不可变的，即没有被修改的 。
-
-  
-
-在代码层面上，就是一个将业务逻辑放到Service类中，一个将业务逻辑放到Domain领域模型中，这体现不出充血模型的优势。但是在开发流程上，两者的区别就体现出来了。我们平时的开发，大部分都是**SQL驱动（SQL-Driven）**的开发模式，业务逻辑基本上包裹在一个大的SQL语句中。当需求变化后，只能重新写个满足新需求的SQL语句，复用性很差！
-
-如果我们在项目中，应用基于充血模型的DDD的开发模式，我们就需要事先理清楚所有的业务，定义领域模型所包含的属性和方法，这样领域模型充当可复用的业务中间层。所以，基于充血模型的DDD开发模式，更适合开发对代码的复用性、易维护性要求更高的复杂业务系统。例如，包含各种利息计算模型、还款模型等复杂业务的金融系统。
-
-
-
-
-
-## 国际化
-
-首先注册bean对象
-
-~~~java
-    @Bean
-    public LocaleResolver localeResolver() {
-        SessionLocaleResolver localeResolver = new SessionLocaleResolver();
-        localeResolver.setDefaultLocale(Locale.US);
-        return localeResolver;
-    }
-
-    @Bean
-    public ResourceBundleMessageSource messageSource() {
-        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-
-        // Doesn’t throw an error if a message isn’t found, instead it returns the message code
-        messageSource.setUseCodeAsDefaultMessage(true);
-
-        //  sets messages as the base name of the message source file
-        messageSource.setBasename("messages");
-
-        // For example, if we were in Italy, we would use the
-        // Locale.IT, and we would have a file called messages_it.properties. In case we don’t
-        // find a message in a specific language, the message source will search on the default
-        // message file called messages.properties.
-        return  messageSource;
-    }
-~~~
 

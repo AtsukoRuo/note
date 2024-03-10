@@ -1535,7 +1535,6 @@ public class PayloadApplicationEvent<T> extends ApplicationEvent implements Reso
 
 	public PayloadApplicationEvent(Object source, T payload) {
 		super(source);
-		Assert.notNull(payload, "Payload must not be null");
 		this.payload = payload;
 	}
 }
@@ -1545,6 +1544,7 @@ public class PayloadApplicationEvent<T> extends ApplicationEvent implements Reso
 
 ~~~java
 public class PayloadObjectApplicationListener implements ApplicationListener<PayloadApplicationEvent> {
+    
     @Override
     public void onApplicationEvent(PayloadApplicationEvent event) {
         System.out.println("监听到PayloadApplicationEvent ------> " + event.getPayload());
@@ -1634,12 +1634,7 @@ protected void publishEvent(Object event, @Nullable ResolvableType eventType) {
     // Publish event via parent context as well...
     // 通知父容器发布事件
     if (this.parent != null) {
-        if (this.parent instanceof AbstractApplicationContext) {
-            ((AbstractApplicationContext) this.parent).publishEvent(event, eventType);
-        }
-        else {
-            this.parent.publishEvent(event);
-        }
+        //...
     }
 }
 ~~~

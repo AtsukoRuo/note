@@ -1401,9 +1401,9 @@ SqlSession sqlSession = sqlSessionFactory.openSession();
 SqlSession sqlSessionAutoCommit = sqlSessionFactory.openSession(true);
 ~~~
 
-在MyBatis中，当我们创建了一个新的SqlSession后，默认情况下它是不会自动提交的，也就是说在执行过数据库操作后，必须明确地调用SqlSession的commit()方法来提交事务。
+在MyBatis中，当我们创建了一个新的SqlSession后，默认情况下它是不会自动提交的，即开启事务。也就是说在执行过数据库操作后，必须明确地调用SqlSession的commit()方法来提交事务。
 
-如果你调用SqlSessionFactory的openSession(true)方法，得到的SqlSession会在每次调用执行增删改（insert/update/delete）操作后，自动提交事务。也就是说，你不再需要在每次做完修改后还要额外调用commit()方法。
+如果你调用SqlSessionFactory的openSession(true)方法，得到的SqlSession会在每次调用执行增删改（insert/update/delete）操作后，自动提交事务，即关闭事务特性。也就是说，你不再需要在每次做完修改后还要额外调用commit()方法。
 
 
 
