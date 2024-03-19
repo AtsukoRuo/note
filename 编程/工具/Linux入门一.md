@@ -212,6 +212,17 @@ head -5 /etc/passwd
 
 
 
+
+
+- 硬限制（Hard Limit）是用户或进程在任何时候都不能超过的资源限制。由 root 用户设置
+- 软限制（Soft Limit）可以被用户或进程提高或降低，但不能超过硬限制。系统会按照软限制的值限制资源。
+
+
+
+`ulimit` 命令：只对当前会话有效，而且不能超过硬限制
+
+`limits.conf` 文件：在所有会话中有效，且重启系统后依然有效。
+
 ### 变量
 
 shell 中可以保存一些临时变量，称作 shell 变量
@@ -373,7 +384,11 @@ head /proc/cpuinfo | tr a-z A-Z
   chmod g-w 文件名
   
   chmod guo+rw bgDemo
+  
   ~~~
+  
+
+`-R` 选项可以递归修改权限。
 
 ### 目录结构
 
@@ -713,6 +728,41 @@ ip addr del 192.168.1.2/24 dev eth0
 10.23.2.4 pacific.aem7.net pacific
 ~~~
 
+
+
+linux服务器配置DNS解析的三种方法：
+
+1. 编辑**/etc/hosts**文件，利用hosts自动解析域名到ip
+
+   ~~~bash
+   vim /etc/hosts
+   127.0.0.1 localhost
+   10.23.2.3 atlantic.aem7.net atlantic
+   10.23.2.4 pacific.aem7.net pacific
+   ~~~
+
+2. 编辑DNS客户端配置文件：**/etc/resolv.conf**
+
+   ~~~bash
+   vim /etc/resolv.conf
+   nameserver 114.114.114.114
+   nameserver 8.8.8.8
+   ~~~
+
+3. 假设网卡名为eth0，编辑网卡配置文件，增加DNS规则：
+
+   ~~~bash
+   vim /etc/sysconfig/network-scripts/ifcfg-eth0 
+   # 添加规则
+   DNS1=114.114.114.114
+   DNS2=8.8.8.8
+   service network restart #重启网络使配置生效
+   ~~~
+
+   
+
+优先级：本地Hosts > 网卡配置 > 系统默认DNS配置
+
 ## Shell脚本
 
 
@@ -772,6 +822,8 @@ Shell中的特殊变量
 -  `$?`：shell 执行上一个命令的退出码
 
 
+
+`$()` 与反引号\`在功能上是一致的，都是用来完成命令替换的。命令替换是指 Shell 可以先执行`$()`，然后用标准输出替换`$()`
 
 
 
@@ -833,9 +885,34 @@ if [ $a -eq $b ]; then
 for循环：
 
 ~~~shell
+
+
+# 数字
+for((i=1;i<=10;i++)); do   
+	echo $(expr $i \* 3 + 1);  
+done  
+
+for i in $(seq 1 10)  do   
+	echo $(expr $i \* 3 + 1);  
+done  
+
+# 字符串
+for i in `ls`;  do   
+	echo $i is file name\! ;  
+done  
+
 for str in one two three four; do
 	echo $str
 done
+
+# 路径查找
+for file in /proc/*;  do  
+	echo $file is file path \! ;  
+done  
+
+for file in $(ls *.sh)  do  
+	echo $file is file path \! ;  
+done  
 ~~~
 
 
@@ -845,6 +922,36 @@ while tail -10 $FILE | grep -q firstline; do
 	echo newline >> $FILE
 done
 ~~~
+
+函数：
+
+~~~bash
+function demoFun() {
+    echo "这是我的第一个 shell 函数!"
+}
+
+echo "-----函数开始执行-----"
+demoFun
+echo "-----函数执行完毕-----"
+~~~
+
+函数参数：
+
+~~~bash
+funWithParam(){
+    echo "第一个参数为 $1 !"
+    echo "第二个参数为 $2 !"
+    echo "第十个参数为 $10 !"
+    echo "第十个参数为 ${10} !"
+    echo "第十一个参数为 ${11} !"
+    echo "参数总数有 $# 个!"
+    echo "作为一个字符串输出所有参数 $* !"
+}
+
+funWithParam 1 2 3 4 5 6 7 8 9 34 73
+~~~
+
+
 
 
 

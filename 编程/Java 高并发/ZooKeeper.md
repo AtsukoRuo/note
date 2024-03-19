@@ -59,11 +59,13 @@ ZooKeeper集群节点数必须是奇数，否则可能会出现「可用节点�
    - `initLimit`：节点的初始化时间
    - `syncLimit`：心跳最大延迟周期。
 
-6. 运行`${zookeeper}/bin/zkServer.sh`
+6. 运行`${zookeeper}/bin/zkServer.sh/cmd`
 
 每个节点都要执行一遍上述流程，而且在复制的zookeeper文件夹中
 
 ![image-20240227202227608](assets/image-20240227202227608.png)
+
+
 
 
 
@@ -455,9 +457,22 @@ public interface Watcher {
 }
 ~~~
 
+WatchedEvent 包含了每一个事件的三个基本属性：通知状态（keeperState）、事件类型（eventType）和节点路径（path）
 
 
-![watch-eventType](assets/zk-watch-eventType.png)
+
+| 通知状态           | 状态说明                                                     | 事件类型               | 设置方法                      | 触发条件                                                     |
+| :----------------- | :----------------------------------------------------------- | :--------------------- | :---------------------------- | :----------------------------------------------------------- |
+| Unknown(-1)        | 从3.1.0版本开始被废弃                                        |                        |                               |                                                              |
+| Disconnected(0)    | 客户端和服务器处于断开连接状态                               | None(-1)               |                               | 客户端与ZooKeeper服务器断开连接                              |
+| NoSyncConnected(1) | 从3.1.0版本开始被废弃                                        |                        |                               |                                                              |
+| SyncConnected(3)   | 客户端和服务器处于连接状态                                   | None(-1)               |                               | 客户端与服务器成功建立会话                                   |
+| SyncConnected(3)   | 客户端和服务器处于连接状态                                   | NodeCreated(1)         | 通过exists调用设置            | Watcher监听的对应数据节点被创建，通过create调用触发          |
+| SyncConnected(3)   | 客户端和服务器处于连接状态                                   | NodeDeleted(2)         | 通过exists或者getData调用设置 | Watcher监听的对应数据节点被删除，通过delete调用触发          |
+| SyncConnected(3)   | 客户端和服务器处于连接状态                                   | NodeDataChanged(3)     | 通过exists或者getData调用设置 | Watcher监听的对应数据节点的数据内容发生变更，通过setData调用触发 |
+| SyncConnected(3)   | 客户端和服务器处于连接状态                                   | NodeChildrenChanged(4) | 通过getChildren调用设置       | Watcher监听的对应数据节点的子节点列表发生变更，通过create、delete调用触发 |
+| AuthFailed(4)      | 权限验证失败状态，通常同时也会收到AuthFailedException异常    | None(-1)               |                               | 通常有两种情况：(1)使用错误的scheme进行权限检查。(2)SASL权限检查失败。 |
+| Expired(-112)      | 此时客户端会话失效，通常同时也会收到SessionExpiredException异常 | None(-1)               |                               | 会话超时                                                     |
 
 
 
@@ -473,14 +488,42 @@ ZooKeeper使用`WatchedEvent`对象来封装服务端事件，并传递给Watche
 // 定义一个监听器
 Watcher w = new Watcher() {
     @Override
-    public void process(WatchedEvent watchedEvent) {
-    	log.info("监听器watchedEvent：" + watchedEvent);
+    public void process(WatchedEvent event) {
+      Event.KeeperState state = event.getState();
+      String path = event.getPath();
+      // 连接状态
+      if (state == Event.KeeperState.SyncConnected) {
+          System.out.println("客户端与ZooKeeper服务器处于连接状态");
+          connectedSignal.countDown();
+          if(event.getType() == Event.EventType.None && null == event.getPath()) {
+              System.out.println("监控状态变化");
+          }
+          else if(event.getType() == Event.EventType.NodeCreated) {
+              System.out.println("监控到节点[" + path + "]被创建");
+          }
+          else if(event.getType() == Event.EventType.NodeDataChanged) {
+              System.out.println("监控到节点[" + path + "]的数据内容发生变化");
+          }
+          else if(event.getType() == Event.EventType.NodeDeleted) {
+              System.out.println("监控到节点[" + path + "]被删除");
+          }
+      }
+      // 断开连接状态
+      else if (state == Event.KeeperState.Disconnected){
+          System.out.println("客户端与ZooKeeper服务器处于断开连接状态");
+      }
+      // 会话超时
+      else if (state == Event.KeeperState.Expired){
+          System.out.println("客户端与ZooKeeper服务器会话超时");
+      }
     }
 };
 
 //为GetDataBuilder实例设置监听器
 byte[] content = client.getData().usingWatcher(w).forPath(workerPath);
 ~~~
+
+
 
 **zk中的watch是一次性的，触发后立即销毁。**为了多次反复监听事件，Curator引入了Cache机制，Cache的类型有：
 

@@ -32,6 +32,8 @@
 
 ## 缓存一致性协议——MESI
 
+MESI协议是强一致性，它的感知层次是收到请求，而不是发送请求。
+
 `MESI（Modified-Exclusive-Shared-Invalid）`协议是一种缓存一致性协议，它将缓存条目的状态划分为`Modified`、`Exclusive`、`Shared` 和 `Invalid`这4种，并在此基础上定义了一组消息（Message）用于协调各个处理器的读、 写内存操作。
 
 
@@ -66,7 +68,7 @@ MESI协议中的消息分为「请求消息」和「响应消息」。处理器�
 
 2. 否则（状态为I），那么需要往总线发送Read消息。
 
-   假设 Processor1 中对应的缓存条目的状态不为I，那么Processor1嗅探到Processor0的请求消息后，会构造相应的 Read Response 消息并发送。Processor1往总线发送 Read Response 之后，相应的缓存条目的状态会被更新为 S。特别地，如果Processor1 中对应的缓存条目的状态为M，那么在发送消息前，将数据写入主内存
+   假设 Processor1 中对应的缓存条目的状态不为I，那么Processor1嗅探到Processor0的请求消息后，会构造相应的 Read Response 消息并发送。同时，相应的缓存条目的状态会被更新为 S。特别地，如果Processor1 中对应的缓存条目的状态为M，那么在发送消息前，将数据写入主内存
 
 
 
@@ -95,15 +97,13 @@ MESI协议中的消息分为「请求消息」和「响应消息」。处理器�
 
 ### 写缓冲器
 
-写缓冲器对于每个核来说是私有的。引入写缓冲器后，如果缓存条目的状态为I、S，那么就先将更新数据先写入缓冲器中，然后再发送消息。此后核就任务写操作已经完成了，无需等待Invalidate Acknowledge/Read Response消息，而是继续执行其他指令。再接收其他所有Invalidate Acknowledge响应消息后，才将写缓冲器的数据写入到缓存行中。
+写缓冲器对于每个核来说是私有的。引入写缓冲器后，如果缓存条目的状态为I、S，那么就先将更新数据先写入缓冲器中，然后再发送消息。此时，任务写操作已经完成了，无需等待Invalidate Acknowledge/Read Response消息，而是继续执行其他指令。再接收其他所有Invalidate Acknowledge响应消息后，才将写缓冲器的数据写入到缓存行中。
 
-当核中读取某个数据时，会优先查询写缓冲器，确保结果是最新的。若查询失败，才会考虑缓冲行中的数据。这种技术称为存储转发（Store Forwarding）。
-
-
+当核中读取某个数据时，会优先查询写缓冲器，确保结果是最新的。若查询失败，才会考虑缓冲行中的数据。这种技术称为**存储转发（Store Forwarding）**。
 
 ### 无效化队列
 
-引入无效化队列（Invalidate Queue）之后，处理器在接收到 Invalidate 消息之后，并不删除消息中指定地址对应的副本数据。而是将消息存入无效化队列之后，就回复 Invalidate Acknowledge 消息，从而减少了写操作执行处理器所需的等待时间。
+引入**无效化队列（Invalidate Queue）**之后，处理器在接收到 Invalidate 消息之后，并不删除消息中指定地址对应的副本数据。而是将消息存入无效化队列之后，就回复 Invalidate Acknowledge 消息，从而减少了写操作执行处理器所需的等待时间。
 
 ### 内存重排序和可见性问题
 
@@ -194,11 +194,7 @@ LoadLoad屏障、LoadStore屏障、StoreStore 屏障和 StoreLoad 屏障统称�
 
 Java 虚拟机会在 monitorenter 指令后以及临界区开始前，插入一个获取屏障。Java 虚拟机会在临界区结束后以及monitorexit指令前，插入一个释放屏障。
 
-
-
 由于Java虚拟机的内存屏障比较耗性能，因此Java虚拟机会做出一些优化，例如对于两个连续的 volatile写操作，Java虚拟机可能仅在最后一个 volatile写操作之后插入StoreLoad 屏障。
-
-
 
 ~~~java
 sharedRef = new HTTPRangeRequest("http://xyz.com/download/big.tar",0,1048576);
@@ -295,8 +291,6 @@ Java 内存模型只会从“什么”（What）而不会从“如何”（How�
 ![image-20240207153843542](assets/image-20240207153843542.png)
 
 这是因为L1上的缓存未命中的数量急剧增加，从而导致更多的内存访问延迟。
-
-
 
 解决伪共享问题的一个直观思路就是填充（Padding），填充方式分为两种
 

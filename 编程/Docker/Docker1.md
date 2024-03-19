@@ -855,22 +855,21 @@ Dockerfile 的指令简单分为五大类：
   我们可以在构建时通过 `docker build` 的 `--build-arg` 选项来设置参数变量。
 
   ```shell
-  shell
-  复制代码$ sudo docker build --build-arg TOMCAT_MAJOR=8 --build-arg TOMCAT_VERSION=8.0.53 -t tomcat:8.0 ./tomcat
+  sudo docker build --build-arg TOMCAT_MAJOR=8 --build-arg TOMCAT_VERSION=8.0.53 -t tomcat:8.0 ./tomcat
   ```
-
   
-
+  
+  
   ARG 指令有生效范围，如果在 `FROM` 指令之前指定，那么只能用于 `FROM` 指令中。
-
+  
   ~~~dockerfile
   ARG DOCKER_USERNAME=library
   FROM ${DOCKER_USERNAME}/alpine
   RUN set -x ; echo ${DOCKER_USERNAME}
   ~~~
-
+  
   使用上述 Dockerfile 会发现无法输出 `${DOCKER_USERNAME}` 变量的值，要想正常输出，你必须在 `FROM` 之后再次指定 `ARG`
-
+  
   ~~~dockerfile
   # 只在 FROM 中生效
   ARG DOCKER_USERNAME=library
@@ -879,7 +878,7 @@ Dockerfile 的指令简单分为五大类：
   ARG DOCKER_USERNAME=library
   RUN set -x ; echo ${DOCKER_USERNAME}
   ~~~
-
+  
 - `WORKDIR` 指令可以来指定工作目录（或者称为当前目录）
 
   ```

@@ -1,0 +1,93 @@
+# 高级应用
+
+[TOC]
+
+## TTL
+
+通过消息的 timestamp 字段和 ConsumerInterceptor 接口的 onConsume()方法，来实现消息的 TTL 功能。消息超时可以配合死信队列使用，方便应用通过消费死信队列中的消息来诊断系统的运行概况。
+
+通过消息中的 headers 字段，我们可以灵活地定义超时时间：
+
+~~~java
+public interface Header {
+    String key();
+    byte[] value();
+}
+~~~
+
+我们可以自定义实现 Headers 和 Header 接口，但这样未免过于烦琐，这里可以直接使用 Kafka 提供的实现类 `org.apache.kafka.common.header.internals.RecordHeaders` 和 `org.apache.kafka.common.header.internals.RecordHeader`。
+
+这里我们实现一个 Long 与 Byte[] 相互转换的小工具：
+
+~~~java
+public class BytesUtils {
+    public static byte[] longToBytes(long res) {
+        byte[] buffer = new byte[8];
+        for (int i = 0; i < 8; i++) {
+        	int offset = 64 - (i + 1) * 8;
+        	buffer[i] = (byte) ((res >> offset) & 0xff);
+        }
+        return buffer;
+    }
+    
+    public static long bytesToLong(byte[] b) {
+        long values = 0;
+        for (int i = 0; i < 8; i++) {
+        	values <<= 8; values|= (b[i] & 0xff);
+        }
+        return values;
+    }
+}
+~~~
+
+发送自定义 TTL 消息：
+
+~~~java
+ProducerRecord<String, String> record1 = new ProducerRecord<>(
+    topic, 
+    0, 
+    System.currentTimeMillis(),
+    null, 
+    "msg_ttl_1",
+    new RecordHeaders()
+    	.add(new RecordHeader(
+            "ttl", 
+            BytesUtils.longToBytes(20))));
+~~~
+
+## 延时队列
+
+延时消息是指消息被发送以后，需等待特定时间后，才能被获取。原生的 Kafka 并不具备延时队列的功能。
+
+在发送延时消息的时候，并不先投递到要发送的真实主题（real_topic）中，而是先投递到一些 Kafka 内部的主题 （delay_topic）中，这些内部主题对用户不可见，然后通过一个自定义的服务拉取这些内部主题中的消息，并将满足条件的消息再投递到要发送的真实的主题中。
+
+然后将延时时间按照等级来划分的，比如划分为 5s、10s、30s、1min、2min、 5min、10min、20min、30min、45min、1hour、2hour。延时的消息按照延时时间投递到不同等级的主题中，投递到同一主题中的消息的延时时间会被强转为与此主题延时等级一致的延时时间。这样虽然有一定的延时误差，但是减少了主题的划分。
+
+![image-20240315113408060](assets/image-20240315113408060.png)
+
+发送到内部主题（delay_topic_*）中的消息，会被一个独立的 DelayService 进程消费，这个 DelayService 进程和 Kafka broker 进程以一对一的配比进行同机部署。
+
+![image-20240315113431832](assets/image-20240315113431832.png)
+
+DelayService 使用 DelayQueue 对消息进行缓存，这一目的是将来自多个分区的消息按照投递时间进行有序排序。
+
+![image-20240315113519796](assets/image-20240315113519796.png)
+
+
+
+在 Kafka 服务中增加一个前置缓存，生产者将延时消息发送到缓存服务中。这里缓存的实现我们采用单层时间轮，并且每个时间格也对应一个文件，消息缓存到文件中，这样避免内存的占用。同时，为了减少系统资源（文件句柄）的消耗，我们采用懒加载机制。
+
+![image-20240315114320990](assets/image-20240315114320990.png)
+
+同时为了解决消息可靠性的问题，我们引入缓存多副本的机制。生产者发送的消息不单单发往一个缓存中，而是发往多个缓存，待所有缓存都收到消息之后，才算发送成功。只有一个缓存服务正常使用，其他缓存服务处于冷备状态，当某个延迟操作触发时，会通知清理服务去清理其他延时操作缓存中对应的延时操作。
+
+![image-20240315114529160](assets/image-20240315114529160.png)
+
+## 死信队列和重试队列
+
+由于某些原因消息无法被正确地投递，为了确保消息不会被无故地丢弃，一般将其置于死信队列中。
+
+重试队列其实可以看作一种回退队列，具体指消费端消费消息失败时，为了防止消息无故丢失，而重新将消息回滚到 broker 中。重试队列一般分成多个重试等级，重试次数越多投递延时就越大。重试次数的逻辑实现需要客户端负责。
+
+## 消息轨迹
+

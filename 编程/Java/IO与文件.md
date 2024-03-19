@@ -13,9 +13,7 @@
 ~~~java
 Paths.get("C:\\path\\to");		 //绝对路径
 Paths.get("src");				 //相对路径，相对项目工程的根目录
-
 Path.of("C:", "path", "to");	 //推荐使用，屏蔽各个平台文件分割符的差异
-Path.of("PathInfo.java");		 //构建了一个相对路径
 Path.of(new URI(...));			 //根据URI构建路径
 ~~~
 
@@ -43,8 +41,8 @@ try {
     System.out.println(e);
 }
 
-URI u = p.toUri();						//转换为URI
-File f = ap.toFile();					//转换为File类型
+URI u = p.toUri();						// 转换为URI
+File f = ap.toFile();					// 转换为File类型
 ~~~
 
 注意：toAbsolutePath不会访问文件系统来解析路径，而是仅仅做字符串的转换，下面给出一个例子来说明
@@ -57,8 +55,6 @@ System.out.println(p.toRealPath());		//C:\Users\AtsukoRuo\Desktop\spring-demo\Fi
 ~~~
 
 可以使用`normalize`方法来消除冗余路径，例如`..`、`.`，但是这个方法仍然不访问文件系统
-
-
 
 
 
@@ -159,15 +155,11 @@ System.out.println(p3.resolve(p4));			//C:\src\c
 
 ### 监听Path
 
-
-
 ## 目录 & 文件
 
 **这些静态方法都是Files类的**
 
 ### 创建与删除
-
-
 
 删除目录或者文件
 
@@ -244,11 +236,7 @@ public static Stream<Path> walk(Path start, FileVisitOption... options) throws I
 public static DirectoryStream<Path> newDirectoryStream(Path dir) throws IOException			//获得当前目录内容的流（不考虑子目录中的内容）
 ~~~
 
-
-
 ### 文件系统
-
-
 
 
 
@@ -517,13 +505,7 @@ public class TestEOF {
 }
 ~~~
 
-
-
-
-
 注意，`available()`的工作方式会随着所读取媒介类型的不同而有所不同——该方法的字面意思是“**在没有阻塞的情况下**所能读取的字节数量”。对于文件来说，这意味着整个文件，但是对于不同类型的流来说，则可能并不是这样。
-
-
 
 还有DataOutputStream的`writeUTF()`和`readUTF()`使用的是一种适用于Java的特殊UTF-8变体（JDK文档中有关于这些方法的描述），因此如果你用非Java程序来读取用`writeUTF()`写入的字符串，就必须编写特殊的代码来妥当地读取该字符串。
 
@@ -934,8 +916,6 @@ Some text
 对于一个二进制数据0x0000000000000061（十进制97），按照不同语义解释如下：
 
 ![图7-1](assets/screenshow.png)
-
-
 
 此外还需要注意字节序的问题。不同的机器可以使用不同的字节排序方式保存数据。“大端”（big endian，即高位优先）方式将最高位的字节放在最低的内存地址（即内存起始地址），而“小端”（little endian，即低位优先）方式将最高位的字节放在最高的内存地址（即内存末尾地址）。可以通过向`ByteBuffer`的`order()`方法传入参数`ByteOrder.BIG_ENDIAN`或`ByteOrder.LITTLE_ENDIAN`来改变`ByteBuffer`中的字节序。下面看一个例子：
 
